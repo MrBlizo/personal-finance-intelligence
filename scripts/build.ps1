@@ -130,8 +130,11 @@ if (-not $SkipTests) {
 # ---------------------------------------------------------------- frontend
 Say "4/10 Building the screens (Next.js)"
 $fe = Join-Path $Root "frontend"
-if (-not (Test-Path (Join-Path $fe "node_modules\next"))) {
+$npmHashFile = Join-Path $Dist ".npm-hash"
+$npmHash = (Get-FileHash (Join-Path $fe "package-lock.json") -Algorithm SHA256).Hash
+if (-not (Test-Path (Join-Path $fe "node_modules\next")) -or -not (Test-Path $npmHashFile) -or (Get-Content $npmHashFile) -ne $npmHash) {
     Run "`"$npm`" ci --no-audit --no-fund" $fe "npm install"
+    Set-Content $npmHashFile $npmHash
 }
 Run "`"$npm`" run build" $fe "Next.js build"
 
