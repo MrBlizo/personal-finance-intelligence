@@ -177,7 +177,14 @@ $running = Get-Process -Name PFI -ErrorAction SilentlyContinue |
     Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) }
 if ($running) { Fail "Personal Finance Intelligence is running from dist\PFI. Close it and run build.bat again." }
 Stop-SmokeDb
-if (Test-Path $Stage) { Remove-Item $Stage -Recurse -Force }
+if (Test-Path $Stage) {
+    try { Remove-Item $Stage -Recurse -Force -ErrorAction Stop }
+    catch {
+        Fail ("dist\PFI could not be replaced because another program still uses it ($($_.Exception.Message)). " +
+              "A program started from a test run of the app (for example a PDF viewer opened from an export, " +
+              "or a File Explorer window inside dist\PFI) keeps the folder open. Close it and run build.bat again.")
+    }
+}
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 # The Windows App SDK ships its on-device AI runtime (ONNX Runtime, DirectML,
 # ~42 MB); PFI does not use it.

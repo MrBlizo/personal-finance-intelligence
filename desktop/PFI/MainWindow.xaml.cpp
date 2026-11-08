@@ -161,8 +161,8 @@ namespace winrt::PFI::implementation
             a.Handled(true);
             winrt::Windows::System::Launcher::LaunchUriAsync(winrt::Windows::Foundation::Uri(a.Uri()));
         });
-        // Exports and backups: save straight to Downloads and confirm with a
-        // native notice instead of the browser's download flyout.
+        // Exports and backups: save straight to Downloads and let the page
+        // confirm it, instead of showing the browser's download flyout.
         core.DownloadStarting([this](CoreWebView2 const&, CoreWebView2DownloadStartingEventArgs const& a)
         {
             a.Handled(true);
@@ -217,41 +217,35 @@ namespace winrt::PFI::implementation
 
     void MainWindow::ShowDownload(std::wstring const& path, bool ok)
     {
+        // The page shows the confirmation (XAML drawn over WebView2 can be
+        // hidden behind it); the shell only remembers the file.
         m_lastDownload = ok ? path : L"";
-        auto bar = DownloadBar();
-        bar.FlowDirection(m_lang == L"ar" ? FlowDirection::RightToLeft : FlowDirection::LeftToRight);
-        bar.Severity(ok ? InfoBarSeverity::Success : InfoBarSeverity::Error);
-        bar.Title(winrt::hstring(pfi::Tr(m_lang, ok ? pfi::Text::Saved : pfi::Text::SaveFailed)));
-        bar.Message(winrt::hstring(std::filesystem::path(path).filename().wstring()));
-        DownloadOpenButton().Content(box_value(winrt::hstring(pfi::Tr(m_lang, pfi::Text::OpenFile))));
-        DownloadShowButton().Content(box_value(winrt::hstring(pfi::Tr(m_lang, pfi::Text::ShowInFolder))));
-        DownloadOpenButton().Visibility(ok ? Visibility::Visible : Visibility::Collapsed);
-        DownloadShowButton().Visibility(ok ? Visibility::Visible : Visibility::Collapsed);
-        bar.IsOpen(true);
-        if (!m_downloadTimer)
+        auto core = Web().CoreWebView2();
+        if (!core) return;
+        JsonObject msg;
+        msg.SetNamedValue(L"type", JsonValue::CreateStringValue(L"downloaded"));
+        msg.SetNamedValue(L"name", JsonValue::CreateStringValue(
+            std::filesystem::path(path).filename().wstring()));
+        msg.SetNamedValue(L"ok", JsonValue::CreateBooleanValue(ok));
+        core.PostWebMessageAsJson(msg.Stringify());
+    }
+
+    void MainWindow::OpenLastDownload(bool inFolder)
+    {
+        std::error_code ec;
+        if (m_lastDownload.empty() || !std::filesystem::exists(m_lastDownload, ec)) return;
+        // Start the viewer in the file's folder so it never inherits (and
+        // locks) the app's own working directory.
+        auto dir = std::filesystem::path(m_lastDownload).parent_path().wstring();
+        if (inFolder)
         {
-            m_downloadTimer = DispatcherQueue().CreateTimer();
-            m_downloadTimer.IsRepeating(false);
-            m_downloadTimer.Interval(std::chrono::seconds(10));
-            m_downloadTimer.Tick([this](auto&&, auto&&) { DownloadBar().IsOpen(false); });
+            std::wstring args = L"/select,\"" + m_lastDownload + L"\"";
+            ShellExecuteW(nullptr, L"open", L"explorer.exe", args.c_str(), dir.c_str(), SW_SHOWNORMAL);
         }
-        m_downloadTimer.Stop();
-        m_downloadTimer.Start();
-    }
-
-    void MainWindow::DownloadOpen_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        if (m_lastDownload.empty()) return;
-        ShellExecuteW(nullptr, L"open", m_lastDownload.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-        DownloadBar().IsOpen(false);
-    }
-
-    void MainWindow::DownloadShow_Click(IInspectable const&, RoutedEventArgs const&)
-    {
-        if (m_lastDownload.empty()) return;
-        std::wstring args = L"/select,\"" + m_lastDownload + L"\"";
-        ShellExecuteW(nullptr, L"open", L"explorer.exe", args.c_str(), nullptr, SW_SHOWNORMAL);
-        DownloadBar().IsOpen(false);
+        else
+        {
+            ShellExecuteW(nullptr, L"open", m_lastDownload.c_str(), nullptr, dir.c_str(), SW_SHOWNORMAL);
+        }
     }
 
     void MainWindow::OnWebMessage(CoreWebView2 const&, CoreWebView2WebMessageReceivedEventArgs const& args)
@@ -281,6 +275,10 @@ namespace winrt::PFI::implementation
             else if (type == L"queryHello")
             {
                 ReplyHelloStatus();
+            }
+            else if (type == L"openDownload" || type == L"showDownload")
+            {
+                OpenLastDownload(type == L"showDownload");
             }
         }
         catch (...)

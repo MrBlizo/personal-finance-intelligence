@@ -605,5 +605,9 @@
  "stooq (end of day, free API key)": "stooq (clôture, clé API gratuite)",
  "stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency. Needs your free stooq API key in Settings.": "symbole stooq avec suffixe de marché, p. ex. vt.us, vwrl.uk, sap.de. Cours de clôture dans la devise de cotation. Nécessite votre clé API stooq gratuite dans Paramètres.",
  "Download the latest prices": "Télécharger les derniers cours",
- "Give a holding a price source (stooq or CoinGecko) to download prices.": "Attribuez une source de cours (stooq ou CoinGecko) à une position pour télécharger les cours."
+ "Give a holding a price source (stooq or CoinGecko) to download prices.": "Attribuez une source de cours (stooq ou CoinGecko) à une position pour télécharger les cours.",
+ "Saved to Downloads": "Enregistré dans Téléchargements",
+ "The file could not be saved. Check free disk space and try again.": "Le fichier n'a pas pu être enregistré. Vérifiez l'espace disque libre et réessayez.",
+ "Open": "Ouvrir",
+ "Show in folder": "Afficher dans le dossier"
 }

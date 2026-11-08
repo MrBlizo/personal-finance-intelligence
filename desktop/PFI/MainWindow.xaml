@@ -96,17 +96,6 @@
                         <Button Content="Open log folder" Click="OpenLogs_Click" />
                     </InfoBar.ActionButton>
                 </InfoBar>
-
-                <InfoBar x:Name="DownloadBar" VerticalAlignment="Bottom"
-                         HorizontalAlignment="Right" Margin="24" MaxWidth="520"
-                         Severity="Success" IsOpen="False">
-                    <InfoBar.ActionButton>
-                        <Button x:Name="DownloadOpenButton" Content="Open"
-                                Click="DownloadOpen_Click" />
-                    </InfoBar.ActionButton>
-                    <HyperlinkButton x:Name="DownloadShowButton" Content="Show in folder"
-                                     Click="DownloadShow_Click" Margin="0,0,0,8" />
-                </InfoBar>
             </Grid>
         </NavigationView>
 

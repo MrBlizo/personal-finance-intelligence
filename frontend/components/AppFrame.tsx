@@ -2,10 +2,16 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { Spinner } from "@fluentui/react-components";
+import {
+  Link as FLink, Spinner, Toast, ToastBody, ToastFooter, ToastTitle, Toaster,
+  useId, useToastController,
+} from "@fluentui/react-components";
 import { get, Settings } from "@/lib/api";
 import { I18nProvider, Lang, translate, useT } from "@/lib/i18n";
-import { inShell, notifyLanguage, notifyRoute, onShellNavigate } from "@/lib/shell";
+import {
+  inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
+  openLastDownload,
+} from "@/lib/shell";
 import { ThemeRoot } from "./Theme";
 
 export const NAV = [
@@ -45,6 +51,26 @@ function Sidebar({ path }: { path: string }) {
   );
 }
 
+/** Confirms exports the shell saved to Downloads, like a Windows toast. */
+function DownloadToasts() {
+  const t = useT();
+  const toasterId = useId("downloads");
+  const { dispatchToast } = useToastController(toasterId);
+  useEffect(() => onShellDownload((d) => dispatchToast(
+    <Toast>
+      <ToastTitle>{d.ok ? t("Saved to Downloads")
+        : t("The file could not be saved. Check free disk space and try again.")}</ToastTitle>
+      {d.name && <ToastBody>{d.name}</ToastBody>}
+      {d.ok && (
+        <ToastFooter>
+          <FLink onClick={() => openLastDownload(false)}>{t("Open")}</FLink>
+          <FLink onClick={() => openLastDownload(true)}>{t("Show in folder")}</FLink>
+        </ToastFooter>)}
+    </Toast>,
+    { intent: d.ok ? "success" : "error", timeout: 8000 })), [dispatchToast, t]);
+  return <Toaster toasterId={toasterId} position="bottom-end" />;
+}
+
 export default function AppFrame({ children }: { children: ReactNode }) {
   const path = usePathname() || "/";
   const router = useRouter();
@@ -75,6 +101,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
             <Sidebar path={path} />
             <main className="main">{children}</main>
           </div>
+          <DownloadToasts />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>

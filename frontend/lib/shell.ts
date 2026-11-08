@@ -63,3 +63,22 @@ export function queryHello(): Promise<boolean | null> {
     setTimeout(() => { wv.removeEventListener("message", handler); resolve(null); }, 4000);
   });
 }
+
+export type ShellDownload = { name: string; ok: boolean };
+
+/** Subscribe to files the shell saved to the Downloads folder. */
+export function onShellDownload(cb: (d: ShellDownload) => void): () => void {
+  const wv = webview();
+  if (!wv) return () => {};
+  const handler = (e: { data: unknown }) => {
+    const d = e.data as { type?: string; name?: string; ok?: boolean };
+    if (d?.type === "downloaded") cb({ name: d.name ?? "", ok: Boolean(d.ok) });
+  };
+  wv.addEventListener("message", handler);
+  return () => wv.removeEventListener("message", handler);
+}
+
+/** Open the last saved file, or show it selected in File Explorer. */
+export function openLastDownload(inFolder: boolean) {
+  webview()?.postMessage({ type: inFolder ? "showDownload" : "openDownload" });
+}

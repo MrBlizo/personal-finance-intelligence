@@ -19,10 +19,6 @@ namespace winrt::PFI::implementation
                                   winrt::Microsoft::UI::Xaml::Controls::NavigationViewSelectionChangedEventArgs const& args);
         void OpenLogs_Click(winrt::Windows::Foundation::IInspectable const& sender,
                             winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
-        void DownloadOpen_Click(winrt::Windows::Foundation::IInspectable const& sender,
-                                winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
-        void DownloadShow_Click(winrt::Windows::Foundation::IInspectable const& sender,
-                                winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
         void Unlock_Click(winrt::Windows::Foundation::IInspectable const& sender,
                           winrt::Microsoft::UI::Xaml::RoutedEventArgs const& args);
 
@@ -43,6 +39,7 @@ namespace winrt::PFI::implementation
         void StartBackend();
         void ShowError(std::wstring const& message);
         void ShowDownload(std::wstring const& path, bool ok);
+        void OpenLastDownload(bool inFolder);
         winrt::fire_and_forget OpenUi();
         void OnWebMessage(winrt::Microsoft::Web::WebView2::Core::CoreWebView2 const& sender,
                           winrt::Microsoft::Web::WebView2::Core::CoreWebView2WebMessageReceivedEventArgs const& args);
@@ -83,7 +80,6 @@ namespace winrt::PFI::implementation
 
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer m_idleTimer{ nullptr };
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer m_reminderTimer{ nullptr };
-        winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer m_downloadTimer{ nullptr };
         std::wstring m_lastDownload;
     };
 }
