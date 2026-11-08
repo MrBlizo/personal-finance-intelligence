@@ -119,6 +119,12 @@ if (-not (Test-Path $py)) {
     Run "`"$py`" -m pip install $($pipSpecs -join ' ')" $Root "Installing pip packages"
 }
 Set-Content $hashFile $hash
+# Same PATH as "conda activate pfi": native libraries of conda-forge packages
+# (e.g. Pillow's image codecs used by the PDF report) live in Library\bin and
+# must be found by the tests and by PyInstaller when it collects DLLs.
+$envDir = Split-Path -Parent $py
+$env:PATH = (@($envDir, "$envDir\Library\mingw-w64\bin", "$envDir\Library\usr\bin",
+    "$envDir\Library\bin", "$envDir\Scripts", "$envDir\bin") -join ";") + ";" + $env:PATH
 
 # ------------------------------------------------------------ backend tests
 if (-not $SkipTests) {
