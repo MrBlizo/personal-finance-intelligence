@@ -291,9 +291,10 @@ if (-not $SkipMsix -and -not $DebugBuild) {
     $manifest = $manifest.Replace('{{PUBLISHER_DISPLAY}}', [System.Security.SecurityElement]::Escape($pubName))
     $manifest = $manifest.Replace('{{VERSION}}', $msixVersion).Replace('{{TOAST_CLSID}}', '4b02a14f-82b3-46dc-90ca-731ec1d0edde')
     [IO.File]::WriteAllText((Join-Path $layout "AppxManifest.xml"), $manifest, (New-Object Text.UTF8Encoding($false)))
-    # resources.pri = tile images + the app's XAML resources (merged .pri files).
+    # resources.pri = tile images + the app's XAML resources. The .xbf files
+    # are already indexed inside PFI.pri, so only the .pri files are merged.
     Copy-Item (Join-Path $layout "Assets\*") (Join-Path $priSrc "Assets") -Recurse
-    Get-ChildItem $layout -File | Where-Object { $_.Extension -in ".xbf", ".pri" } | Copy-Item -Destination $priSrc
+    Get-ChildItem $layout -File -Filter *.pri | Copy-Item -Destination $priSrc
     Run "`"$makepri`" createconfig /cf `"$msixRoot\priconfig.xml`" /dq en-US /pv 10.0.0 /o" $msixRoot "MakePri createconfig"
     Run "`"$makepri`" new /pr `"$priSrc`" /cf `"$msixRoot\priconfig.xml`" /mn `"$layout\AppxManifest.xml`" /of `"$layout\resources.pri`" /o" $msixRoot "MakePri"
     $msix = Join-Path $Dist "PFI-$msixVersion-x64.msix"
