@@ -68,6 +68,20 @@ function Run([string]$CommandLine, [string]$WorkDir = $Root, [string]$What = "",
     }
 }
 
+# Stops a smoke-test PostgreSQL left over from an earlier failed build (it
+# locks files in dist\PFI). Never touches a PFI that the user is running.
+function Stop-SmokeDb {
+    $pgCtl = Join-Path $Stage "pgsql\bin\pg_ctl.exe"
+    $pgData = Join-Path $Dist "smoke-data\pgdata"
+    if ((Test-Path $pgCtl) -and (Test-Path (Join-Path $pgData "postmaster.pid"))) {
+        & $pgCtl stop -D $pgData -m fast -w -t 30 2>&1 | Out-Null
+    }
+    Start-Sleep -Milliseconds 500
+    Get-Process -Name postgres, pfi-api -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) } |
+        Stop-Process -Force -ErrorAction SilentlyContinue
+}
+
 try {
 # ------------------------------------------------------------- preflight
 Say "1/10 Checking tools"
@@ -159,6 +173,10 @@ if (-not $exe) { Fail "MSBuild finished but PFI.exe was not found under desktop\
 
 # ---------------------------------------------------------------- stage
 Say "7/10 Assembling dist\PFI"
+$running = Get-Process -Name PFI -ErrorAction SilentlyContinue |
+    Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) }
+if ($running) { Fail "Personal Finance Intelligence is running from dist\PFI. Close it and run build.bat again." }
+Stop-SmokeDb
 if (Test-Path $Stage) { Remove-Item $Stage -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 # The Windows App SDK ships its on-device AI runtime (ONNX Runtime, DirectML,
@@ -194,6 +212,7 @@ for ($i = 0; $i -lt 180 -and -not $proc.HasExited; $i++) {
 }
 if (-not $ok) {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force }
+    Stop-SmokeDb
     if (Test-Path "$smoke\logs\api.log") { Get-Content "$smoke\logs\api.log" -Tail 40 | Add-Content $Log }
     Fail "The packaged backend did not start (see the api.log lines above in dist\build.log)."
 }
@@ -223,8 +242,11 @@ try {
     try { Invoke-RestMethod "$base/api/settings" | Out-Null; throw "API answered without the token" } catch { if ($_.Exception.Message -like "*without the token*") { throw } }
     $results += "token check: ok"
 } catch {
+    $err = $_.Exception.Message
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-    Fail "Smoke test request failed: $($_.Exception.Message)"
+    Stop-SmokeDb
+    if (Test-Path "$smoke\logs\api.log") { Get-Content "$smoke\logs\api.log" -Tail 40 | Add-Content $Log }
+    Fail "Smoke test request failed: $err (see the api.log lines above in dist\build.log)."
 }
 Invoke-RestMethod "$base/api/system/shutdown" -Method Post -Headers $h | Out-Null
 if (-not $proc.WaitForExit(30000)) { Stop-Process -Id $proc.Id -Force; Fail "Backend did not stop within 30 s after shutdown." }
@@ -272,7 +294,7 @@ if (-not $SkipMsix -and -not $DebugBuild) {
     # resources.pri = tile images + the app's XAML resources (merged .pri files).
     Copy-Item (Join-Path $layout "Assets\*") (Join-Path $priSrc "Assets") -Recurse
     Get-ChildItem $layout -File | Where-Object { $_.Extension -in ".xbf", ".pri" } | Copy-Item -Destination $priSrc
-    Run "`"$makepri`" createconfig /cf `"$msixRoot\priconfig.xml`" /dq en-US_fr-FR_ar-SA /pv 10.0.0 /o" $msixRoot "MakePri createconfig"
+    Run "`"$makepri`" createconfig /cf `"$msixRoot\priconfig.xml`" /dq en-US /pv 10.0.0 /o" $msixRoot "MakePri createconfig"
     Run "`"$makepri`" new /pr `"$priSrc`" /cf `"$msixRoot\priconfig.xml`" /mn `"$layout\AppxManifest.xml`" /of `"$layout\resources.pri`" /o" $msixRoot "MakePri"
     $msix = Join-Path $Dist "PFI-$msixVersion-x64.msix"
     Run "`"$makeappx`" pack /d `"$layout`" /p `"$msix`" /o" $Root "MakeAppx"
