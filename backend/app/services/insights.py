@@ -23,6 +23,14 @@ CADENCES = {"weekly": (6, 8), "monthly": (26, 35), "quarterly": (85, 97),
             "yearly": (355, 375)}
 
 
+def _text(title: tuple[str, dict], detail: tuple[str, dict]) -> dict:
+    """Render English text and keep the template for UI translation."""
+    (tt, tv), (dt, dv) = title, detail
+    return {"title": tt.format(**tv), "detail": dt.format(**dv),
+            "i18n": {"title": tt, "title_vars": tv, "detail": dt,
+                     "detail_vars": dv}}
+
+
 def payee_key(description: str, merchant: str | None) -> str:
     """Normalise a payee by dropping digits, dates and punctuation."""
     text = (merchant or description or "").lower()
@@ -62,11 +70,14 @@ def unusual_transactions(df: pd.DataFrame, recent_days: int,
             row = grp.loc[idx]
             out.append({
                 "type": "unusual_transaction", "severity": "warning",
-                "title": f"Unusually large {cat} expense",
-                "detail": (f"{row['description'][:60]} on "
-                           f"{row['txn_date'].date()}: {row['spend']:.2f} "
-                           f"vs. a typical {med:.2f} (robust z = "
-                           f"{z[idx]:.1f})."),
+                **_text(("Unusually large {cat} expense", {"cat": cat}),
+                        ("{desc} on {date}: {amount} vs. a typical "
+                         "{typical} (robust z = {z}).",
+                         {"desc": row["description"][:60],
+                          "date": str(row["txn_date"].date()),
+                          "amount": f"{row['spend']:.2f}",
+                          "typical": f"{med:.2f}",
+                          "z": f"{z[idx]:.1f}"})),
                 "data": {"transaction_id": int(row["id"]),
                          "amount": float(row["spend"]),
                          "median": float(med), "z": float(z[idx])}})
@@ -105,12 +116,16 @@ def subscription_candidates(df: pd.DataFrame) -> list[dict]:
                     "yearly": 1 / 12}[cadence]
                 out.append({
                     "type": "subscription", "severity": "info",
-                    "title": f"Recurring payment: {payee}",
-                    "detail": (f"{len(grp)} {cadence} charges of about "
-                               f"{grp['spend'].iloc[-1]:.2f}, last on "
-                               f"{grp['txn_date'].iloc[-1].date()} "
-                               f"(≈ {monthly:.2f} per month). Add it as a "
-                               "recurring item to improve the forecast."),
+                    **_text(("Recurring payment: {payee}",
+                             {"payee": payee}),
+                            ("{n} {cadence} charges of about {amount}, "
+                             "last on {date} (≈ {monthly} per month). Add "
+                             "it as a recurring item to improve the "
+                             "forecast.",
+                             {"n": len(grp), "cadence": cadence,
+                              "amount": f"{grp['spend'].iloc[-1]:.2f}",
+                              "date": str(grp["txn_date"].iloc[-1].date()),
+                              "monthly": f"{monthly:.2f}"})),
                     "data": {"payee": payee, "cadence": cadence,
                              "count": int(len(grp)),
                              "last_amount": float(grp["spend"].iloc[-1]),
@@ -163,10 +178,13 @@ def category_shifts(df: pd.DataFrame, today: date,
         out.append({
             "type": "category_shift",
             "severity": "warning" if up else "positive",
-            "title": f"{cat} {'up' if up else 'down'} "
-                     f"{abs(diff) / prev:.0%} in {last_p.strftime('%B')}",
-            "detail": (f"{last:.2f} vs. a 3-month average of {prev:.2f} "
-                       f"({diff:+.2f})."),
+            **_text(("{cat} up {pct} in {month}" if up
+                     else "{cat} down {pct} in {month}",
+                     {"cat": cat, "pct": f"{abs(diff) / prev:.0%}",
+                      "month": last_p.strftime("%B")}),
+                    ("{last} vs. a 3-month average of {prev} ({diff}).",
+                     {"last": f"{last:.2f}", "prev": f"{prev:.2f}",
+                      "diff": f"{diff:+.2f}"})),
             "data": {"category": cat, "last_month": last,
                      "previous_avg": prev, "change": diff}})
     return sorted(out, key=lambda i: -abs(i["data"]["change"]))
@@ -205,18 +223,19 @@ def build_insights(db: Session, fx: FxConverter, base: str,
     if missing:
         items.insert(0, {
             "type": "data_quality", "severity": "warning",
-            "title": "Exchange rates missing",
-            "detail": (f"Transactions in {', '.join(missing)} are excluded "
-                       f"from analysis until a rate to {base} is added."),
+            **_text(("Exchange rates missing", {}),
+                    ("Transactions in {list} are excluded from analysis "
+                     "until a rate to {base} is added.",
+                     {"list": ", ".join(missing), "base": base})),
             "data": {"currencies": missing}})
     uncategorized = int((exp["category"] == "Uncategorized").sum()) \
         if len(exp) else 0
     if uncategorized:
         items.append({
             "type": "data_quality", "severity": "info",
-            "title": f"{uncategorized} uncategorized expenses",
-            "detail": "Categorize them or add rules so the breakdown and "
-                      "budgets are complete.",
+            **_text(("{n} uncategorized expenses", {"n": uncategorized}),
+                    ("Categorize them or add rules so the breakdown and "
+                     "budgets are complete.", {})),
             "data": {"count": uncategorized}})
     return {"start": start, "end": today, "currency": base,
             "insights": items}

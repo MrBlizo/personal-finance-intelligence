@@ -1,4 +1,5 @@
 """Settings, exchange rates, accounts, categories and rules."""
+import json
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -11,9 +12,9 @@ from ..migrations import MIGRATIONS
 from ..models import (
     Account, Category, CategoryRule, ExchangeRate, Holding, SavingsGoal,
     Setting, Transaction)
+from ..services import prefs
 from ..services.fx import FxConverter
 from ..services.fx_fetch import FxFetchError, update_rates
-from ..seed import get_setting
 from ..services.importer import Categorizer
 from ..services.ledger import base_currency, net_worth
 from .common import category_names, commit_or_409, get_or_404
@@ -34,8 +35,7 @@ def get_settings_(db: Session = Depends(get_db)):
     return {"base_currency": base_currency(db),
             "currencies_in_use": _currencies(db),
             "schema_version": max(v for v, _, _ in MIGRATIONS),
-            "fx_auto_update": get_setting(db, "fx_auto_update", "1") == "1",
-            "fx_last_update": get_setting(db, "fx_last_update", "") or None}
+            **prefs.snapshot(db)}
 
 
 def _put(db: Session, key: str, value: str) -> None:
@@ -48,9 +48,12 @@ def _put(db: Session, key: str, value: str) -> None:
 
 @router.put("/settings", response_model=s.SettingsOut)
 def put_settings(body: s.SettingsIn, db: Session = Depends(get_db)):
-    _put(db, "base_currency", body.base_currency)
-    if body.fx_auto_update is not None:
-        _put(db, "fx_auto_update", "1" if body.fx_auto_update else "0")
+    for key, value in body.model_dump(exclude_none=True).items():
+        if isinstance(value, bool):
+            value = "1" if value else "0"
+        elif isinstance(value, dict):
+            value = json.dumps(value)
+        _put(db, key, str(value))
     db.commit()
     return get_settings_(db)
 
@@ -284,6 +287,7 @@ def apply_rules(only_uncategorized: bool = True,
         if cat is not None and cat != txn.category_id:
             txn.category_id = cat
             txn.kind = cz.kind_for(cat, txn.amount)
+            txn.category_source = "rule"
             changed += 1
     db.commit()
     return {"updated": changed}

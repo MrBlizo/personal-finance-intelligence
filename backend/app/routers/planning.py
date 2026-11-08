@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .. import schemas as s
 from ..db import get_db
 from ..models import Account, Budget, Category, RecurringItem, SavingsGoal
+from ..services.automation import enable_auto_post
 from ..services.fx import FxConverter
 from ..services.ledger import base_currency
 from ..services.planning import budget_status, goal_progress, \
@@ -48,6 +49,8 @@ def list_recurring(db: Session = Depends(get_db)):
 def create_recurring(body: s.RecurringIn, db: Session = Depends(get_db)):
     _check_recurring(db, body)
     item = RecurringItem(**body.model_dump())
+    if item.auto_post:
+        enable_auto_post(item, date.today())
     db.add(item)
     db.commit()
     return _rec_out(item)
@@ -58,8 +61,11 @@ def update_recurring(item_id: int, body: s.RecurringIn,
                      db: Session = Depends(get_db)):
     item = get_or_404(db, RecurringItem, item_id)
     _check_recurring(db, body)
+    was_auto = item.auto_post
     for key, value in body.model_dump().items():
         setattr(item, key, value)
+    if item.auto_post and not was_auto:
+        enable_auto_post(item, date.today())
     db.commit()
     return _rec_out(item)
 

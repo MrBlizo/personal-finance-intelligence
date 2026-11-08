@@ -18,6 +18,7 @@ from ..db import get_db
 from ..models import (
     Account, Category, ImportBatch, ImportPreset, Transaction)
 from ..services import importer
+from ..services.learn_apply import auto_categorize_batch
 from ..services.fx import FxConverter
 from ..services.ledger import base_currency
 from .common import (
@@ -94,6 +95,8 @@ def create_transaction(body: s.TransactionIn,
     data["kind"] = _resolve_kind(db, body.category_id, body.kind,
                                  body.amount)
     txn = Transaction(**data)
+    if txn.category_id is not None:
+        txn.category_source = "user"
     db.add(txn)
     commit_or_409(db, "transaction")
     db.refresh(txn)
@@ -121,6 +124,8 @@ def update_transaction(txn_id: int, body: s.TransactionPatch,
         setattr(txn, key, value)
     if clear:
         txn.category_id = None
+    if clear or "category_id" in patch:
+        txn.category_source = "user" if txn.category_id else None
     if txn.kind != "transfer":
         txn.kind = _resolve_kind(db, txn.category_id, wanted_kind,
                                  txn.amount)
@@ -158,6 +163,7 @@ def bulk_categorize(body: s.BulkCategorize, db: Session = Depends(get_db)):
             Transaction.id.in_(body.ids), Transaction.kind != "transfer",
             Transaction.trade_id.is_(None))):
         txn.category_id = body.category_id
+        txn.category_source = "user" if body.category_id else None
         txn.kind = kind or ("income" if txn.amount > 0 else "expense")
         changed += 1
     db.commit()
@@ -275,6 +281,7 @@ async def import_commit(file: UploadFile = File(...),
     except importer.ImportError_ as exc:
         db.rollback()
         raise HTTPException(422, str(exc)) from exc
+    result["learned"] = auto_categorize_batch(db, result["batch_id"])
     if save_preset and save_preset.strip():
         df, _, _ = importer.read_csv(raw, m.skip_rows)
         name = save_preset.strip()[:120]

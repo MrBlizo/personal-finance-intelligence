@@ -367,7 +367,8 @@ def commit_import(db: Session, raw: bytes, filename: str,
             account_id=m.account_id, txn_date=r["txn_date"],
             amount=r["amount"], kind=categorizer.kind_for(cat, r["amount"]),
             description=r["description"], merchant=r["merchant"],
-            category_id=cat, import_batch_id=batch.id, fingerprint=fp))
+            category_id=cat, import_batch_id=batch.id, fingerprint=fp,
+            category_source="rule" if cat is not None else None))
         batch.rows_imported += 1
     db.commit()
     return {"batch_id": batch.id, "rows_total": batch.rows_total,

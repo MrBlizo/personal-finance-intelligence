@@ -29,3 +29,7 @@ third_party/pgsql/
 # Misc
 frontend/tsconfig.tsbuildinfo
 *.log
+
+# Store packaging output
+*.msix
+*.msixupload

@@ -1,22 +1,25 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { Button, Link as FLink, Tab, TabList } from "@fluentui/react-components";
 import Plot from "@/components/Plot";
-import { Banner, Empty, Kpi, PageHead, Spinner, useLoad } from "@/components/ui";
-import { Insight, PlotFigure, Summary, get, post } from "@/lib/api";
-import { money, pct, signClass } from "@/lib/format";
+import { Banner, Empty, Kpi, PageHead, Section, Spinner, useLoad } from "@/components/ui";
+import { Insight, PlotFigure, Reminder, Summary, get, insightText, post } from "@/lib/api";
+import { date, money, pct, signClass } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 const PERIODS: Record<string, string> = {
   this_month: "This month", last_3_months: "3 months",
   last_12_months: "12 months", year_to_date: "Year to date",
 };
-const SEV: Record<string, string> = {
-  warning: "var(--warn)", positive: "var(--pos)", info: "var(--accent)",
+const SEV_GLYPH: Record<string, string> = {
+  warning: "", positive: "", info: "",
 };
 
 type Dash = { summary: Summary; charts: Record<string, PlotFigure> };
 
-export default function Dashboard() {
+export default function Home() {
+  const t = useT();
   const [period, setPeriod] = useState("last_12_months");
   const periods = useLoad(() =>
     get<Record<string, [string, string]>>("/api/analytics/periods"));
@@ -26,8 +29,8 @@ export default function Dashboard() {
     charts: ["monthly_cashflow", "category_breakdown", "net_worth",
       "budget_vs_actual"],
   }) : null, [range?.[0], range?.[1]]);
-  const insights = useLoad(() =>
-    get<{ insights: Insight[] }>("/api/insights"));
+  const insights = useLoad(() => get<{ insights: Insight[] }>("/api/insights"));
+  const reminders = useLoad(() => get<Reminder[]>("/api/reminders", { days: 14 }));
   const [seeding, setSeeding] = useState(false);
   const s = dash.data?.summary;
   const cur = s?.currency ?? "CHF";
@@ -35,73 +38,93 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHead title="Dashboard" sub="Your finances at a glance">
-        <div className="chips">
+      <PageHead title={t("Home")} sub={t("Your finances at a glance")}>
+        <TabList size="small" selectedValue={period}
+          onTabSelect={(_, d) => setPeriod(String(d.value))}>
           {Object.entries(PERIODS).map(([k, label]) => (
-            <button key={k} className={k === period ? "on" : ""}
-              onClick={() => setPeriod(k)}>{label}</button>))}
-        </div>
+            <Tab key={k} value={k}>{t(label)}</Tab>))}
+        </TabList>
       </PageHead>
       {dash.error && <Banner kind="error">{dash.error}</Banner>}
       {s && s.missing_fx.length > 0 && (
-        <Banner kind="warning">
-          No exchange rate to {cur} for {s.missing_fx.join(", ")}: those
-          amounts are left out. <Link href="/settings/">Add rates</Link>.
+        <Banner kind="warning" title={t("Missing exchange rates")}
+          action={<Link href="/settings/"><Button size="small">{t("Open settings")}</Button></Link>}>
+          {t("No rate to {cur} for {list}; those amounts are left out.",
+            { cur, list: s.missing_fx.join(", ") })}
         </Banner>)}
       {s && s.unpriced_holdings.length > 0 && (
-        <Banner kind="info">
-          No price entered for {s.unpriced_holdings.join(", ")}; they count as
-          zero. <Link href="/investments/">Update prices</Link>.
+        <Banner kind="info"
+          action={<Link href="/investments/"><Button size="small">{t("Update prices")}</Button></Link>}>
+          {t("No price yet for {list}; they count as zero.",
+            { list: s.unpriced_holdings.join(", ") })}
         </Banner>)}
       {empty && (
-        <Banner kind="info">
-          <b>Welcome!</b> Start by <Link href="/accounts/">adding an
-          account</Link> and <Link href="/import/">importing a bank CSV</Link>,
-          or explore with a synthetic demo dataset (removable in Settings).{" "}
-          <button className="primary" disabled={seeding} onClick={async () => {
-            setSeeding(true);
-            try { await post("/api/demo"); await dash.reload(); insights.reload(); }
-            finally { setSeeding(false); }
-          }}>{seeding ? "Generating…" : "Load demo data"}</button>
+        <Banner kind="info" title={t("Welcome")}
+          action={<Button appearance="primary" size="small" disabled={seeding}
+            onClick={async () => {
+              setSeeding(true);
+              try { await post("/api/demo"); await dash.reload(); insights.reload(); }
+              finally { setSeeding(false); }
+            }}>{seeding ? t("Generating…") : t("Load demo data")}</Button>}>
+          {t("Add an account and import a bank CSV, or explore with synthetic demo data (removable in Settings).")}
         </Banner>)}
-      {!s && dash.loading && <Spinner label="Loading…" />}
+      {!s && dash.loading && <Spinner label={t("Loading…")} />}
       {s && (
-        <div className="stack">
-          <div className="grid kpis">
-            <Kpi label="Net worth" value={money(s.net_worth, cur)}
-              sub={`Liquid ${money(s.liquid, undefined, 0)} · Invested ${money(s.investments, undefined, 0)}`} />
-            <Kpi label="Income" value={money(s.income, cur)}
-              sub={`Ø ${money(s.avg_monthly_income, undefined, 0)} / month`} />
-            <Kpi label="Expenses" value={money(s.expenses, cur)}
-              sub={`Ø ${money(s.avg_monthly_expenses, undefined, 0)} / month`} />
-            <Kpi label="Net saved" value={money(s.net, cur)} cls={signClass(s.net)}
-              sub={`${s.transactions} transactions`} />
-            <Kpi label="Savings rate" value={pct(s.savings_rate)}
-              cls={signClass(s.savings_rate)} sub="(income − expenses) / income" />
+        <>
+          <div className="kpis">
+            <Kpi label={t("Net worth")} value={money(s.net_worth, cur)}
+              sub={`${t("Liquid")} ${money(s.liquid, undefined, 0)} · ${t("Invested")} ${money(s.investments, undefined, 0)}`} />
+            <Kpi label={t("Income")} value={money(s.income, cur)}
+              sub={t("Ø {v} / month", { v: money(s.avg_monthly_income, undefined, 0) })} />
+            <Kpi label={t("Expenses")} value={money(s.expenses, cur)}
+              sub={t("Ø {v} / month", { v: money(s.avg_monthly_expenses, undefined, 0) })} />
+            <Kpi label={t("Net saved")} value={money(s.net, cur)} cls={signClass(s.net)}
+              sub={t("{n} transactions", { n: s.transactions })} />
+            <Kpi label={t("Savings rate")} value={pct(s.savings_rate)}
+              cls={signClass(s.savings_rate)} sub={t("(income − expenses) / income")} />
           </div>
           <div className="grid g2">
-            <div className="card"><h3>Income vs. expenses</h3>
-              <Plot figure={dash.data?.charts.monthly_cashflow} /></div>
-            <div className="card"><h3>Where the money goes</h3>
-              <Plot figure={dash.data?.charts.category_breakdown} /></div>
-            <div className="card"><h3>Net worth</h3>
-              <Plot figure={dash.data?.charts.net_worth} /></div>
-            <div className="card"><h3>Budgets this month</h3>
-              <Plot figure={dash.data?.charts.budget_vs_actual} /></div>
+            <Section title={t("Income vs. expenses")}>
+              <Plot figure={dash.data?.charts.monthly_cashflow} /></Section>
+            <Section title={t("Where the money goes")}>
+              <Plot figure={dash.data?.charts.category_breakdown} /></Section>
+            <Section title={t("Net worth")}>
+              <Plot figure={dash.data?.charts.net_worth} /></Section>
+            <Section title={t("Budgets this month")}>
+              <Plot figure={dash.data?.charts.budget_vs_actual} /></Section>
           </div>
-          <div className="card">
-            <div className="page-head" style={{ marginBottom: 4 }}>
-              <h3>Insights</h3><Link href="/insights/">All insights →</Link>
-            </div>
-            {insights.data?.insights.length === 0 &&
-              <Empty>No notable patterns yet.</Empty>}
-            {insights.data?.insights.slice(0, 5).map((i, n) => (
-              <div className="insight" key={n}>
-                <span className="dot" style={{ background: SEV[i.severity] }} />
-                <div><b>{i.title}</b><div className="muted small">{i.detail}</div></div>
-              </div>))}
+          <div className="grid g2">
+            <Section title={t("Coming up")} sub={t("Bills and income in the next 14 days")}
+              actions={<Link href="/recurring/"><FLink as="span">{t("Bills & recurring")}</FLink></Link>}>
+              {reminders.data?.length === 0 && <Empty>{t("Nothing due in the next 14 days.")}</Empty>}
+              {reminders.data?.slice(0, 6).map((r) => (
+                <div className="list-row" key={r.key}>
+                  <span className="glyph" aria-hidden>{r.auto_post ? "" : ""}</span>
+                  <div className="grow">
+                    <span className="cell-main">{r.name}</span>
+                    <span className="cell-sub">
+                      {date(r.date)} · {r.days_left === 0 ? t("today")
+                        : t("in {n} days", { n: r.days_left })}
+                      {r.auto_post ? ` · ${t("posted automatically")}` : ""}
+                    </span>
+                  </div>
+                  <span className={`num ${signClass(r.amount)}`}>{money(r.amount, r.currency)}</span>
+                </div>))}
+            </Section>
+            <Section title={t("Insights")}
+              actions={<Link href="/insights/"><FLink as="span">{t("All insights")}</FLink></Link>}>
+              {insights.data?.insights.length === 0 && <Empty>{t("No notable patterns yet.")}</Empty>}
+              {insights.data?.insights.slice(0, 4).map((i, n) => {
+                const x = insightText(i, t);
+                return (
+                  <div className="insight" key={n}>
+                    <span className="glyph" aria-hidden>{SEV_GLYPH[i.severity]}</span>
+                    <div><div>{x.title}</div><div className="caption">{x.detail}</div></div>
+                  </div>);
+              })}
+            </Section>
           </div>
-        </div>)}
+        </>)}
     </>
   );
 }

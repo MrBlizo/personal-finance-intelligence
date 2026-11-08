@@ -6,7 +6,7 @@ migrations to ``MIGRATIONS``; never edit one that has shipped.
 import logging
 from collections.abc import Callable
 
-from sqlalchemy import Connection, Engine, inspect, select
+from sqlalchemy import Connection, Engine, inspect, select, text
 
 from . import models
 from .db import Base
@@ -22,9 +22,31 @@ def _import_presets(conn: Connection) -> None:
     models.ImportPreset.__table__.create(conn, checkfirst=True)
 
 
+def _v03_automation_investments(conn: Connection) -> None:
+    for stmt in (
+        "ALTER TABLE settings ALTER COLUMN value TYPE TEXT",
+        "ALTER TABLE recurring_items ADD COLUMN IF NOT EXISTS auto_post "
+        "BOOLEAN NOT NULL DEFAULT FALSE",
+        "ALTER TABLE recurring_items ADD COLUMN IF NOT EXISTS remind_days "
+        "INTEGER NOT NULL DEFAULT 3",
+        "ALTER TABLE recurring_items ADD COLUMN IF NOT EXISTS last_posted "
+        "DATE",
+        "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS recurring_id "
+        "INTEGER REFERENCES recurring_items(id) ON DELETE SET NULL",
+        "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS category_source "
+        "VARCHAR(10)",
+        "ALTER TABLE holdings ADD COLUMN IF NOT EXISTS price_source "
+        "VARCHAR(20) NOT NULL DEFAULT 'manual'",
+        "ALTER TABLE holdings ADD COLUMN IF NOT EXISTS price_symbol "
+        "VARCHAR(64)",
+    ):
+        conn.execute(text(stmt))
+
+
 MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (1, "initial schema", _initial_schema),
     (2, "import presets", _import_presets),
+    (3, "automation and investment pricing", _v03_automation_investments),
 ]
 
 

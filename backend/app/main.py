@@ -15,11 +15,14 @@ from .config import get_settings
 from .db import SessionLocal, init_engine
 from .migrations import run_migrations
 from .pg_embedded import EmbeddedPostgres
-from .routers import analytics, core, investments, planning, system
+from .routers import analytics, automation, core, investments, planning, system
+from .routers import reports
 from .routers import transactions
 from .security import TokenMiddleware
 from .seed import seed_defaults
+from .services.automation import post_due
 from .services.backup import auto_backup_if_due
+from .services.prices import prices_due, update_prices
 from .services.fx import FxRateMissing
 from .services.fx_fetch import auto_update_due, update_rates
 from .services.ledger import base_currency
@@ -37,7 +40,7 @@ for _ext, _type in ((".js", "text/javascript"), (".mjs", "text/javascript"),
 
 
 def background_tasks(pg: EmbeddedPostgres | None, data_dir: Path) -> None:
-    """Weekly automatic backup and daily exchange-rate update.
+    """Weekly backup, recurring auto-posting, daily rate and price update.
 
     Runs in a daemon thread after start-up; failures are logged only, so a
     missing internet connection never blocks the app.
@@ -51,11 +54,25 @@ def background_tasks(pg: EmbeddedPostgres | None, data_dir: Path) -> None:
             log.exception("Automatic backup failed")
     try:
         with SessionLocal() as db:
+            posted = post_due(db)
+            db.commit()
+            if posted:
+                log.info("Posted %d recurring transactions", len(posted))
+    except Exception:
+        log.exception("Recurring auto-posting failed")
+    try:
+        with SessionLocal() as db:
             if auto_update_due(db):
                 result = update_rates(db, base_currency(db), backfill=True)
                 log.info("Exchange rates updated: %s", result)
     except Exception as exc:
         log.warning("Automatic exchange-rate update skipped: %s", exc)
+    try:
+        with SessionLocal() as db:
+            if prices_due(db):
+                log.info("Prices updated: %s", update_prices(db))
+    except Exception as exc:
+        log.warning("Automatic price update skipped: %s", exc)
 
 
 @asynccontextmanager
@@ -103,7 +120,7 @@ def create_app() -> FastAPI:
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
     for module in (system, core, transactions, planning, investments,
-                   analytics):
+                   analytics, automation, reports):
         app.include_router(module.router)
     if settings.frontend_dist.is_dir():
         app.mount("/", StaticFiles(directory=settings.frontend_dist,

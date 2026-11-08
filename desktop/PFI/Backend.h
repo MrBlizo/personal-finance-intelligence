@@ -24,6 +24,9 @@ namespace pfi
     // Folder containing PFI.exe.
     std::filesystem::path ExeDir();
 
+    // True when running from an MSIX package (Microsoft Store install).
+    bool IsPackaged();
+
     // Reads pfi.ini next to PFI.exe (optional) on top of the installed layout.
     BackendConfig LoadConfig();
 
@@ -62,6 +65,8 @@ namespace pfi
     };
 
     // Minimal HTTP client for 127.0.0.1 (returns status code, -1 on error).
+    // When `body` is given, the response body (UTF-8) is stored in it.
     int LocalHttp(wchar_t const* method, int port, wchar_t const* path,
-                  std::wstring const& token, int timeoutMs = 2000);
+                  std::wstring const& token, int timeoutMs = 2000,
+                  std::string* body = nullptr);
 }

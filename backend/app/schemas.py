@@ -40,11 +40,48 @@ class SettingsOut(BaseModel):
     schema_version: int
     fx_auto_update: bool = True
     fx_last_update: str | None = None
+    price_auto_update: bool = True
+    price_last_update: str | None = None
+    language: str = "en"
+    app_lock: str = "off"
+    lock_after_minutes: int = 5
+    auto_categorize: bool = True
+    auto_categorize_threshold: float = 0.8
+    allocation_targets: dict[str, float] = {}
+    stooq_api_key_set: bool = False
+    stooq_api_key_hint: str | None = None
 
 
 class SettingsIn(_UpperCurrency):
-    base_currency: Currency
+    """Partial update: only the fields that are sent are changed."""
+
+    base_currency: Currency | None = None
     fx_auto_update: bool | None = None
+    price_auto_update: bool | None = None
+    language: Literal["en", "fr", "ar"] | None = None
+    app_lock: Literal["off", "hello"] | None = None
+    lock_after_minutes: Annotated[int | None, Field(ge=0, le=240)] = None
+    auto_categorize: bool | None = None
+    auto_categorize_threshold: Annotated[
+        float | None, Field(ge=0.5, le=0.99)] = None
+    allocation_targets: dict[AssetClass, Annotated[
+        float, Field(ge=0, le=100)]] | None = None
+    stooq_api_key: Annotated[str | None, Field(
+        max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
+
+    @field_validator("base_currency", mode="before")
+    @classmethod
+    def _upper_base(cls, v):
+        return v.upper() if isinstance(v, str) else v
+
+    @field_validator("allocation_targets")
+    @classmethod
+    def _sum_100(cls, v):
+        if v is not None and v and abs(sum(v.values()) - 100) > 0.5:
+            raise ValueError(
+                f"Target allocation must add up to 100 % (it adds up to "
+                f"{sum(v.values()):.1f} %). Adjust the percentages.")
+        return v
 
 
 class FxRateIn(_UpperCurrency):
@@ -216,6 +253,7 @@ class ImportResult(BaseModel):
     rows_failed: int
     errors: list[str]
     categorized: int
+    learned: int = 0
     preset: str | None = None
 
 
@@ -241,12 +279,15 @@ class RecurringIn(BaseModel):
     start_date: date
     end_date: date | None = None
     is_active: bool = True
+    auto_post: bool = False
+    remind_days: Annotated[int, Field(ge=0, le=60)] = 3
 
 
 class RecurringOut(RecurringIn, ORM):
     id: int
     amount: Money
     next_date: date | None = None
+    last_posted: date | None = None
 
 
 class BudgetIn(BaseModel):
@@ -279,6 +320,8 @@ class HoldingIn(_UpperCurrency):
     asset_class: AssetClass
     currency: Currency
     notes: str | None = None
+    price_source: Literal["manual", "stooq", "coingecko"] = "manual"
+    price_symbol: Annotated[str | None, Field(max_length=64)] = None
 
 
 class TradeIn(BaseModel):

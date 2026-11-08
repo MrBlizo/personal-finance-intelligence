@@ -1,17 +1,18 @@
 "use client";
 import { useState } from "react";
-import { categoryOptions, useRefs } from "@/components/refs";
+import { Button, Input, Tooltip } from "@fluentui/react-components";
+import { Add20Regular, Delete20Regular, Edit20Regular } from "@fluentui/react-icons";
+import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
-  Banner, Confirm, Empty, FormModal, Kpi, PageHead, Progress, Spinner, useLoad,
+  Banner, Confirm, Empty, FormModal, Kpi, PageHead, Progress, Spinner,
+  StatusBadge, useLoad,
 } from "@/components/ui";
 import { BudgetItem, BudgetStatus, del, get, post, put } from "@/lib/api";
 import { money, pct } from "@/lib/format";
-
-const STATUS: Record<string, [string, string]> = {
-  ok: ["ok", "On track"], at_risk: ["warn", "At risk"], over: ["err", "Over budget"],
-};
+import { useT } from "@/lib/i18n";
 
 export default function Budgets() {
+  const t = useT();
   const now = new Date();
   const [month, setMonth] = useState(
     `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`);
@@ -25,57 +26,68 @@ export default function Budgets() {
 
   return (
     <>
-      <PageHead title="Budgets" sub={`Monthly limits per expense category, in ${cur}`}>
-        <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} />
-        <button className="primary" onClick={() => setEdit("new")}>+ Add budget</button>
+      <PageHead title={t("Budgets")} sub={t("Monthly limits per expense category, in {cur}", { cur })}>
+        <Input type="month" value={month} onChange={(_, d) => setMonth(d.value)}
+          aria-label={t("Month")} />
+        <Button appearance="primary" icon={<Add20Regular />} onClick={() => setEdit("new")}>
+          {t("Add budget")}</Button>
       </PageHead>
       {status.error && <Banner kind="error">{status.error}</Banner>}
       {status.loading && !s && <Spinner />}
       {s && (
-        <div className="stack">
-          <div className="grid kpis">
-            <Kpi label="Budgeted" value={money(s.total_budget, cur)} />
-            <Kpi label="Spent" value={money(s.total_spent, cur)}
-              sub={s.total_budget ? `${pct(s.total_spent / s.total_budget, 0)} of budget` : undefined} />
-            <Kpi label="Remaining" value={money(s.total_budget - s.total_spent, cur)}
+        <>
+          <div className="kpis">
+            <Kpi label={t("Budgeted")} value={money(s.total_budget, cur)} />
+            <Kpi label={t("Spent")} value={money(s.total_spent, cur)}
+              sub={s.total_budget ? t("{p} of budget", { p: pct(s.total_spent / s.total_budget, 0) }) : undefined} />
+            <Kpi label={t("Remaining")} value={money(s.total_budget - s.total_spent, cur)}
               cls={s.total_budget - s.total_spent < 0 ? "neg" : "pos"} />
-            <Kpi label="Month progress" value={`${s.days_elapsed} / ${s.days_in_month} days`} />
+            <Kpi label={t("Month progress")}
+              value={t("{a} / {b} days", { a: s.days_elapsed, b: s.days_in_month })} />
           </div>
-          <div className="card">
-            {s.items.length === 0 ? <Empty>No budgets yet. Add one for a category such as Food.</Empty> : (
+          <div className="card table-wrap" style={{ padding: "4px 8px" }}>
+            {s.items.length === 0 ? (
+              <Empty action={<Button appearance="primary" onClick={() => setEdit("new")}>{t("Add budget")}</Button>}>
+                {t("No budgets yet. Add one for a category such as Food.")}</Empty>) : (
               <table>
-                <thead><tr><th>Category</th><th style={{ width: "30%" }}>Progress</th>
-                  <th className="num">Spent</th><th className="num">Budget</th>
-                  <th className="num">Projected</th><th>Status</th><th /></tr></thead>
+                <thead><tr><th>{t("Category")}</th><th style={{ width: "28%" }}>{t("Progress")}</th>
+                  <th className="num">{t("Spent")}</th><th className="num">{t("Budget")}</th>
+                  <th className="num">{t("Projected")}</th><th>{t("Status")}</th><th /></tr></thead>
                 <tbody>{s.items.map((i) => (
                   <tr key={i.id}>
-                    <td>{i.category}</td>
-                    <td><Progress value={(i.pct ?? 0)} status={i.status} />
-                      <span className="small muted">{pct(i.pct, 0)}</span></td>
+                    <td>{catLabel(i.category, t)}</td>
+                    <td><Progress value={i.pct ?? 0} status={i.status} />
+                      <span className="caption">{pct(i.pct, 0)}</span></td>
                     <td className="num">{money(i.spent)}</td>
                     <td className="num">{money(i.budget)}</td>
-                    <td className="num muted" title="Linear projection to month end">{money(i.projected)}</td>
-                    <td><span className={`badge ${STATUS[i.status][0]}`}>{STATUS[i.status][1]}</span></td>
-                    <td className="num">
-                      <button className="link" onClick={() => setEdit(i)}>Edit</button>
-                      <button className="link danger" onClick={() => setRemove(i)}>Delete</button>
+                    <td className="num muted">{money(i.projected)}</td>
+                    <td><StatusBadge status={i.status} /></td>
+                    <td className="actions">
+                      <Tooltip content={t("Edit")} relationship="label">
+                        <Button appearance="subtle" size="small" icon={<Edit20Regular />}
+                          onClick={() => setEdit(i)} /></Tooltip>
+                      <Tooltip content={t("Delete")} relationship="label">
+                        <Button appearance="subtle" size="small" icon={<Delete20Regular />}
+                          onClick={() => setRemove(i)} /></Tooltip>
                     </td>
                   </tr>))}</tbody>
               </table>)}
-            <p className="small muted">Spending in sub-categories counts toward a parent category&apos;s budget.
-              “Projected” extrapolates the month so far linearly and is rough early in the month.</p>
           </div>
-        </div>)}
+          <p className="caption" style={{ marginTop: 8 }}>
+            {t("Spending in sub-categories counts toward a parent category's budget. “Projected” extrapolates the month so far linearly and is rough early in the month.")}</p>
+        </>)}
       {edit && (
-        <FormModal title={edit === "new" ? "Add budget" : `Edit budget: ${edit.category}`}
+        <FormModal title={edit === "new" ? t("Add budget")
+          : t("Edit budget: {c}", { c: catLabel(edit.category, t) })}
           onClose={() => setEdit(null)}
           initial={edit === "new" ? { category_id: "", monthly_amount: "" }
             : { category_id: edit.category_id, monthly_amount: edit.budget }}
           fields={[
-            { name: "category_id", label: "Expense category", type: "select", required: true,
-              options: categoryOptions(refs.data?.categories ?? [], "expense")
+            { name: "category_id", label: t("Expense category"), type: "select", required: true,
+              options: categoryOptions(refs.data?.categories ?? [], "expense", t)
                 .filter((o) => edit !== "new" || !used.has(Number(o.value))) },
-            { name: "monthly_amount", label: `Monthly limit (${cur})`, type: "number", step: "0.01", required: true },
+            { name: "monthly_amount", label: t("Monthly limit ({cur})", { cur }), type: "number",
+              step: "0.01", required: true },
           ]}
           onSubmit={async (v) => {
             const body = { category_id: Number(v.category_id), monthly_amount: String(v.monthly_amount) };
@@ -83,7 +95,8 @@ export default function Budgets() {
             else await put(`/api/budgets/${edit.id}`, body);
             status.reload();
           }} />)}
-      {remove && <Confirm onClose={() => setRemove(null)} text={`Delete the budget for ${remove.category}?`}
+      {remove && <Confirm danger yesLabel={t("Delete")} onClose={() => setRemove(null)}
+        text={t("Delete the budget for {c}?", { c: catLabel(remove.category, t) })}
         onYes={async () => { await del(`/api/budgets/${remove.id}`); status.reload(); }} />}
     </>
   );
