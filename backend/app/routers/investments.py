@@ -14,6 +14,8 @@ from .. import schemas as s
 from ..db import get_db
 from ..models import (
     Account, AssetPrice, Category, Holding, InvestmentTrade, Transaction)
+from ..services import performance as perf
+from ..services import prices
 from ..services.fx import FxConverter
 from ..services.ledger import base_currency, compute_position, \
     holding_valuations
@@ -196,3 +198,32 @@ def delete_price(price_id: int, db: Session = Depends(get_db)):
     db.delete(get_or_404(db, AssetPrice, price_id))
     db.commit()
     return Response(status_code=204)
+
+
+@router.get("/investments/performance")
+def performance(db: Session = Depends(get_db)):
+    """XIRR, time-weighted return, dividend income and allocation drift."""
+    return perf.portfolio(db, FxConverter.from_db(db), base_currency(db))
+
+
+@router.post("/prices/update")
+def update_all_prices(db: Session = Depends(get_db)):
+    """Download prices for all holdings with an online price source."""
+    return prices.update_prices(db)
+
+
+@router.post("/holdings/{holding_id}/prices/update")
+def update_one_price(holding_id: int, db: Session = Depends(get_db)):
+    """Download prices for one holding."""
+    h = get_or_404(db, Holding, holding_id)
+    if h.price_source == "manual":
+        raise HTTPException(
+            422, f"{h.symbol} uses manual prices. Edit the holding and "
+            "choose an online price source (stooq or CoinGecko) first.")
+    try:
+        added = prices.update_holding(db, h)
+    except prices.PriceFetchError as exc:
+        db.rollback()
+        raise HTTPException(502, str(exc)) from exc
+    db.commit()
+    return {"new_prices": added}

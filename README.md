@@ -18,7 +18,7 @@ Double-click **`build.bat`**. It checks the tools, creates the conda
 environment, runs the backend tests against PostgreSQL, builds the screens,
 packages the backend, downloads the Windows App SDK packages, builds
 `PFI.exe` with MSBuild, assembles `dist\PFI\`, smoke-tests the packaged
-backend and creates **`dist\PFI-Setup-0.2.0.exe`**.
+backend and creates **`dist\PFI-Setup-0.3.0.exe`**.
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`.
 Options: `build.bat -SkipTests`, `build.bat -SkipInstaller`, `build.bat -DebugBuild`.

@@ -20,7 +20,7 @@ param(
     [switch]$SkipTests,
     [switch]$SkipInstaller,
     [switch]$DebugBuild,
-    [string]$Version = "0.2.0"
+    [string]$Version = "0.3.0"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"

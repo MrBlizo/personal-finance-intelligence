@@ -1,6 +1,6 @@
 {
   "name": "pfi-frontend",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
@@ -8,6 +8,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fluentui/react-components": "^9.75.1",
+    "@fluentui/react-icons": "^2.0.345",
     "next": "^16.4.5",
     "plotly.js-dist-min": "^4.2.0",
     "react": "^19.3.1",

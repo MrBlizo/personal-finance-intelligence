@@ -24,6 +24,8 @@ FREQUENCIES = ("weekly", "biweekly", "monthly", "quarterly", "yearly")
 ASSET_CLASSES = ("stock", "etf", "bond", "fund", "crypto", "real_estate",
                  "commodity", "cash", "other")
 TRADE_TYPES = ("buy", "sell", "dividend", "fee")
+PRICE_SOURCES = ("manual", "stooq", "coingecko")
+CATEGORY_SOURCES = ("user", "rule", "model", "recurring", "system")
 MATCH_FIELDS = ("description", "merchant", "any")
 
 Money = Numeric(14, 2)
@@ -37,7 +39,7 @@ def _in(column: str, values: tuple[str, ...]) -> str:
 class Setting(Base):
     __tablename__ = "settings"
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
-    value: Mapped[str] = mapped_column(String(500))
+    value: Mapped[str] = mapped_column(Text)
 
 
 class SchemaVersion(Base):
@@ -142,6 +144,8 @@ class Holding(Base):
     asset_class: Mapped[str] = mapped_column(String(20))
     currency: Mapped[str] = mapped_column(String(3))
     notes: Mapped[str | None] = mapped_column(Text)
+    price_source: Mapped[str] = mapped_column(String(20), default="manual")
+    price_symbol: Mapped[str | None] = mapped_column(String(64))
     account: Mapped[Account] = relationship()
 
 
@@ -200,6 +204,9 @@ class Transaction(Base):
     trade_id: Mapped[int | None] = mapped_column(
         ForeignKey("investment_trades.id", ondelete="CASCADE"))
     fingerprint: Mapped[str | None] = mapped_column(String(64))
+    recurring_id: Mapped[int | None] = mapped_column(
+        ForeignKey("recurring_items.id", ondelete="SET NULL"))
+    category_source: Mapped[str | None] = mapped_column(String(10))
     notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
@@ -240,6 +247,9 @@ class RecurringItem(Base):
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date | None] = mapped_column(Date)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    auto_post: Mapped[bool] = mapped_column(Boolean, default=False)
+    remind_days: Mapped[int] = mapped_column(Integer, default=3)
+    last_posted: Mapped[date | None] = mapped_column(Date)
 
 
 class Budget(Base):
