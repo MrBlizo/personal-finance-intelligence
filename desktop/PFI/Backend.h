@@ -24,6 +24,9 @@ namespace pfi
     // Folder containing PFI.exe.
     std::filesystem::path ExeDir();
 
+    // True when running from an MSIX package (Microsoft Store install).
+    bool IsPackaged();
+
     // Reads pfi.ini next to PFI.exe (optional) on top of the installed layout.
     BackendConfig LoadConfig();
 

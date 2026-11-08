@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "Backend.h"
 
+#include <appmodel.h>
 #include <bcrypt.h>
 #include <winhttp.h>
+#include <winrt/Windows.Storage.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
@@ -90,6 +92,12 @@ namespace pfi
         }
     }
 
+    bool IsPackaged()
+    {
+        UINT32 length = 0;
+        return GetCurrentPackageFullName(&length, nullptr) != APPMODEL_ERROR_NO_PACKAGE;
+    }
+
     fs::path ExeDir()
     {
         std::wstring buf(MAX_PATH, L'\0');
@@ -112,6 +120,20 @@ namespace pfi
         c.webDir = Resolve(exeDir, IniValue(ini, L"WebDir", L"web"));
         c.dataDir = Resolve(exeDir, IniValue(ini, L"DataDir",
                                              L"%LOCALAPPDATA%\\PersonalFinanceIntelligence"));
+        if (IsPackaged())
+        {
+            // Microsoft Store (MSIX) install: keep the data in the package's
+            // own storage. It is removed with the app and never mixes with a
+            // copy installed from PFI-Setup.exe.
+            try
+            {
+                auto local = winrt::Windows::Storage::ApplicationData::Current().LocalFolder().Path();
+                c.dataDir = fs::path(std::wstring(local)) / L"PersonalFinanceIntelligence";
+            }
+            catch (...)
+            {
+            }
+        }
         return c;
     }
 
