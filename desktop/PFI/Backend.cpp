@@ -246,7 +246,7 @@ namespace pfi
     }
 
     int LocalHttp(wchar_t const* method, int port, wchar_t const* path,
-                  std::wstring const& token, int timeoutMs)
+                  std::wstring const& token, int timeoutMs, std::string* body)
     {
         int status = -1;
         HINTERNET session = WinHttpOpen(L"PFI/1.0", WINHTTP_ACCESS_TYPE_NO_PROXY,
@@ -270,6 +270,18 @@ namespace pfi
                 if (WinHttpQueryHeaders(req, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
                                         WINHTTP_HEADER_NAME_BY_INDEX, &code, &size, WINHTTP_NO_HEADER_INDEX))
                     status = static_cast<int>(code);
+                if (body)
+                {
+                    body->clear();
+                    DWORD avail = 0;
+                    while (WinHttpQueryDataAvailable(req, &avail) && avail > 0)
+                    {
+                        std::string chunk(avail, '\0');
+                        DWORD read = 0;
+                        if (!WinHttpReadData(req, chunk.data(), avail, &read) || read == 0) break;
+                        body->append(chunk.data(), read);
+                    }
+                }
             }
             WinHttpCloseHandle(req);
         }

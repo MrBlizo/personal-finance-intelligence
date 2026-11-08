@@ -22,8 +22,7 @@
         <!-- Custom title bar (content extends into it) -->
         <Grid x:Name="AppTitleBar" Padding="16,0,0,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
-                <FontIcon Glyph="&#xE9D2;" FontSize="14"
-                          Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                <Image Source="ms-appx:///Assets/pfi-16.png" Width="16" Height="16" />
                 <TextBlock Text="Personal Finance Intelligence" VerticalAlignment="Center"
                            Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
@@ -31,10 +30,10 @@
 
         <NavigationView x:Name="Nav" Grid.Row="1"
                         IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
-                        PaneDisplayMode="Left" OpenPaneLength="220" IsEnabled="False"
+                        PaneDisplayMode="Left" OpenPaneLength="232" IsEnabled="False"
                         SelectionChanged="Nav_SelectionChanged">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Dashboard" Tag="/">
+                <NavigationViewItem Content="Home" Tag="/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE80F;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Transactions" Tag="/transactions/">
@@ -53,6 +52,9 @@
                 <NavigationViewItem Content="Goals" Tag="/goals/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE7C1;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="Bills &amp; recurring" Tag="/recurring/">
+                    <NavigationViewItem.Icon><FontIcon Glyph="&#xE8EE;" /></NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Investments" Tag="/investments/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xEAFC;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
@@ -63,6 +65,9 @@
                 <NavigationViewItem Content="Insights" Tag="/insights/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xEA80;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="Reports" Tag="/reports/">
+                    <NavigationViewItem.Icon><FontIcon Glyph="&#xE9F9;" /></NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem Content="Settings" Tag="/settings/">
@@ -71,14 +76,15 @@
             </NavigationView.FooterMenuItems>
 
             <Grid>
-                <WebView2 x:Name="Web" Visibility="Collapsed" />
+                <WebView2 x:Name="Web" Visibility="Collapsed" FlowDirection="LeftToRight" />
 
                 <StackPanel x:Name="Splash" HorizontalAlignment="Center"
                             VerticalAlignment="Center" Spacing="16">
                     <ProgressRing IsActive="True" Width="48" Height="48" />
                     <TextBlock x:Name="Status" Text="Starting…" HorizontalAlignment="Center"
                                Style="{StaticResource BodyTextBlockStyle}" />
-                    <TextBlock Text="The first start sets up your private database and can take up to a minute."
+                    <TextBlock x:Name="SplashHint"
+                               Text="The first start sets up your private database and can take up to a minute."
                                HorizontalAlignment="Center" Opacity="0.7"
                                Style="{StaticResource CaptionTextBlockStyle}" />
                 </StackPanel>
@@ -92,5 +98,25 @@
                 </InfoBar>
             </Grid>
         </NavigationView>
+
+        <!-- Windows Hello lock: covers everything below the title bar. -->
+        <Grid x:Name="LockOverlay" Grid.Row="1" Visibility="Collapsed"
+              Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Spacing="12" MaxWidth="460">
+                <FontIcon Glyph="&#xE72E;" FontSize="48" HorizontalAlignment="Center"
+                          Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                <TextBlock x:Name="LockTitle" Text="Personal Finance Intelligence is locked"
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Name="LockBody" Text="Unlock with Windows Hello to see your finances."
+                           HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
+                           Opacity="0.8" Style="{StaticResource BodyTextBlockStyle}" />
+                <Button x:Name="UnlockButton" Content="Unlock" HorizontalAlignment="Center"
+                        MinWidth="140" Margin="0,8,0,0"
+                        Style="{StaticResource AccentButtonStyle}" Click="Unlock_Click" />
+                <InfoBar x:Name="LockError" Severity="Warning" IsClosable="False" IsOpen="False" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

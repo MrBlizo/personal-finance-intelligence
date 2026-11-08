@@ -130,9 +130,9 @@ class Model:
             gain = {}
             for w in set(words):
                 if w in self.vocab and not w.startswith("sign:"):
-                    gain[w] = (math.log((self.word_count[best][w] + ALPHA) / d1)
-                               - math.log((self.word_count[second][w]
-                                           + ALPHA) / d2))
+                    p1 = (self.word_count[best][w] + ALPHA) / d1
+                    p2 = (self.word_count[second][w] + ALPHA) / d2
+                    gain[w] = math.log(p1) - math.log(p2)
             why = [w.removeprefix("m:") for w, g in
                    sorted(gain.items(), key=lambda x: -x[1])[:3] if g > 0]
         return best, exp[best] / z, why

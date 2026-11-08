@@ -15,7 +15,6 @@ from ..models import (
 from ..services import prefs
 from ..services.fx import FxConverter
 from ..services.fx_fetch import FxFetchError, update_rates
-from ..seed import get_setting
 from ..services.importer import Categorizer
 from ..services.ledger import base_currency, net_worth
 from .common import category_names, commit_or_409, get_or_404

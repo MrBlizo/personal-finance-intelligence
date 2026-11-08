@@ -23,7 +23,6 @@ CADENCES = {"weekly": (6, 8), "monthly": (26, 35), "quarterly": (85, 97),
             "yearly": (355, 375)}
 
 
-
 def _text(title: tuple[str, dict], detail: tuple[str, dict]) -> dict:
     """Render English text and keep the template for UI translation."""
     (tt, tv), (dt, dv) = title, detail

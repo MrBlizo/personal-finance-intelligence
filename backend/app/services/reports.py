@@ -425,8 +425,8 @@ def workbook(db: Session, fx: FxConverter, base: str,
     for mth in months:
         i, e = float(by_m_inc.get(mth, 0)), float(by_m_exp.get(mth, 0))
         summary.append([mth, i, e, i - e, (i - e) / i if i > 0 else None])
-    ws = sheet(f"Monthly ({base})", ["Month", "Income", "Expenses", "Net",
-                                      "Savings rate"], summary, (2, 3, 4),
+    header = ["Month", "Income", "Expenses", "Net", "Savings rate"]
+    ws = sheet(f"Monthly ({base})", header, summary, (2, 3, 4),
                [10, 14, 14, 14, 13])
     for cell in ws.iter_rows(min_row=2, min_col=5, max_col=5):
         cell[0].number_format = "0.0%"

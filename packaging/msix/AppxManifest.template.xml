@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MSIX manifest for the Microsoft Store. Tokens in double braces are filled
+     in by scripts\build.ps1 from packaging\store.json. -->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap rescap desktop com">
+
+  <Identity Name="{{IDENTITY_NAME}}" Publisher="{{PUBLISHER}}"
+            Version="{{VERSION}}" ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Personal Finance Intelligence</DisplayName>
+    <PublisherDisplayName>{{PUBLISHER_DISPLAY}}</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>Track income, expenses, investments and savings goals, forecast cash flow and analyse spending. Your data stays on your PC.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+    <Resource Language="fr-fr" />
+    <Resource Language="ar-sa" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="PFI.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="Personal Finance Intelligence"
+                          Description="Personal finance tracking, forecasting and analysis"
+                          BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Square150x150Logo.png"
+                          Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"
+                         Square71x71Logo="Assets\Square71x71Logo.png"
+                         Square310x310Logo="Assets\Square310x310Logo.png"
+                         ShortName="PFI" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <!-- Bill reminders: clicking a notification activates PFI. -->
+        <desktop:Extension Category="windows.toastNotificationActivation">
+          <desktop:ToastNotificationActivation ToastActivatorCLSID="{{TOAST_CLSID}}" />
+        </desktop:Extension>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="PFI.exe" DisplayName="Personal Finance Intelligence"
+                           Arguments="----AppNotificationActivated:">
+              <com:Class Id="{{TOAST_CLSID}}" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- Exchange rates and market prices (only codes and symbols are sent). -->
+    <Capability Name="internetClient" />
+    <!-- Desktop app (WinUI 3 shell + local PostgreSQL and Python backend). -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

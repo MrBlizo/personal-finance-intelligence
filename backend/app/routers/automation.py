@@ -1,11 +1,9 @@
 """Reminders, recurring auto-posting and learned categorisation."""
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import Transaction
 from ..services import automation, learner, learn_apply, prefs
 from .common import category_names
 

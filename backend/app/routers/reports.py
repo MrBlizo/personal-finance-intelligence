@@ -1,4 +1,4 @@
-"""Downloadable reports: monthly PDF, Excel workbook, CSV, net-worth history."""
+"""Reports: monthly PDF, Excel workbook, CSV, net-worth history."""
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
