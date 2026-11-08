@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/.env
+backend/.devdata/
+backend/build/
+backend/dist/
+
+# Node / Next.js
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Visual Studio / C++
+desktop/**/x64/
+desktop/**/ARM64/
+desktop/**/Debug/
+desktop/**/Release/
+desktop/**/Generated Files/
+desktop/packages/
+desktop/.vs/
+*.user
+
+# Release staging
+dist/
+third_party/pgsql/
+
+# Misc
+frontend/tsconfig.tsbuildinfo
+*.log
