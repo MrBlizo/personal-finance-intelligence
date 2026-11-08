@@ -196,9 +196,14 @@ def test_price_update_keeps_manual_prices(api, monkeypatch):
         calls.append(url)
         return STOOQ.encode()
     monkeypatch.setattr(prices, "_get", fake)
+    no_key = api.post("/api/prices/update").json()
+    assert no_key["updated"] == 0 and "API key" in no_key["errors"][0]["error"]
+    s = api.put("/api/settings", json={"stooq_api_key": "abc123XYZ"}).json()
+    assert s["stooq_api_key_set"] and s["stooq_api_key_hint"] == "3XYZ"
+    assert "abc123XYZ" not in json.dumps(s)
     res = api.post("/api/prices/update").json()
     assert res["updated"] == 1 and res["new_prices"] == 1
-    assert "s=vt.us" in calls[0]
+    assert "s=vt.us" in calls[0] and "apikey=abc123XYZ" in calls[0]
     rows = {p["price_date"]: p for p in
             api.get(f"/api/holdings/{h}/prices").json()}
     assert rows["2026-11-06"]["price"] == 999
@@ -207,9 +212,14 @@ def test_price_update_keeps_manual_prices(api, monkeypatch):
 
 def test_price_update_reports_errors(api, monkeypatch):
     _portfolio(api)
+    api.put("/api/settings", json={"stooq_api_key": "k"})
     monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0: b"No data")
     res = api.post("/api/prices/update").json()
     assert res["updated"] == 0 and "vt.us" in res["errors"][0]["error"]
+    page = b"Get your apikey:\n 1. Open https://stooq.com/q/d/?s=spy.us"
+    monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0: page)
+    res = api.post("/api/prices/update").json()
+    assert "did not accept the API key" in res["errors"][0]["error"]
 
 
 def test_coingecko_parsing(monkeypatch):

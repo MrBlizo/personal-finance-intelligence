@@ -48,6 +48,8 @@ class SettingsOut(BaseModel):
     auto_categorize: bool = True
     auto_categorize_threshold: float = 0.8
     allocation_targets: dict[str, float] = {}
+    stooq_api_key_set: bool = False
+    stooq_api_key_hint: str | None = None
 
 
 class SettingsIn(_UpperCurrency):
@@ -64,6 +66,8 @@ class SettingsIn(_UpperCurrency):
         float | None, Field(ge=0.5, le=0.99)] = None
     allocation_targets: dict[AssetClass, Annotated[
         float, Field(ge=0, le=100)]] | None = None
+    stooq_api_key: Annotated[str | None, Field(
+        max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
 
     @field_validator("base_currency", mode="before")
     @classmethod

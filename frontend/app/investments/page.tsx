@@ -276,7 +276,7 @@ export default function Investments() {
                 placeholder: v.price_source === "coingecko" ? "bitcoin" : "vt.us",
                 help: v.price_source === "coingecko"
                   ? t("CoinGecko coin id, e.g. bitcoin or ethereum. Prices are in the trading currency.")
-                  : t("stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency.") },
+                  : t("stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency. Needs your free stooq API key in Settings.") },
               { name: "notes", label: t("Notes"), type: "textarea", full: true },
             ]}
             onSubmit={async (v) => {

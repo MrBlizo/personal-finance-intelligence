@@ -594,5 +594,14 @@
  "…and credit (in)": "…et crédit (entrées)",
  "…or debit (out)": "…ou débit (sorties)",
  "3 months": "3 mois",
- "12 months": "12 mois"
+ "12 months": "12 mois",
+ "stooq API key": "Clé API stooq",
+ "A key ending in {k} is saved. It is only sent to stooq.": "Une clé se terminant par {k} est enregistrée. Elle n'est envoyée qu'à stooq.",
+ "Needed for stock and ETF prices from stooq (free). Open the stooq key page, enter the captcha and copy the value after “apikey=” from the CSV download link.": "Nécessaire pour les cours des actions et ETF de stooq (gratuit). Ouvrez la page de clé stooq, saisissez le captcha et copiez la valeur après « apikey= » dans le lien de téléchargement CSV.",
+ "Open the stooq key page": "Ouvrir la page de clé stooq",
+ "stooq API key saved.": "Clé API stooq enregistrée.",
+ "stooq API key removed.": "Clé API stooq supprimée.",
+ "Due payments posted: {n}.": "Paiements échus comptabilisés : {n}.",
+ "stooq (end of day, free API key)": "stooq (clôture, clé API gratuite)",
+ "stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency. Needs your free stooq API key in Settings.": "symbole stooq avec suffixe de marché, p. ex. vt.us, vwrl.uk, sap.de. Cours de clôture dans la devise de cotation. Nécessite votre clé API stooq gratuite dans Paramètres."
 }

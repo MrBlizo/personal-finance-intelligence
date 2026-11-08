@@ -3,10 +3,14 @@
 * ``stooq``: end-of-day closes for stocks, ETFs and funds on many
   exchanges (symbols such as ``vt.us``, ``vwrl.uk``, ``sap.de``). The
   daily CSV download also provides history for performance figures.
+  Since 2026 stooq requires a free personal API key (obtained once on
+  stooq.com after a captcha); it is stored in the app's settings and
+  only sent to stooq.
 * ``coingecko``: crypto prices by coin id (``bitcoin``, ``ethereum``) in
   the holding's currency, with up to 365 days of daily history.
 
-Only the symbol and the currency code are sent. Prices are stored with
+Only the symbol, the currency code and (for stooq) your stooq API key
+are sent. Prices are stored with
 the provider name as ``source``; a manual price for the same day is never
 overwritten. Prices are delayed (end of day for stooq) and are meant for
 portfolio tracking, not trading.
@@ -29,6 +33,11 @@ from . import prefs
 log = logging.getLogger(__name__)
 HISTORY_DAYS = 365 * 3
 STOOQ_URL = "https://stooq.com/q/d/l/?s={sym}&i=d&d1={d1}&d2={d2}"
+STOOQ_KEY_PAGE = "https://stooq.com/q/d/?s=spy.us&get_apikey"
+STOOQ_KEY_HELP = (
+    "stooq needs a free API key. Open " + STOOQ_KEY_PAGE + ", enter the "
+    "captcha, copy the value after 'apikey=' from the CSV download link and "
+    "paste it in Settings > Exchange rates & prices > stooq API key.")
 GECKO_URL = ("https://api.coingecko.com/api/v3/coins/{coin}/market_chart"
              "?vs_currency={cur}&days={days}")
 
@@ -43,7 +52,8 @@ def _get(url: str, timeout: float = 20.0) -> bytes:
         return resp.read()
 
 
-def fetch_stooq(symbol: str, start: date, end: date) -> dict[date, float]:
+def fetch_stooq(symbol: str, start: date, end: date,
+                apikey: str = "") -> dict[date, float]:
     """Return daily closes from stooq.
 
     Parameters
@@ -54,6 +64,8 @@ def fetch_stooq(symbol: str, start: date, end: date) -> dict[date, float]:
         The first day requested.
     end : date
         The last day requested.
+    apikey : str
+        The user's stooq API key.
 
     Returns
     -------
@@ -65,14 +77,24 @@ def fetch_stooq(symbol: str, start: date, end: date) -> dict[date, float]:
     PriceFetchError
         If the request fails or the symbol is unknown.
     """
+    if not apikey:
+        raise PriceFetchError(STOOQ_KEY_HELP)
     url = STOOQ_URL.format(sym=urllib.parse.quote(symbol.lower()),
                            d1=start.strftime("%Y%m%d"),
                            d2=end.strftime("%Y%m%d"))
+    url += "&apikey=" + urllib.parse.quote(apikey)
     try:
         text = _get(url).decode("utf-8", "replace")
     except Exception as exc:
         raise PriceFetchError(f"stooq could not be reached for {symbol}: "
                               f"{exc}") from exc
+    if "apikey" in text.lower() and "date" not in text[:40].lower():
+        raise PriceFetchError("stooq did not accept the API key. "
+                              + STOOQ_KEY_HELP)
+    if "limit exceeded" in text.lower():
+        raise PriceFetchError(
+            "stooq's daily download limit was reached. Try again "
+            "tomorrow.")
     rows = list(csv.DictReader(io.StringIO(text)))
     out = {}
     for r in rows:
@@ -173,7 +195,8 @@ def update_holding(db: Session, holding: Holding,
         today - timedelta(days=HISTORY_DAYS)
     symbol = holding.price_symbol or holding.symbol
     if holding.price_source == "stooq":
-        prices = fetch_stooq(symbol, start, today)
+        prices = fetch_stooq(symbol, start, today,
+                             prefs.get(db, "stooq_api_key"))
     elif holding.price_source == "coingecko":
         prices = fetch_coingecko(symbol, holding.currency,
                                  (today - start).days + 1)

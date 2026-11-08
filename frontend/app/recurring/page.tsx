@@ -39,7 +39,7 @@ export default function RecurringPage() {
         sub={t("Salary, rent, subscriptions and other regular payments")}>
         <Button icon={<ArrowSync20Regular />} onClick={async () => {
           const r = await post<{ posted: number }>("/api/recurring/post-due");
-          setMsg(t("{n} due payments posted.", { n: r.posted })); reload();
+          setMsg(t("Due payments posted: {n}.", { n: r.posted })); reload();
         }}>{t("Post due now")}</Button>
         <Button appearance="primary" icon={<Add20Regular />} onClick={() => setEdit("new")}>
           {t("Add recurring item")}</Button>

@@ -594,5 +594,14 @@
  "…and credit (in)": "…ودائن (داخل)",
  "…or debit (out)": "…أو مدين (خارج)",
  "3 months": "3 أشهر",
- "12 months": "12 شهراً"
+ "12 months": "12 شهراً",
+ "stooq API key": "مفتاح API لـ stooq",
+ "A key ending in {k} is saved. It is only sent to stooq.": "تم حفظ مفتاح ينتهي بـ {k}. لا يُرسل إلا إلى stooq.",
+ "Needed for stock and ETF prices from stooq (free). Open the stooq key page, enter the captcha and copy the value after “apikey=” from the CSV download link.": "مطلوب لأسعار الأسهم والصناديق المتداولة من stooq (مجاني). افتح صفحة مفتاح stooq، أدخل رمز التحقق وانسخ القيمة بعد «apikey=» من رابط تنزيل CSV.",
+ "Open the stooq key page": "فتح صفحة مفتاح stooq",
+ "stooq API key saved.": "تم حفظ مفتاح API لـ stooq.",
+ "stooq API key removed.": "تم حذف مفتاح API لـ stooq.",
+ "Due payments posted: {n}.": "الدفعات المستحقة المسجلة: {n}.",
+ "stooq (end of day, free API key)": "stooq (سعر الإغلاق، مفتاح API مجاني)",
+ "stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency. Needs your free stooq API key in Settings.": "رمز stooq مع لاحقة السوق، مثل vt.us أو vwrl.uk أو sap.de. الأسعار هي أسعار الإغلاق بعملة الإدراج. يتطلب مفتاح API المجاني لـ stooq في الإعدادات."
 }

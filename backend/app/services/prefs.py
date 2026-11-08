@@ -18,6 +18,7 @@ DEFAULTS: dict[str, str] = {
     "auto_categorize": "1",
     "auto_categorize_threshold": "0.8",
     "allocation_targets": "{}",
+    "stooq_api_key": "",
 }
 
 
@@ -72,4 +73,8 @@ def snapshot(db: Session) -> dict:
         "auto_categorize_threshold": get_float(db,
                                                "auto_categorize_threshold"),
         "allocation_targets": get_targets(db),
+        # The key itself is never sent back to the UI.
+        "stooq_api_key_set": bool(get(db, "stooq_api_key")),
+        "stooq_api_key_hint": (get(db, "stooq_api_key")[-4:]
+                               if get(db, "stooq_api_key") else None),
     }

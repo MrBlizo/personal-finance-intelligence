@@ -18,6 +18,8 @@ export interface Settings {
   auto_categorize: boolean;
   auto_categorize_threshold: number;
   allocation_targets: Record<string, number>;
+  stooq_api_key_set: boolean;
+  stooq_api_key_hint: string | null;
 }
 export interface Backup { name: string; kind: string; size: number; created: string }
 export interface Account {

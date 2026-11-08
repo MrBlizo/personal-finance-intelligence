@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
-  Badge, Button, Select, Switch, Tooltip,
+  Badge, Button, Input, Link as FLink, Select, Switch, Tooltip,
 } from "@fluentui/react-components";
 import {
   Add20Regular, ArrowDownload20Regular, ArrowSync20Regular, Delete20Regular,
@@ -18,7 +18,7 @@ import {
   get, post, put,
 } from "@/lib/api";
 import { CURRENCIES, date, num, pct, today } from "@/lib/format";
-import { LANGS, Lang, useT } from "@/lib/i18n";
+import { LANGS, Lang, translate, useT } from "@/lib/i18n";
 import { inShell, notifyLockSettings, queryHello, requestLock } from "@/lib/shell";
 
 type Info = { version: string; data_dir: string; database: string };
@@ -42,6 +42,7 @@ export default function SettingsPage() {
   const [ruleModal, setRuleModal] = useState<Rule | "new" | null>(null);
   const [confirm, setConfirm] = useState<{ text: string; run: () => Promise<void>; danger?: boolean } | null>(null);
   const [hello, setHello] = useState<boolean | null>(null);
+  const [stooqKey, setStooqKey] = useState("");
   const restoreInput = useRef<HTMLInputElement>(null);
   useEffect(() => { queryHello().then(setHello); }, []);
   const s = refs.data?.settings;
@@ -51,7 +52,7 @@ export default function SettingsPage() {
     try { setMsg({ kind: "success", text: await f() }); }
     catch (e) { setMsg({ kind: "error", text: (e as Error).message }); }
   };
-  const save = async (body: Partial<Settings>) => {
+  const save = async (body: Partial<Settings> & { stooq_api_key?: string }) => {
     const out = await put<Settings>("/api/settings", body);
     refs.reload();
     return out;
@@ -72,7 +73,7 @@ export default function SettingsPage() {
               <Select value={s.language} onChange={(_, d) => run(async () => {
                 await save({ language: d.value as Lang });
                 setLang(d.value as Lang);
-                return t("Language changed.");
+                return translate(d.value as Lang, "Language changed.");
               })}>
                 {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
               </Select>
@@ -200,6 +201,27 @@ export default function SettingsPage() {
                             await del(`/api/fx-rates/${r.id}`); rates.reload(); missing.reload();
                           }} /></td></tr>))}</tbody></table>)}
               </div>)}
+            <SettingRow icon={"\uE8D7"} title={t("stooq API key")}
+              description={<>
+                {s.stooq_api_key_set
+                  ? t("A key ending in {k} is saved. It is only sent to stooq.", { k: s.stooq_api_key_hint ?? "" })
+                  : t("Needed for stock and ETF prices from stooq (free). Open the stooq key page, enter the captcha and copy the value after “apikey=” from the CSV download link.")}{" "}
+                <FLink href="https://stooq.com/q/d/?s=spy.us&get_apikey" target="_blank">
+                  {t("Open the stooq key page")}</FLink>
+              </>}>
+              <Input type="password" value={stooqKey}
+                placeholder={s.stooq_api_key_set ? "••••" + (s.stooq_api_key_hint ?? "") : ""}
+                style={{ width: 200 }} onChange={(_, d) => setStooqKey(d.value.trim())}
+                aria-label={t("stooq API key")} />
+              <Button disabled={!stooqKey} onClick={() => run(async () => {
+                await save({ stooq_api_key: stooqKey }); setStooqKey("");
+                return t("stooq API key saved.");
+              })}>{t("Save")}</Button>
+              {s.stooq_api_key_set && <Button appearance="subtle" onClick={() => run(async () => {
+                await save({ stooq_api_key: "" });
+                return t("stooq API key removed.");
+              })}>{t("Remove")}</Button>}
+            </SettingRow>
             <SettingRow icon={""} title={t("Update investment prices automatically")}
               description={(s.price_last_update ? t("Last update {d}.", { d: date(s.price_last_update) }) + " " : "")
                 + t("Once a day for holdings with stooq or CoinGecko as price source; only the symbol is sent.")}>

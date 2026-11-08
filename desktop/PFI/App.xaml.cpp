@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "App.xaml.h"
 #include "MainWindow.xaml.h"
+#include "Backend.h"
 
 using namespace winrt;
 using namespace Microsoft::UI::Xaml;
@@ -82,7 +83,24 @@ namespace winrt::PFI::implementation
         {
             auto manager = AppNotifications::AppNotificationManager::Default();
             manager.NotificationInvoked({ this, &App::OnNotificationInvoked });
-            manager.Register();
+            bool named = false;
+            if (!pfi::IsPackaged())
+            {
+                // Unpackaged: give the notifications the full app name and
+                // icon (a package provides both from its manifest).
+                try
+                {
+                    std::wstring icon = (pfi::ExeDir() / L"Assets" / L"pfi-32.png").generic_wstring();
+                    std::wstring uri = L"file:///";
+                    for (wchar_t c : icon) uri += (c == L' ') ? std::wstring(L"%20") : std::wstring(1, c);
+                    manager.Register(L"Personal Finance Intelligence", winrt::Windows::Foundation::Uri(uri));
+                    named = true;
+                }
+                catch (...)
+                {
+                }
+            }
+            if (!named) manager.Register();
             m_notificationsRegistered = true;
         }
         catch (...)
