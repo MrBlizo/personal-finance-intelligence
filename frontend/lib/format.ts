@@ -10,29 +10,36 @@ function fmt(decimals: number) {
   return nf.get(decimals)!;
 }
 
+// In right-to-left layouts, numbers such as 53'093 must be kept as one
+// left-to-right run, otherwise the bidi algorithm reorders the groups.
+// Unicode isolates (LRI ... PDI) do that and are invisible.
+const isolate = (s: string) =>
+  typeof document !== "undefined" && document.documentElement.dir === "rtl"
+    ? `\u2066${s}\u2069` : s;
+
 export function money(v: number | null | undefined, currency?: string,
   decimals = 2): string {
   if (v === null || v === undefined || Number.isNaN(v)) return "—";
   const s = fmt(decimals).format(v);
-  return currency ? `${currency} ${s}` : s;
+  return isolate(currency ? `${currency} ${s}` : s);
 }
 
 export function num(v: number | null | undefined, decimals = 2): string {
   if (v === null || v === undefined || Number.isNaN(v)) return "—";
-  return fmt(decimals).format(v);
+  return isolate(fmt(decimals).format(v));
 }
 
 export function pct(v: number | null | undefined, decimals = 1): string {
   if (v === null || v === undefined || Number.isNaN(v)) return "—";
-  return `${(v * 100).toFixed(decimals)} %`;
+  return isolate(`${(v * 100).toFixed(decimals)} %`);
 }
 
 export function date(v: string | null | undefined): string {
   if (!v) return "—";
   const d = new Date(v.length === 10 ? v + "T00:00:00" : v);
-  return d.toLocaleDateString("de-CH", {
+  return isolate(d.toLocaleDateString("de-CH", {
     day: "2-digit", month: "2-digit", year: "numeric",
-  });
+  }));
 }
 
 export function iso(d: Date): string {

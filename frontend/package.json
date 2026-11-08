@@ -12,6 +12,7 @@
     "@fluentui/react-icons": "^2.0.345",
     "next": "^16.4.5",
     "plotly.js-dist-min": "^4.2.0",
+    "plotly.js-locales": "^4.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

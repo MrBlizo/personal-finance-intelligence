@@ -10,6 +10,14 @@ export interface Settings {
   schema_version: number;
   fx_auto_update: boolean;
   fx_last_update: string | null;
+  price_auto_update: boolean;
+  price_last_update: string | null;
+  language: "en" | "fr" | "ar";
+  app_lock: "off" | "hello";
+  lock_after_minutes: number;
+  auto_categorize: boolean;
+  auto_categorize_threshold: number;
+  allocation_targets: Record<string, number>;
 }
 export interface Backup { name: string; kind: string; size: number; created: string }
 export interface Account {
@@ -42,6 +50,54 @@ export interface Recurring {
   id: Id; name: string; account_id: Id; category_id: Id | null;
   amount: number; frequency: string; start_date: string;
   end_date: string | null; is_active: boolean; next_date: string | null;
+  auto_post: boolean; remind_days: number; last_posted: string | null;
+}
+export interface Reminder {
+  key: string; item_id: Id; name: string; date: string; amount: number;
+  currency: string; account: string; days_left: number; auto_post: boolean;
+}
+export interface LearnStatus {
+  examples: number; min_examples: number; n_train: number; n_test: number;
+  accuracy: number | null; baseline: number | null; categories: number;
+  coverage_at_threshold: number | null; accuracy_at_threshold: number | null;
+  threshold: number;
+}
+export interface Suggestion {
+  id: Id; txn_date: string; description: string; merchant: string | null;
+  amount: number; currency: string; category_id: Id; category_name: string;
+  confidence: number; why: string[];
+}
+export interface PerfHolding {
+  id: Id; symbol: string; name: string; asset_class: string;
+  value_base: number | null; xirr: number | null; dividends_12m: number;
+  yield_12m: number | null;
+}
+export interface AllocationRow {
+  asset_class: string; value: number; actual_pct: number;
+  target_pct: number | null; drift_pp: number | null; rebalance: number | null;
+}
+export interface Performance {
+  base_currency: string; holdings: PerfHolding[];
+  total: { value: number; xirr: number | null; twr_cumulative: number | null;
+    twr_annualised: number | null; dividends_12m: number };
+  twr_months: { month: string; return: number | null; value: number }[];
+  dividends_by_year: { year: number; amount: number }[];
+  allocation: AllocationRow[];
+}
+export interface MonthlyReport {
+  month: string; currency: string; income: number; expenses: number;
+  net: number; savings_rate: number | null; net_worth: number;
+  net_worth_change: number;
+  categories: { category: string; this: number; prev: number; avg3: number }[];
+  budgets: BudgetItem[];
+  largest: { date: string; description: string; category: string; amount: number }[];
+  payees: { payee: string; amount: number; count: number }[];
+  portfolio_value: number; month_return: number | null; dividends: number;
+  uncategorised: { count: number; amount: number }; missing_fx: string[];
+}
+export interface NetWorthPoint {
+  date: string; total: number; liquid: number; investments: number;
+  change?: number;
 }
 export interface BudgetItem {
   id: Id; category_id: Id; category: string; budget: number; spent: number;
@@ -68,6 +124,8 @@ export interface Holding {
   market_value: number | null; unrealized_pl: number | null;
   unrealized_pl_pct: number | null; realized_pl: number; dividends: number;
   market_value_base: number | null; cost_basis_base: number | null;
+  price_source: "manual" | "stooq" | "coingecko"; price_symbol: string | null;
+  notes: string | null;
 }
 export interface Trade {
   id: Id; holding_id: Id; trade_date: string; trade_type: string;
@@ -85,6 +143,18 @@ export interface Summary {
 export interface Insight {
   type: string; severity: "info" | "warning" | "positive";
   title: string; detail: string; data: Record<string, unknown>;
+  i18n?: { title: string; title_vars: Record<string, string | number>;
+    detail: string; detail_vars: Record<string, string | number> };
+}
+
+const TRANSLATED_VARS = new Set(["cat", "cadence", "month"]);
+/** Translated title and detail of an insight (English if no template). */
+export function insightText(i: Insight, t: (k: string, v?: Record<string, string | number>) => string) {
+  if (!i.i18n) return { title: i.title, detail: i.detail };
+  const tr = (vars: Record<string, string | number>) => Object.fromEntries(
+    Object.entries(vars).map(([k, v]) => [k, TRANSLATED_VARS.has(k) ? t(String(v)) : v]));
+  return { title: t(i.i18n.title, tr(i.i18n.title_vars)),
+    detail: t(i.i18n.detail, tr(i.i18n.detail_vars)) };
 }
 export interface Forecast {
   base_currency: string; origin: string; horizon_days: number;
@@ -105,7 +175,7 @@ export interface ImportPreview {
 export interface ImportResult {
   batch_id: Id; rows_total: number; rows_imported: number;
   rows_duplicate: number; rows_failed: number; errors: string[];
-  categorized: number; preset?: string | null;
+  categorized: number; learned?: number; preset?: string | null;
 }
 export interface ImportBatch {
   id: Id; account_id: Id; filename: string; rows_total: number;
@@ -180,6 +250,16 @@ export const put = <T>(path: string, json: unknown) =>
   api<T>(path, { method: "PUT", json });
 export const patch = <T>(path: string, json: unknown) =>
   api<T>(path, { method: "PATCH", json });
+/** URL for a file download (the WebView saves it to Downloads). */
+export function downloadUrl(path: string, query?: Record<string, unknown>) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(query ?? {})) {
+    if (v !== undefined && v !== null && v !== "") qs.append(k, String(v));
+  }
+  const s = qs.toString();
+  return base() + path + (s ? "?" + s : "");
+}
+
 export const del = <T = void>(path: string,
   query?: Record<string, unknown>) =>
   api<T>(path, { method: "DELETE", query });

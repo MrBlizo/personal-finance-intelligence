@@ -192,6 +192,13 @@ try {
     $results += "dashboard: net worth $([math]::Round($dash.summary.net_worth, 2)) $($dash.summary.currency)"
     $fc = Invoke-RestMethod "$base/api/forecast" -Headers $h
     $results += "forecast: $($fc.dates.Count) days"
+    $pdf = Invoke-WebRequest "$base/api/reports/monthly.pdf" -Headers $h -UseBasicParsing
+    if ([System.Text.Encoding]::ASCII.GetString($pdf.Content[0..3]) -ne "%PDF") { throw "The monthly report is not a PDF." }
+    $results += "pdf report: $($pdf.Content.Length) bytes"
+    $xlsx = Invoke-WebRequest "$base/api/export/workbook.xlsx" -Headers $h -UseBasicParsing
+    $results += "excel export: $($xlsx.Content.Length) bytes"
+    $perf = Invoke-RestMethod "$base/api/investments/performance" -Headers $h
+    $results += "performance: TWR $([math]::Round(100 * $perf.total.twr_cumulative, 2)) %"
     $ui = Invoke-WebRequest "$base/forecast/" -UseBasicParsing
     $results += "ui: HTTP $($ui.StatusCode)"
     $js = [regex]::Match($ui.Content, '/_next/static/[^"]+\.js').Value

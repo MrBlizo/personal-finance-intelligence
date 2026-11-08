@@ -1,6 +1,6 @@
 # PyInstaller spec for pfi-api.exe (one-folder build: fast start-up).
 #   pyinstaller --noconfirm pfi-api.spec   ->   dist/pfi-api/pfi-api.exe
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 hidden = (
     collect_submodules("uvicorn")
@@ -11,12 +11,17 @@ hidden = (
         "multipart",
         "python_multipart",
     ]
+    + collect_submodules("reportlab.graphics")
+    + collect_submodules("openpyxl")
 )
+# reportlab ships its standard fonts and glyph metrics as data files.
+datas = collect_data_files("reportlab")
 
 a = Analysis(
     ["run.py"],
     pathex=["."],
     hiddenimports=hidden,
+    datas=datas,
     excludes=["tkinter", "matplotlib", "IPython", "pytest", "notebook",
               "PyQt5", "PySide6", "scipy"],
     noarchive=False,

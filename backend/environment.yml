@@ -16,6 +16,9 @@ dependencies:
   # resolves its DLLs reliably.
   - libblas=*=*openblas
   - plotly>=6.0
+  # reports: PDF (reportlab) and Excel export (openpyxl)
+  - reportlab>=4.2
+  - openpyxl>=3.1
   # build & test
   - pyinstaller>=6.6
   - pytest>=8

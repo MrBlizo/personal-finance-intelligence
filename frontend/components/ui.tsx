@@ -1,5 +1,15 @@
 "use client";
+// Shared building blocks on top of Fluent UI v9, laid out like WinUI 3
+// pages: a title, a command row, and content in cards and "setting rows".
+import {
+  Badge, Button, Checkbox, Dialog, DialogActions, DialogBody, DialogContent,
+  DialogSurface, DialogTitle, Field as FField, Input, MessageBar,
+  MessageBarActions, MessageBarBody, MessageBarTitle, ProgressBar, Select,
+  Spinner as FSpinner, Switch, Textarea,
+} from "@fluentui/react-components";
+import { Dismiss20Regular } from "@fluentui/react-icons";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n";
 
 export function useLoad<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
@@ -23,28 +33,42 @@ export function useLoad<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   return { data, error, loading, reload, setData };
 }
 
-export function Banner({ kind = "info", children, onClose }: {
-  kind?: "info" | "warning" | "error" | "success"; children: ReactNode;
-  onClose?: () => void;
+const INTENT = { info: "info", warning: "warning", error: "error",
+  success: "success" } as const;
+
+/** WinUI InfoBar look-alike. */
+export function Banner({ kind = "info", title, children, onClose, action }: {
+  kind?: keyof typeof INTENT; title?: string; children?: ReactNode;
+  onClose?: () => void; action?: ReactNode;
 }) {
+  const t = useT();
   return (
-    <div className={`banner ${kind}`} role={kind === "error" ? "alert" : "status"}>
-      <div className="grow">{children}</div>
-      {onClose && <button className="link" onClick={onClose}>✕</button>}
-    </div>
+    <MessageBar intent={INTENT[kind]} className="banner" layout="multiline">
+      <MessageBarBody>
+        {title && <MessageBarTitle>{title}</MessageBarTitle>}
+        {children}
+      </MessageBarBody>
+      {(onClose || action) && (
+        <MessageBarActions containerAction={onClose && (
+          <Button appearance="transparent" aria-label={t("Close")}
+            icon={<Dismiss20Regular />} onClick={onClose} />)}>
+          {action}
+        </MessageBarActions>)}
+    </MessageBar>
   );
 }
 
 export function Spinner({ label }: { label?: string }) {
-  return (
-    <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-      <span className="spinner" />{label && <span className="muted">{label}</span>}
-    </span>
-  );
+  return <FSpinner size="tiny" label={label} labelPosition="after" />;
 }
 
-export function Empty({ children }: { children: ReactNode }) {
-  return <div className="empty">{children}</div>;
+export function Empty({ children, action }: { children: ReactNode; action?: ReactNode }) {
+  return (
+    <div className="empty">
+      <div>{children}</div>
+      {action && <div style={{ marginTop: 12 }}>{action}</div>}
+    </div>
+  );
 }
 
 export function Kpi({ label, value, sub, cls }: {
@@ -52,63 +76,113 @@ export function Kpi({ label, value, sub, cls }: {
 }) {
   return (
     <div className="card kpi">
-      <div className="label">{label}</div>
-      <div className={`value ${cls ?? ""}`}>{value}</div>
-      {sub !== undefined && <div className="sub">{sub}</div>}
+      <div className="kpi-label">{label}</div>
+      <div className={`kpi-value ${cls ?? ""}`}>{value}</div>
+      {sub !== undefined && <div className="kpi-sub">{sub}</div>}
     </div>
   );
 }
 
+/** WinUI page header: large title, optional subtitle, command bar. */
 export function PageHead({ title, sub, children }: {
   title: string; sub?: ReactNode; children?: ReactNode;
 }) {
   return (
-    <div className="page-head">
-      <div><h1>{title}</h1>{sub && <div className="muted">{sub}</div>}</div>
-      <div className="toolbar">{children}</div>
+    <header className="page-head">
+      <div className="titles">
+        <h1>{title}</h1>
+        {sub && <div className="subtitle">{sub}</div>}
+      </div>
+      {children && <div className="commands">{children}</div>}
+    </header>
+  );
+}
+
+/** A card section with an optional header and command area. */
+export function Section({ title, sub, actions, children, className }: {
+  title?: ReactNode; sub?: ReactNode; actions?: ReactNode;
+  children?: ReactNode; className?: string;
+}) {
+  return (
+    <section className={`card section ${className ?? ""}`}>
+      {(title || actions) && (
+        <div className="section-head">
+          <div>
+            {title && <h2>{title}</h2>}
+            {sub && <div className="caption">{sub}</div>}
+          </div>
+          {actions && <div className="commands">{actions}</div>}
+        </div>)}
+      {children}
+    </section>
+  );
+}
+
+/** WinUI "settings card": icon, header + description, control on the right. */
+export function SettingRow({ icon, title, description, children }: {
+  icon?: string; title: ReactNode; description?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="setting-row">
+      <span className="glyph setting-icon" aria-hidden>{icon ?? ""}</span>
+      <div className="setting-text">
+        <div className="setting-title">{title}</div>
+        {description && <div className="caption">{description}</div>}
+      </div>
+      <div className="setting-control">{children}</div>
     </div>
   );
+}
+
+export function StatusBadge({ status }: { status: string }) {
+  const t = useT();
+  const map: Record<string, ["success" | "warning" | "danger" | "informative", string]> = {
+    ok: ["success", "On track"], at_risk: ["warning", "At risk"],
+    over: ["danger", "Over budget"], achieved: ["success", "Achieved"],
+    behind: ["warning", "Behind"], on_track: ["success", "On track"],
+    no_deadline: ["informative", "No deadline"], completed: ["success", "Completed"],
+    overdue: ["danger", "Overdue"], manual: ["informative", "Manual tracking"],
+  };
+  const [color, label] = map[status] ?? ["informative", status];
+  return <Badge appearance="tint" color={color}>{t(label)}</Badge>;
 }
 
 export function Modal({ title, children, onClose, actions, wide }: {
   title: string; children: ReactNode; onClose: () => void;
   actions?: ReactNode; wide?: boolean;
 }) {
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", k);
-    return () => window.removeEventListener("keydown", k);
-  }, [onClose]);
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => {
-      if (e.target === e.currentTarget) onClose();
-    }}>
-      <div className="modal" role="dialog" aria-label={title}
-        style={wide ? { width: 860 } : undefined}>
-        <h2>{title}</h2>
-        {children}
-        {actions && <div className="modal-actions">{actions}</div>}
-      </div>
-    </div>
+    <Dialog open onOpenChange={(_, d) => { if (!d.open) onClose(); }}>
+      <DialogSurface style={{ maxWidth: wide ? 900 : 560 }}>
+        <DialogBody>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogContent className="dialog-content">{children}</DialogContent>
+          {actions && <DialogActions>{actions}</DialogActions>}
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }
 
 export type Field = {
   name: string; label: string;
-  type?: "text" | "number" | "date" | "select" | "checkbox" | "textarea"
-    | "month";
+  type?: "text" | "number" | "date" | "select" | "checkbox" | "switch"
+    | "textarea" | "month";
   options?: { value: string | number; label: string }[];
   required?: boolean; full?: boolean; step?: string; placeholder?: string;
   help?: string; hidden?: boolean;
 };
 export type Values = Record<string, string | number | boolean | null>;
 
+/** Dialog with a two-column form, validation and async submit. */
 export function FormModal({ title, fields: fieldsProp, initial, onSubmit, onClose,
-  submitLabel = "Save", onChange }: {
+  submitLabel, onChange, wide }: {
   title: string; fields: Field[] | ((v: Values) => Field[]); initial: Values;
   onSubmit: (v: Values) => Promise<void>; onClose: () => void;
-  submitLabel?: string; onChange?: (v: Values) => Values;
+  submitLabel?: string; onChange?: (v: Values) => Values; wide?: boolean;
 }) {
+  const t = useT();
   const [values, setValues] = useState<Values>(initial);
   const fields = typeof fieldsProp === "function" ? fieldsProp(values) : fieldsProp;
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +195,7 @@ export function FormModal({ title, fields: fieldsProp, initial, onSubmit, onClos
     for (const f of fields) {
       const v = values[f.name];
       if (f.required && !f.hidden && (v === "" || v === null || v === undefined)) {
-        setError(`“${f.label}” is required.`);
+        setError(t("“{field}” is required.", { field: f.label }));
         return;
       }
     }
@@ -132,45 +206,47 @@ export function FormModal({ title, fields: fieldsProp, initial, onSubmit, onClos
     finally { setBusy(false); }
   };
   return (
-    <Modal title={title} onClose={onClose} actions={<>
-      <button onClick={onClose}>Cancel</button>
-      <button className="primary" disabled={busy} onClick={submit}>
-        {busy ? "Saving…" : submitLabel}</button>
+    <Modal title={title} onClose={onClose} wide={wide} actions={<>
+      <Button appearance="primary" disabled={busy} onClick={submit}>
+        {busy ? t("Saving…") : (submitLabel ?? t("Save"))}</Button>
+      <Button onClick={onClose}>{t("Cancel")}</Button>
     </>}>
       {error && <Banner kind="error">{error}</Banner>}
       <form className="form-grid" onSubmit={(e) => { e.preventDefault(); submit(); }}>
         {fields.filter((f) => !f.hidden).map((f) => {
           const v = values[f.name];
-          const common = { id: f.name, name: f.name };
+          const cls = f.full ? "full" : "";
+          if (f.type === "checkbox") {
+            return <Checkbox key={f.name} className={cls} label={f.label}
+              checked={Boolean(v)} onChange={(_, d) => set(f.name, Boolean(d.checked))} />;
+          }
+          if (f.type === "switch") {
+            return (
+              <FField key={f.name} className={cls} hint={f.help}>
+                <Switch label={f.label} checked={Boolean(v)}
+                  onChange={(_, d) => set(f.name, d.checked)} />
+              </FField>);
+          }
           let input: ReactNode;
           if (f.type === "select") {
             input = (
-              <select {...common} value={v === null ? "" : String(v ?? "")}
-                onChange={(e) => set(f.name, e.target.value)}>
+              <Select value={v === null ? "" : String(v ?? "")}
+                onChange={(_, d) => set(f.name, d.value)}>
                 {!f.required && <option value="">—</option>}
                 {f.options?.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>))}
-              </select>);
-          } else if (f.type === "checkbox") {
-            return (
-              <label key={f.name} className={`check ${f.full ? "full" : ""}`}>
-                <input type="checkbox" {...common} checked={Boolean(v)}
-                  onChange={(e) => set(f.name, e.target.checked)} />
-                {f.label}
-              </label>);
+              </Select>);
           } else if (f.type === "textarea") {
-            input = <textarea {...common} rows={3} value={String(v ?? "")}
-              onChange={(e) => set(f.name, e.target.value)} />;
+            input = <Textarea resize="vertical" value={String(v ?? "")}
+              onChange={(_, d) => set(f.name, d.value)} />;
           } else {
-            input = <input {...common} type={f.type ?? "text"} step={f.step}
+            input = <Input type={f.type ?? "text"} step={f.step}
               placeholder={f.placeholder} value={String(v ?? "")}
-              onChange={(e) => set(f.name, e.target.value)} />;
+              onChange={(_, d) => set(f.name, d.value)} />;
           }
           return (
-            <label key={f.name} className={`field ${f.full ? "full" : ""}`}>
-              {f.label}{f.required ? " *" : ""}{input}
-              {f.help && <span className="small">{f.help}</span>}
-            </label>);
+            <FField key={f.name} className={cls} label={f.label}
+              required={f.required} hint={f.help}>{input}</FField>);
         })}
         <button type="submit" hidden />
       </form>
@@ -178,32 +254,33 @@ export function FormModal({ title, fields: fieldsProp, initial, onSubmit, onClos
   );
 }
 
-export function Confirm({ text, onYes, onClose }: {
+export function Confirm({ text, onYes, onClose, danger, yesLabel }: {
   text: ReactNode; onYes: () => Promise<void>; onClose: () => void;
+  danger?: boolean; yesLabel?: string;
 }) {
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   return (
-    <Modal title="Please confirm" onClose={onClose} actions={<>
-      <button onClick={onClose}>Cancel</button>
-      <button className="primary" onClick={async () => {
-        try { await onYes(); onClose(); }
-        catch (e) { setError((e as Error).message); }
-      }}>Confirm</button></>}>
+    <Modal title={t("Are you sure?")} onClose={onClose} actions={<>
+      <Button appearance="primary" disabled={busy}
+        className={danger ? "danger-btn" : undefined} onClick={async () => {
+          setBusy(true);
+          try { await onYes(); onClose(); }
+          catch (e) { setError((e as Error).message); setBusy(false); }
+        }}>{yesLabel ?? t("Confirm")}</Button>
+      <Button onClick={onClose}>{t("Cancel")}</Button></>}>
       {error && <Banner kind="error">{error}</Banner>}
       <div>{text}</div>
     </Modal>
   );
 }
 
-export function Progress({ value, status }: {
-  value: number; status?: string;
-}) {
-  const cls = status === "over" ? "over" : status === "at_risk" ? "risk" : "";
-  return (
-    <div className={`progress ${cls}`}>
-      <div style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }} />
-    </div>
-  );
+export function Progress({ value, status }: { value: number; status?: string }) {
+  const color = status === "over" ? "error" : status === "at_risk" ? "warning"
+    : status === "achieved" ? "success" : "brand";
+  return <ProgressBar thickness="large" value={Math.max(0, Math.min(1, value))}
+    color={color} />;
 }
 
 /** Strip empty strings to null and convert numeric fields. */
