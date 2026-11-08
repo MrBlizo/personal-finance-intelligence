@@ -69,6 +69,10 @@ def load_transactions(db: Session, fx: FxConverter, base: str,
             t.description, t.merchant, t.transfer_group))
     df = pd.DataFrame(rows, columns=COLUMNS)
     df["txn_date"] = pd.to_datetime(df["txn_date"])
+    # pandas 3 stores missing strings as NaN (a float); keep them as None so
+    # that ``merchant or description`` style code keeps working.
+    for col in ("merchant", "transfer_group"):
+        df[col] = df[col].astype(object).where(df[col].notna(), None)
     df.attrs["missing_fx"] = sorted(missing)
     return df
 

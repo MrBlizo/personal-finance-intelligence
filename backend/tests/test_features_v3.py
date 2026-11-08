@@ -259,3 +259,27 @@ def test_reports_and_exports(api):
     assert csv.startswith("﻿".encode()) and b"amount_base" in csv
     nw = api.get("/api/reports/net-worth", params={"months": 6}).json()
     assert len(nw["points"]) >= 6 and "change" in nw["points"][-1]
+
+
+def test_transactions_without_payee_do_not_break_analysis(api):
+    """A hand-entered expense without merchant must not fail any report."""
+    from datetime import date, timedelta
+
+    acc = make_account(api, opening_date="2025-01-01")
+    when = (date.today() - timedelta(days=3)).isoformat()
+    for i in range(4):
+        r = api.post("/api/transactions", json={
+            "account_id": acc, "txn_date": when,
+            "amount": str(-900 - i), "description": f"Cash withdrawal {i}"})
+        assert r.status_code == 201 and r.json()["merchant"] is None
+    # one row with a payee makes pandas infer its string dtype (NaN gaps)
+    api.post("/api/transactions", json={
+        "account_id": acc, "txn_date": when, "amount": "-5",
+        "description": "Coffee", "merchant": "Bakery"})
+    assert api.get("/api/insights").status_code == 200
+    month = date.today().strftime("%Y-%m")
+    rep = api.get("/api/reports/monthly", params={"month": month})
+    assert rep.status_code == 200, rep.text
+    assert rep.json()["largest"][0]["description"].startswith("Cash")
+    csv = api.get("/api/export/transactions.csv")
+    assert csv.status_code == 200 and "nan" not in csv.text.lower()

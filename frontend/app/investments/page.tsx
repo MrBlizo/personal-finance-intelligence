@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   Badge, Button, Field, Menu, MenuDivider, MenuItem, MenuList, MenuPopover,
-  MenuTrigger, SpinButton, Tab, TabList, Tooltip,
+  MenuTrigger, SpinButton, Tab, TabList,
 } from "@fluentui/react-components";
 import {
   Add20Regular, ArrowSync20Regular, MoreHorizontal20Regular, TargetArrow20Regular,
@@ -71,7 +71,7 @@ export default function Investments() {
   const [history, setHistory] = useState<Holding | null>(null);
   const [remove, setRemove] = useState<Holding | null>(null);
   const [targets, setTargets] = useState(false);
-  const [msg, setMsg] = useState<{ kind: "success" | "warning" | "error"; text: string } | null>(null);
+  const [msg, setMsg] = useState<{ kind: "success" | "info" | "warning" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const reload = () => { holdings.reload(); perf.reload(); alloc.reload(); refs.reload(); };
   const base = refs.data?.settings.base_currency ?? "CHF";
@@ -117,12 +117,11 @@ export default function Investments() {
     <>
       <PageHead title={t("Investments")}
         sub={t("Average-cost method · prices from stooq, CoinGecko or entered manually")}>
-        <Tooltip relationship="description" content={online ? t("Download the latest prices") : t(
-          "Give a holding a price source (stooq or CoinGecko) to download prices.")}>
-          <Button icon={<ArrowSync20Regular />} disabled={busy}
-            disabledFocusable={!busy && !online} onClick={updatePrices}>
-            {busy ? t("Updating…") : t("Update prices")}</Button>
-        </Tooltip>
+        <Button icon={<ArrowSync20Regular />} disabled={busy} onClick={() => online
+          ? updatePrices()
+          : setMsg({ kind: "info", text: t(
+            "Give a holding a price source (stooq or CoinGecko) to download prices.") })}>
+          {busy ? t("Updating…") : t("Update prices")}</Button>
         <Button appearance="primary" icon={<Add20Regular />} disabled={!invAccounts.length}
           onClick={() => setEdit("new")}>{t("Add holding")}</Button>
       </PageHead>

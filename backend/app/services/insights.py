@@ -34,7 +34,9 @@ def _text(title: tuple[str, dict], detail: tuple[str, dict]) -> dict:
 
 def payee_key(description: str, merchant: str | None) -> str:
     """Normalise a payee by dropping digits, dates and punctuation."""
-    text = (merchant or description or "").lower()
+    def clean(v) -> str:
+        return v if isinstance(v, str) else ""
+    text = (clean(merchant) or clean(description)).lower()
     text = re.sub(r"[\d/.\-:#*]+", " ", text)
     return " ".join(text.split()[:4])
 
