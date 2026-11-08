@@ -161,6 +161,20 @@ namespace winrt::PFI::implementation
             a.Handled(true);
             winrt::Windows::System::Launcher::LaunchUriAsync(winrt::Windows::Foundation::Uri(a.Uri()));
         });
+        // Exports and backups: save straight to Downloads and confirm with a
+        // native notice instead of the browser's download flyout.
+        core.DownloadStarting([this](CoreWebView2 const&, CoreWebView2DownloadStartingEventArgs const& a)
+        {
+            a.Handled(true);
+            a.DownloadOperation().StateChanged([this](CoreWebView2DownloadOperation const& op, auto&&)
+            {
+                auto state = op.State();
+                if (state == CoreWebView2DownloadState::Completed)
+                    ShowDownload(std::wstring(op.ResultFilePath()), true);
+                else if (state == CoreWebView2DownloadState::Interrupted)
+                    ShowDownload(std::wstring(op.ResultFilePath()), false);
+            });
+        });
 
         if (m_lockEnabled) Lock();
         std::wstring next = m_initialPath.empty() ? L"/" : m_initialPath;
@@ -199,6 +213,45 @@ namespace winrt::PFI::implementation
         Splash().Visibility(Visibility::Collapsed);
         ErrorBar().Message(winrt::hstring(message));
         ErrorBar().IsOpen(true);
+    }
+
+    void MainWindow::ShowDownload(std::wstring const& path, bool ok)
+    {
+        m_lastDownload = ok ? path : L"";
+        auto bar = DownloadBar();
+        bar.FlowDirection(m_lang == L"ar" ? FlowDirection::RightToLeft : FlowDirection::LeftToRight);
+        bar.Severity(ok ? InfoBarSeverity::Success : InfoBarSeverity::Error);
+        bar.Title(winrt::hstring(pfi::Tr(m_lang, ok ? pfi::Text::Saved : pfi::Text::SaveFailed)));
+        bar.Message(winrt::hstring(std::filesystem::path(path).filename().wstring()));
+        DownloadOpenButton().Content(box_value(winrt::hstring(pfi::Tr(m_lang, pfi::Text::OpenFile))));
+        DownloadShowButton().Content(box_value(winrt::hstring(pfi::Tr(m_lang, pfi::Text::ShowInFolder))));
+        DownloadOpenButton().Visibility(ok ? Visibility::Visible : Visibility::Collapsed);
+        DownloadShowButton().Visibility(ok ? Visibility::Visible : Visibility::Collapsed);
+        bar.IsOpen(true);
+        if (!m_downloadTimer)
+        {
+            m_downloadTimer = DispatcherQueue().CreateTimer();
+            m_downloadTimer.IsRepeating(false);
+            m_downloadTimer.Interval(std::chrono::seconds(10));
+            m_downloadTimer.Tick([this](auto&&, auto&&) { DownloadBar().IsOpen(false); });
+        }
+        m_downloadTimer.Stop();
+        m_downloadTimer.Start();
+    }
+
+    void MainWindow::DownloadOpen_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        if (m_lastDownload.empty()) return;
+        ShellExecuteW(nullptr, L"open", m_lastDownload.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        DownloadBar().IsOpen(false);
+    }
+
+    void MainWindow::DownloadShow_Click(IInspectable const&, RoutedEventArgs const&)
+    {
+        if (m_lastDownload.empty()) return;
+        std::wstring args = L"/select,\"" + m_lastDownload + L"\"";
+        ShellExecuteW(nullptr, L"open", L"explorer.exe", args.c_str(), nullptr, SW_SHOWNORMAL);
+        DownloadBar().IsOpen(false);
     }
 
     void MainWindow::OnWebMessage(CoreWebView2 const&, CoreWebView2WebMessageReceivedEventArgs const& args)

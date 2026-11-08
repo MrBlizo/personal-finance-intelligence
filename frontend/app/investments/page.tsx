@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   Badge, Button, Field, Menu, MenuDivider, MenuItem, MenuList, MenuPopover,
-  MenuTrigger, SpinButton, Tab, TabList,
+  MenuTrigger, SpinButton, Tab, TabList, Tooltip,
 } from "@fluentui/react-components";
 import {
   Add20Regular, ArrowSync20Regular, MoreHorizontal20Regular, TargetArrow20Regular,
@@ -117,8 +117,12 @@ export default function Investments() {
     <>
       <PageHead title={t("Investments")}
         sub={t("Average-cost method · prices from stooq, CoinGecko or entered manually")}>
-        <Button icon={<ArrowSync20Regular />} disabled={busy || !online} onClick={updatePrices}>
-          {busy ? t("Updating…") : t("Update prices")}</Button>
+        <Tooltip relationship="description" content={online ? t("Download the latest prices") : t(
+          "Give a holding a price source (stooq or CoinGecko) to download prices.")}>
+          <Button icon={<ArrowSync20Regular />} disabled={busy}
+            disabledFocusable={!busy && !online} onClick={updatePrices}>
+            {busy ? t("Updating…") : t("Update prices")}</Button>
+        </Tooltip>
         <Button appearance="primary" icon={<Add20Regular />} disabled={!invAccounts.length}
           onClick={() => setEdit("new")}>{t("Add holding")}</Button>
       </PageHead>

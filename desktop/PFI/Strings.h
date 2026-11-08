@@ -13,6 +13,7 @@ namespace pfi
         LockTitle, LockBody, Unlock, HelloPrompt, HelloFailed, HelloUnavailable,
         DueToday, DueTomorrow, DueInDays, PostedAutomatically, MoreDue,
         Starting, StartingServices, Opening, FirstStartHint,
+        Saved, SaveFailed, OpenFile, ShowInFolder,
     };
 
     inline std::wstring Tr(std::wstring_view lang, Text id)
@@ -49,6 +50,12 @@ namespace pfi
             { L"The first start sets up your private database and can take up to a minute.",
               L"Le premier démarrage crée votre base de données privée et peut prendre jusqu'à une minute.",
               L"يُنشئ التشغيل الأول قاعدة بياناتك الخاصة وقد يستغرق حتى دقيقة." },
+            { L"Saved to Downloads", L"Enregistré dans Téléchargements", L"حُفظ في التنزيلات" },
+            { L"The file could not be saved. Check free disk space and try again.",
+              L"Le fichier n'a pas pu être enregistré. Vérifiez l'espace disque libre et réessayez.",
+              L"تعذّر حفظ الملف. تحقّق من المساحة الحرة على القرص ثم حاول مرة أخرى." },
+            { L"Open", L"Ouvrir", L"فتح" },
+            { L"Show in folder", L"Afficher dans le dossier", L"إظهار في المجلد" },
         };
         return table[static_cast<int>(id)][l];
     }

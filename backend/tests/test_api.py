@@ -202,7 +202,14 @@ def test_demo_dashboard_charts_insights(api):
         fig = api.get(f"/api/analytics/charts/{name}").json()
         assert fig["data"], name
     ins = api.get("/api/insights").json()["insights"]
-    assert any(i["type"] == "subscription" for i in ins)
+    # every regular demo payment already has a recurring item
+    assert not any(i["type"] == "subscription" for i in ins)
+    health = next(r for r in api.get("/api/recurring").json()
+                  if r["name"].startswith("Health"))
+    assert api.delete(f"/api/recurring/{health['id']}").status_code == 204
+    ins = api.get("/api/insights").json()["insights"]
+    subs = [i["data"]["payee"] for i in ins if i["type"] == "subscription"]
+    assert subs == ["health insurer"]
     fc = api.get("/api/forecast").json()
     assert fc["lookback_days_used"] >= 28
     goals = api.get("/api/goals").json()
