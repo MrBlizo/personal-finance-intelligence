@@ -7,6 +7,7 @@ rows are left out of totals and listed under "Data notes".
 """
 import csv
 import io
+import sys
 from datetime import date, datetime, timedelta
 
 import pandas as pd
@@ -162,6 +163,24 @@ def _pct(v: float | None) -> str:
     return "–" if v is None else f"{v * 100:.1f} %"
 
 
+def _guard_freetype() -> None:
+    """Let reportlab work without a usable FreeType DLL.
+
+    reportlab imports the optional ``freetype`` package for converting text
+    to outlines (not needed for PDFs). When the package is installed but its
+    DLL cannot be found (e.g. a conda environment that is not activated, or
+    a frozen app), ``import freetype`` raises RuntimeError instead of
+    ImportError and breaks every chart import. Marking the module as absent
+    makes reportlab take its normal fallback path.
+    """
+    if "freetype" in sys.modules:
+        return
+    try:
+        import freetype  # noqa: F401
+    except Exception:
+        sys.modules["freetype"] = None
+
+
 def render_pdf(data: dict, lang: str = "en") -> bytes:
     """Render the monthly report as an A4 PDF.
 
@@ -177,6 +196,7 @@ def render_pdf(data: dict, lang: str = "en") -> bytes:
     bytes
         The PDF document.
     """
+    _guard_freetype()
     from reportlab.graphics.charts.barcharts import HorizontalBarChart
     from reportlab.graphics.shapes import Drawing
     from reportlab.lib import colors
