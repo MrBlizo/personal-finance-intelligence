@@ -22,6 +22,8 @@ PFI makes only these requests, and only for the purposes described:
 | Purpose | Service | Data sent | When |
 |---|---|---|---|
 | Exchange rates | [Exchange API](https://github.com/fawazahmed0/exchange-api) via cdn.jsdelivr.net or currency-api.pages.dev | currency codes (e.g. `chf`) and a date | once a day if enabled in Settings, or when you click "Update now" |
+| Stock & ETF prices | api.twelvedata.com | the symbol you entered (e.g. `VT`), a date range and your personal Twelve Data API key | once a day for holdings with Twelve Data as price source, or on request |
+| Stock & ETF prices | www.alphavantage.co | the symbol you entered (e.g. `TSCO.LON`) and your personal Alpha Vantage API key | once a day for holdings with Alpha Vantage as price source, or on request |
 | Market prices | stooq.com | the symbol you entered (e.g. `vt.us`), a date range and your personal stooq API key (if you entered one) | once a day for holdings with stooq as price source, or on request |
 | Crypto prices | api.coingecko.com | the coin id (e.g. `bitcoin`) and a currency code | once a day for holdings with CoinGecko as price source, or on request |
 
@@ -29,8 +31,9 @@ These services receive your IP address as part of any internet request;
 their own privacy policies apply. You can switch both automatic updates off
 in Settings and enter rates and prices manually.
 
-Your stooq API key is stored in your local database and is only sent to
-stooq; it is never shown again in the app (only its last four characters).
+Your price-provider API keys (Twelve Data, Alpha Vantage, stooq) are stored
+in your local database and each is only sent to its own provider; they are
+never shown again in the app (only their last four characters).
 
 ## Windows features
 

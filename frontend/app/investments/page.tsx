@@ -21,7 +21,9 @@ import { useT } from "@/lib/i18n";
 
 const BLUE = "#0072B2", GREEN = "#009E73", ORANGE = "#D55E00";
 const SOURCES: Record<string, string> = {
-  manual: "Manual", stooq: "stooq (end of day)", coingecko: "CoinGecko (crypto)",
+  manual: "Manual", twelvedata: "Twelve Data (US stocks & ETFs)",
+  alphavantage: "Alpha Vantage (stocks & ETFs worldwide)", stooq: "stooq (end of day)",
+  coingecko: "CoinGecko (crypto)",
 };
 
 function TargetsDialog({ current, onClose, onSaved }: {
@@ -116,11 +118,11 @@ export default function Investments() {
   return (
     <>
       <PageHead title={t("Investments")}
-        sub={t("Average-cost method · prices from stooq, CoinGecko or entered manually")}>
+        sub={t("Average-cost method · prices from Twelve Data, Alpha Vantage, stooq, CoinGecko or entered manually")}>
         <Button icon={<ArrowSync20Regular />} disabled={busy} onClick={() => online
           ? updatePrices()
           : setMsg({ kind: "info", text: t(
-            "Give a holding a price source (stooq or CoinGecko) to download prices.") })}>
+            "Give a holding a price source (Twelve Data, Alpha Vantage, stooq or CoinGecko) to download prices.") })}>
           {busy ? t("Updating…") : t("Update prices")}</Button>
         <Button appearance="primary" icon={<Add20Regular />} disabled={!invAccounts.length}
           onClick={() => setEdit("new")}>{t("Add holding")}</Button>
@@ -276,10 +278,14 @@ export default function Investments() {
               { name: "price_source", label: t("Price source"), type: "select", required: true,
                 options: Object.entries(SOURCES).map(([value, label]) => ({ value, label: t(label) })) },
               { name: "price_symbol", label: t("Symbol at the price source"), hidden: v.price_source === "manual",
-                placeholder: v.price_source === "coingecko" ? "bitcoin" : "vt.us",
-                help: v.price_source === "coingecko"
-                  ? t("CoinGecko coin id, e.g. bitcoin or ethereum. Prices are in the trading currency.")
-                  : t("stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency. Needs your free stooq API key in Settings.") },
+                placeholder: { coingecko: "bitcoin", twelvedata: "VT", alphavantage: "TSCO.LON" }[
+                  v.price_source as string] ?? "vt.us",
+                help: {
+                  coingecko: t("CoinGecko coin id, e.g. bitcoin or ethereum. Prices are in the trading currency."),
+                  twelvedata: t("Twelve Data ticker, e.g. AAPL or VT; the free plan covers US listings. Leave empty to use the symbol above. Needs your free Twelve Data key in Settings."),
+                  alphavantage: t("Alpha Vantage symbol with exchange suffix outside the US, e.g. IBM or TSCO.LON. Leave empty to use the symbol above. Needs your free Alpha Vantage key in Settings."),
+                }[v.price_source as string]
+                  ?? t("stooq symbol with market suffix, e.g. vt.us, vwrl.uk, sap.de. Prices are end of day in the listing currency. Needs your free stooq API key in Settings.") },
               { name: "notes", label: t("Notes"), type: "textarea", full: true },
             ]}
             onSubmit={async (v) => {

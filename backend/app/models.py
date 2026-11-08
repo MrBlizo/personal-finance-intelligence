@@ -24,7 +24,8 @@ FREQUENCIES = ("weekly", "biweekly", "monthly", "quarterly", "yearly")
 ASSET_CLASSES = ("stock", "etf", "bond", "fund", "crypto", "real_estate",
                  "commodity", "cash", "other")
 TRADE_TYPES = ("buy", "sell", "dividend", "fee")
-PRICE_SOURCES = ("manual", "stooq", "coingecko")
+PRICE_SOURCES = ("manual", "stooq", "twelvedata", "alphavantage",
+                 "coingecko")
 CATEGORY_SOURCES = ("user", "rule", "model", "recurring", "system")
 MATCH_FIELDS = ("description", "merchant", "any")
 

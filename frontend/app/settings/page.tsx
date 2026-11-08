@@ -23,6 +23,48 @@ import { inShell, notifyLockSettings, queryHello, requestLock } from "@/lib/shel
 
 type Info = { version: string; data_dir: string; database: string };
 
+type KeyField = "stooq_api_key" | "twelvedata_api_key" | "alphavantage_api_key";
+type KeyProvider = { id: KeyField; name: string; url: string; help: string };
+
+const KEY_PROVIDERS: KeyProvider[] = [
+  { id: "twelvedata_api_key", name: "Twelve Data", url: "https://twelvedata.com/account/api-keys",
+    help: "Free key for US stocks and ETFs (800 requests a day). Create a free account, then copy the key shown on the API keys page." },
+  { id: "alphavantage_api_key", name: "Alpha Vantage", url: "https://www.alphavantage.co/support/#api-key",
+    help: "Free key for stocks and ETFs on many exchanges, e.g. TSCO.LON (25 requests a day, last 100 trading days)." },
+  { id: "stooq_api_key", name: "stooq", url: "https://stooq.com/q/d/?s=spy.us&get_apikey",
+    help: "Optional. stooq asks for a key obtained with a captcha on its site; the page does not always offer one." },
+];
+
+function ApiKeyRow({ provider, settings, run, save }: {
+  provider: KeyProvider; settings: Settings;
+  run: (f: () => Promise<string>) => Promise<void>;
+  save: (body: Partial<Record<KeyField, string>>) => Promise<Settings>;
+}) {
+  const t = useT();
+  const [value, setValue] = useState("");
+  const isSet = settings[`${provider.id}_set` as keyof Settings] as boolean;
+  const hint = (settings[`${provider.id}_hint` as keyof Settings] as string | null) ?? "";
+  const p = provider.name;
+  return (
+    <SettingRow icon={"\uE8D7"} title={t("{p} API key", { p })}
+      description={<>
+        {isSet ? t("A key ending in {k} is saved. It is only sent to {p}.", { k: hint, p }) : t(provider.help)}{" "}
+        <FLink href={provider.url} target="_blank">{t("Get a free key")}</FLink>
+      </>}>
+      <Input type="password" value={value} placeholder={isSet ? "••••" + hint : ""}
+        style={{ width: 200 }} onChange={(_, d) => setValue(d.value.trim())}
+        aria-label={t("{p} API key", { p })} />
+      <Button disabled={!value} onClick={() => run(async () => {
+        await save({ [provider.id]: value }); setValue("");
+        return t("{p} API key saved.", { p });
+      })}>{t("Save")}</Button>
+      {isSet && <Button appearance="subtle" onClick={() => run(async () => {
+        await save({ [provider.id]: "" });
+        return t("{p} API key removed.", { p });
+      })}>{t("Remove")}</Button>}
+    </SettingRow>);
+}
+
 export default function SettingsPage() {
   const t = useT();
   const { setLang } = usePrefs();
@@ -42,7 +84,6 @@ export default function SettingsPage() {
   const [ruleModal, setRuleModal] = useState<Rule | "new" | null>(null);
   const [confirm, setConfirm] = useState<{ text: string; run: () => Promise<void>; danger?: boolean } | null>(null);
   const [hello, setHello] = useState<boolean | null>(null);
-  const [stooqKey, setStooqKey] = useState("");
   const restoreInput = useRef<HTMLInputElement>(null);
   useEffect(() => { queryHello().then(setHello); }, []);
   const s = refs.data?.settings;
@@ -52,7 +93,7 @@ export default function SettingsPage() {
     try { setMsg({ kind: "success", text: await f() }); }
     catch (e) { setMsg({ kind: "error", text: (e as Error).message }); }
   };
-  const save = async (body: Partial<Settings> & { stooq_api_key?: string }) => {
+  const save = async (body: Partial<Settings> & Partial<Record<KeyField, string>>) => {
     const out = await put<Settings>("/api/settings", body);
     refs.reload();
     return out;
@@ -201,30 +242,11 @@ export default function SettingsPage() {
                             await del(`/api/fx-rates/${r.id}`); rates.reload(); missing.reload();
                           }} /></td></tr>))}</tbody></table>)}
               </div>)}
-            <SettingRow icon={"\uE8D7"} title={t("stooq API key")}
-              description={<>
-                {s.stooq_api_key_set
-                  ? t("A key ending in {k} is saved. It is only sent to stooq.", { k: s.stooq_api_key_hint ?? "" })
-                  : t("Needed for stock and ETF prices from stooq (free). Open the stooq key page, enter the captcha and copy the value after “apikey=” from the CSV download link.")}{" "}
-                <FLink href="https://stooq.com/q/d/?s=spy.us&get_apikey" target="_blank">
-                  {t("Open the stooq key page")}</FLink>
-              </>}>
-              <Input type="password" value={stooqKey}
-                placeholder={s.stooq_api_key_set ? "••••" + (s.stooq_api_key_hint ?? "") : ""}
-                style={{ width: 200 }} onChange={(_, d) => setStooqKey(d.value.trim())}
-                aria-label={t("stooq API key")} />
-              <Button disabled={!stooqKey} onClick={() => run(async () => {
-                await save({ stooq_api_key: stooqKey }); setStooqKey("");
-                return t("stooq API key saved.");
-              })}>{t("Save")}</Button>
-              {s.stooq_api_key_set && <Button appearance="subtle" onClick={() => run(async () => {
-                await save({ stooq_api_key: "" });
-                return t("stooq API key removed.");
-              })}>{t("Remove")}</Button>}
-            </SettingRow>
+            {KEY_PROVIDERS.map((k) => (
+              <ApiKeyRow key={k.id} provider={k} settings={s} run={run} save={save} />))}
             <SettingRow icon={""} title={t("Update investment prices automatically")}
               description={(s.price_last_update ? t("Last update {d}.", { d: date(s.price_last_update) }) + " " : "")
-                + t("Once a day for holdings with stooq or CoinGecko as price source; only the symbol is sent.")}>
+                + t("Once a day for holdings with an online price source; only the symbol and that provider's key are sent.")}>
               <Switch checked={s.price_auto_update} onChange={(_, d) => run(async () => {
                 await save({ price_auto_update: d.checked });
                 return t("Saved.");

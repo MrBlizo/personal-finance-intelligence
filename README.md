@@ -21,7 +21,8 @@ MAD, USD…) with accounts in any currency.
   the due date, and Windows notifications remind you before they are due.
 - **Budgets & goals:** monthly limits per category with projection; savings
   goals linked to accounts.
-- **Investments:** average-cost positions, prices from stooq (end of day) or
+- **Investments:** average-cost positions, end-of-day prices from Twelve Data
+  (US listings) or Alpha Vantage (worldwide) with your free key, stooq,
   CoinGecko (crypto), or entered manually; money-weighted (XIRR) and
   time-weighted returns, dividend income, target allocation with drift.
 - **Forecast:** recurring items plus a block-bootstrap Monte Carlo of your

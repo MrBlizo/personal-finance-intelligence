@@ -58,7 +58,8 @@ learns your categories from the transactions you categorise yourself.
 • Bills & recurring payments: rent, salary and subscriptions post themselves
 on the due date, and Windows reminds you before they are due.
 • Budgets and savings goals with progress and projections.
-• Investments with prices from stooq and CoinGecko, money-weighted and
+• Investments with prices from Twelve Data, Alpha Vantage, stooq and
+CoinGecko, money-weighted and
 time-weighted returns, dividends and target allocation.
 • Cash-flow forecast with probability bands, built from your own history.
 • Insights: unusual expenses, subscriptions, category changes.
@@ -109,7 +110,8 @@ attribuez vous-même.
 • Factures et paiements récurrents : loyer, salaire et abonnements se
 comptabilisent seuls à l'échéance, et Windows vous les rappelle à l'avance.
 • Budgets et objectifs d'épargne avec suivi et projections.
-• Placements avec cours stooq et CoinGecko, rendements pondérés par les
+• Placements avec cours Twelve Data, Alpha Vantage, stooq et CoinGecko,
+rendements pondérés par les
 capitaux et dans le temps, dividendes et répartition cible.
 • Prévision de trésorerie avec intervalles de probabilité.
 • Analyses : dépenses inhabituelles, abonnements, variations par catégorie.
@@ -140,7 +142,7 @@ placements, trésorerie, patrimoine, gestion d'argent
 • الفواتير والدفعات المتكررة: الإيجار والراتب والاشتراكات تُسجَّل تلقائياً
 في موعدها، ويذكّرك Windows قبل استحقاقها.
 • ميزانيات وأهداف ادخار مع التقدم والتوقعات.
-• استثمارات بأسعار من stooq وCoinGecko، عائد مرجّح بالأموال وزمنياً،
+• استثمارات بأسعار من Twelve Data وAlpha Vantage وstooq وCoinGecko، عائد مرجّح بالأموال وزمنياً،
 توزيعات الأرباح والتوزيع المستهدف.
 • توقع التدفق النقدي مع نطاقات احتمالية.
 • تحليلات: مصاريف غير عادية، اشتراكات، تغيرات حسب الفئة.
