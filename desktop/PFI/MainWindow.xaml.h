@@ -38,8 +38,10 @@ namespace winrt::PFI::implementation
         void SetupWindow();
         void StartBackend();
         void ShowError(std::wstring const& message);
+        void WatchDownload(winrt::Microsoft::Web::WebView2::Core::CoreWebView2DownloadOperation const& op);
         void ShowDownload(std::wstring const& path, bool ok);
         void OpenLastDownload(bool inFolder);
+        void ShellLog(std::wstring const& line);
         winrt::fire_and_forget OpenUi();
         void OnWebMessage(winrt::Microsoft::Web::WebView2::Core::CoreWebView2 const& sender,
                           winrt::Microsoft::Web::WebView2::Core::CoreWebView2WebMessageReceivedEventArgs const& args);
@@ -81,6 +83,8 @@ namespace winrt::PFI::implementation
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer m_idleTimer{ nullptr };
         winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer m_reminderTimer{ nullptr };
         std::wstring m_lastDownload;
+        std::vector<winrt::Microsoft::Web::WebView2::Core::CoreWebView2DownloadOperation> m_downloads;
+        winrt::Microsoft::UI::Dispatching::DispatcherQueueTimer m_downloadTimer{ nullptr };
     };
 }
 

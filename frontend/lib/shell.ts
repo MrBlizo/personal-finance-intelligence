@@ -72,7 +72,10 @@ export function onShellDownload(cb: (d: ShellDownload) => void): () => void {
   if (!wv) return () => {};
   const handler = (e: { data: unknown }) => {
     const d = e.data as { type?: string; name?: string; ok?: boolean };
-    if (d?.type === "downloaded") cb({ name: d.name ?? "", ok: Boolean(d.ok) });
+    if (d?.type === "downloaded") {
+      cb({ name: d.name ?? "", ok: Boolean(d.ok) });
+      wv.postMessage({ type: "downloadSeen" });
+    }
   };
   wv.addEventListener("message", handler);
   return () => wv.removeEventListener("message", handler);
