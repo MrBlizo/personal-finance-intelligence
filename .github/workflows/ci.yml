@@ -28,7 +28,7 @@ jobs:
         working-directory: backend
         env:
           PFI_TEST_PG_BIN: /usr/lib/postgresql/16/bin
-        run: pytest -q -p no:cacheprovider
+        run: python -m pytest -q -p no:cacheprovider
 
   frontend:
     name: Screens (type check and build)
