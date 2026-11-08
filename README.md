@@ -60,8 +60,8 @@ Double-click **`build.bat`**. It runs the backend tests against PostgreSQL,
 builds the screens, packages the backend, builds `PFI.exe`, smoke-tests the
 packaged app and creates:
 
-- `dist\PFI-Setup-0.3.0.exe`: installer for direct download;
-- `dist\PFI-0.3.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.3.1.exe`: installer for direct download;
+- `dist\PFI-0.3.1.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:

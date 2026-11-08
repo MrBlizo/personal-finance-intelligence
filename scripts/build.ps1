@@ -22,7 +22,7 @@ param(
     [switch]$SkipInstaller,
     [switch]$SkipMsix,
     [switch]$DebugBuild,
-    [string]$Version = "0.3.0"
+    [string]$Version = "0.3.1"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -191,7 +191,10 @@ New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Run "robocopy `"$($exe.DirectoryName)`" `"$Stage`" /E /XF *.pdb *.lib *.exp *.ilk pfi.ini onnxruntime.dll DirectML.dll /XD AppX /NFL /NDL /NJH /NJS" $Root "Copying PFI.exe" -Robocopy
 Run "robocopy `"$be\dist\pfi-api`" `"$Stage\backend`" /E /NFL /NDL /NJH /NJS" $Root "Copying backend" -Robocopy
 Run "robocopy `"$fe\out`" `"$Stage\web`" /E /NFL /NDL /NJH /NJS" $Root "Copying screens" -Robocopy
-Run "robocopy `"$($pgRoot.FullName)`" `"$Stage\pgsql`" /E /XD doc include symbols `"pgAdmin 4`" StackBuilder installer scripts data /XF *.pdb /NFL /NDL /NJH /NJS" $Root "Copying PostgreSQL" -Robocopy
+# The PostgreSQL installer leaves its uninstaller (whose signature block is
+# malformed: the Store fails to sign the MSIX with 0x800700C1) and two
+# files with this machine's paths; PFI needs none of them.
+Run "robocopy `"$($pgRoot.FullName)`" `"$Stage\pgsql`" /E /XD doc include symbols `"pgAdmin 4`" StackBuilder installer scripts data /XF *.pdb uninstall-postgresql.exe uninstall-postgresql.dat installation_summary.log pg_env.bat /NFL /NDL /NJH /NJS" $Root "Copying PostgreSQL" -Robocopy
 if ($crt) {
     foreach ($dest in @($Stage, (Join-Path $Stage "pgsql\bin"))) {
         Get-ChildItem $crt.FullName -Filter *.dll | ForEach-Object {
