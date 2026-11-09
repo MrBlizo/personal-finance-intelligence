@@ -22,7 +22,7 @@ param(
     [switch]$SkipInstaller,
     [switch]$SkipMsix,
     [switch]$DebugBuild,
-    [string]$Version = "0.3.1"
+    [string]$Version = "0.3.2"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -78,7 +78,8 @@ function Stop-SmokeDb {
     }
     Start-Sleep -Milliseconds 500
     Get-Process -Name postgres, pfi-api -ErrorAction SilentlyContinue |
-        Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) } |
+        Where-Object { $_.Path -and ($_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) -or
+            $_.Path.StartsWith((Join-Path $Dist "smoke-data"), [StringComparison]::OrdinalIgnoreCase)) } |
         Stop-Process -Force -ErrorAction SilentlyContinue
 }
 
@@ -214,6 +215,9 @@ $token = [guid]::NewGuid().ToString("N")
 $port = 8799
 $env:PFI_PG_BIN = Join-Path $Stage "pgsql\bin"; $env:PFI_DATA_DIR = $smoke
 $env:PFI_FRONTEND_DIST = Join-Path $Stage "web"; $env:PFI_API_TOKEN = $token; $env:PFI_PG_PORT = "54398"
+# Run PostgreSQL from a copy in the data folder, as the Store package does
+# (Windows blocks it inside the protected WindowsApps install folder).
+$env:PFI_PG_RELOCATE = "1"
 $proc = Start-Process -FilePath (Join-Path $Stage "backend\pfi-api.exe") -ArgumentList "--port $port --log-file `"$smoke\logs\api.log`"" `
     -WindowStyle Hidden -PassThru
 $h = @{ "X-PFI-Token" = $token }; $base = "http://127.0.0.1:$port"; $ok = $false
@@ -251,6 +255,10 @@ try {
     if ($ctype -notmatch "javascript") { throw "UI scripts are served as '$ctype' instead of JavaScript; the app window would stay blank." }
     try { Invoke-RestMethod "$base/api/settings" | Out-Null; throw "API answered without the token" } catch { if ($_.Exception.Message -like "*without the token*") { throw } }
     $results += "token check: ok"
+    $copied = Get-ChildItem (Join-Path $smoke "runtime") -Filter "pgsql-*" -Directory -ErrorAction SilentlyContinue |
+        Where-Object { Test-Path (Join-Path $_.FullName "bin\postgres.exe") }
+    if (-not $copied) { throw "PostgreSQL did not run from its copy in smoke-data\runtime (Store mode)." }
+    $results += "store mode: PostgreSQL ran from runtime\$($copied[0].Name)"
 } catch {
     $err = $_.Exception.Message
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
@@ -260,7 +268,7 @@ try {
 }
 Invoke-RestMethod "$base/api/system/shutdown" -Method Post -Headers $h | Out-Null
 if (-not $proc.WaitForExit(30000)) { Stop-Process -Id $proc.Id -Force; Fail "Backend did not stop within 30 s after shutdown." }
-Remove-Item Env:PFI_PG_BIN, Env:PFI_DATA_DIR, Env:PFI_FRONTEND_DIST, Env:PFI_API_TOKEN, Env:PFI_PG_PORT
+Remove-Item Env:PFI_PG_BIN, Env:PFI_DATA_DIR, Env:PFI_FRONTEND_DIST, Env:PFI_API_TOKEN, Env:PFI_PG_PORT, Env:PFI_PG_RELOCATE
 $results | ForEach-Object { Write-Host "  $_"; Add-Content $Log -Encoding UTF8 -Value "  $_" }
 
 # ---------------------------------------------------------------- installer

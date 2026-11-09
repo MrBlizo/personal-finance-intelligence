@@ -31,6 +31,10 @@ class Settings(BaseSettings):
         ``pg_ctl``). When set, the backend runs its own private cluster.
     pg_port : int
         The preferred TCP port of the embedded PostgreSQL cluster.
+    pg_relocate : bool or None
+        The flag to run PostgreSQL from a copy in the data directory.
+        ``None`` (default) copies only when the binaries are in the
+        protected Microsoft Store folder (``WindowsApps``).
     data_dir : Path
         The directory for the database cluster, archived imports and logs.
     frontend_dist : Path
@@ -52,6 +56,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://pfi:pfi@localhost:5432/pfi"
     pg_bin: Path | None = None
     pg_port: int = 54329
+    pg_relocate: bool | None = None
     data_dir: Path = _default_data_dir()
     frontend_dist: Path = PROJECT_DIR / "frontend" / "out"
     api_token: str = ""
