@@ -8,6 +8,26 @@ account and no cloud.
 **English · Français · العربية**, base currency of your choice (CHF, EUR,
 MAD, USD…) with accounts in any currency.
 
+<a href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">
+  <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft">
+</a>
+
+Free on the Microsoft Store for Windows 10 (2004) and Windows 11, x64; or
+build it yourself (see [Build](#build)).
+
+## Screenshots
+
+Shown with the built-in demo data (Settings → Load demo data).
+
+| | |
+|---|---|
+| ![Home: net worth, income vs. expenses and spending breakdown](packaging/store-screenshots/1-home.png) | ![Transactions with categories and filters](packaging/store-screenshots/2-transactions.png) |
+| **Home:** net worth, income vs. expenses, where the money goes | **Transactions:** categories, filters, CSV export |
+| ![Investments: money- and time-weighted returns](packaging/store-screenshots/3-investments.png) | ![Bills and recurring items](packaging/store-screenshots/4-bills.png) |
+| **Investments:** money- (XIRR) and time-weighted returns | **Bills & recurring:** due dates and reminders |
+| ![Cash-flow forecast with 50 % and 90 % ranges](packaging/store-screenshots/5-forecast.png) | ![Reports and exports](packaging/store-screenshots/6-reports.png) |
+| **Forecast:** Monte Carlo with 50 % and 90 % ranges | **Reports:** PDF, Excel and CSV |
+
 ## Features
 
 - **Accounts & transactions:** checking, savings, cash, cards, investments,
@@ -21,7 +41,8 @@ MAD, USD…) with accounts in any currency.
   the due date, and Windows notifications remind you before they are due.
 - **Budgets & goals:** monthly limits per category with projection; savings
   goals linked to accounts.
-- **Investments:** average-cost positions, prices from stooq (end of day) or
+- **Investments:** average-cost positions, end-of-day prices from Twelve Data
+  (US listings) or Alpha Vantage (worldwide) with your free key, stooq,
   CoinGecko (crypto), or entered manually; money-weighted (XIRR) and
   time-weighted returns, dividend income, target allocation with drift.
 - **Forecast:** recurring items plus a block-bootstrap Monte Carlo of your
@@ -59,8 +80,8 @@ Double-click **`build.bat`**. It runs the backend tests against PostgreSQL,
 builds the screens, packages the backend, builds `PFI.exe`, smoke-tests the
 packaged app and creates:
 
-- `dist\PFI-Setup-0.3.0.exe`: installer for direct download;
-- `dist\PFI-0.3.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.3.2.exe`: installer for direct download;
+- `dist\PFI-0.3.2.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:

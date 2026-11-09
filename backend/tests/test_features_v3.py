@@ -222,6 +222,92 @@ def test_price_update_reports_errors(api, monkeypatch):
     assert "did not accept the API key" in res["errors"][0]["error"]
 
 
+TWELVE = {"meta": {"symbol": "VT", "currency": "USD"}, "status": "ok",
+          "values": [{"datetime": "2026-11-06", "close": "122.25000"},
+                     {"datetime": "2026-11-05", "close": "121.50000"}]}
+ALPHA = {"Meta Data": {"2. Symbol": "TSCO.LON"}, "Time Series (Daily)": {
+    "2026-11-06": {"1. open": "1", "4. close": "3.9000"},
+    "2026-11-05": {"1. open": "1", "4. close": "3.8500"},
+    "2020-01-02": {"1. open": "1", "4. close": "1.0000"}}}
+
+
+def test_twelvedata_and_alphavantage_sources(api, monkeypatch):
+    acc = make_account(api, "Broker", type_="investment", opening="0")
+    td = api.post("/api/holdings", json={
+        "account_id": acc, "symbol": "VT", "name": "World ETF",
+        "asset_class": "etf", "currency": "USD",
+        "price_source": "twelvedata"})
+    assert td.status_code == 201, td.text
+    td = td.json()
+    av = api.post("/api/holdings", json={
+        "account_id": acc, "symbol": "TSCO", "name": "Tesco",
+        "asset_class": "stock", "currency": "GBP",
+        "price_source": "alphavantage", "price_symbol": "TSCO.LON"}).json()
+    listed = {h["id"]: h for h in api.get("/api/holdings").json()}
+    assert listed[td["id"]]["price_source"] == "twelvedata"
+    calls = []
+
+    def fake(url, timeout=20.0, headers=None):
+        calls.append((url, headers or {}))
+        return json.dumps(TWELVE if "twelvedata" in url else ALPHA).encode()
+    monkeypatch.setattr(prices, "_get", fake)
+    res = api.post("/api/prices/update").json()
+    msgs = " ".join(e["error"] for e in res["errors"])
+    assert res["updated"] == 0 and "twelvedata.com/account/api-keys" in msgs
+    assert "alphavantage.co/support" in msgs and not calls
+    s = api.put("/api/settings", json={
+        "twelvedata_api_key": "td_KEY1234",
+        "alphavantage_api_key": "AVKEY987"}).json()
+    assert s["twelvedata_api_key_hint"] == "1234"
+    assert s["alphavantage_api_key_set"] and s["stooq_api_key_set"] is False
+    dumped = json.dumps(s)
+    assert "td_KEY1234" not in dumped and "AVKEY987" not in dumped
+    res = api.post("/api/prices/update").json()
+    assert res["updated"] == 2 and res["new_prices"] == 4, res
+    td_url, td_headers = next(c for c in calls if "twelvedata" in c[0])
+    av_url = next(c[0] for c in calls if "alphavantage" in c[0])
+    # Twelve Data gets its key in a header, never in the URL.
+    assert "symbol=VT" in td_url and "td_KEY1234" not in td_url
+    assert td_headers == {"Authorization": "apikey td_KEY1234"}
+    assert "symbol=TSCO.LON" in av_url and "apikey=AVKEY987" in av_url
+    rows = {p["price_date"]: p for p in
+            api.get(f"/api/holdings/{av['id']}/prices").json()}
+    # only days inside the requested window are stored
+    assert rows["2026-11-06"]["price"] == 3.9 and "2020-01-02" not in rows
+    assert rows["2026-11-06"]["source"] == "alphavantage"
+
+
+def test_twelvedata_and_alphavantage_errors(monkeypatch):
+    d0, d1 = date(2026, 11, 1), date(2026, 11, 7)
+
+    def answer(payload):
+        monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0,
+                            headers=None: json.dumps(payload).encode())
+    answer({"code": 401, "message": "**apikey** is invalid",
+            "status": "error"})
+    with pytest.raises(prices.PriceFetchError, match="did not accept"):
+        prices.fetch_twelvedata("VT", d0, d1, "k")
+    answer({"code": 403, "message": "This symbol is available starting "
+            "with the Grow plan.", "status": "error"})
+    with pytest.raises(prices.PriceFetchError, match="Alpha Vantage"):
+        prices.fetch_twelvedata("NESN", d0, d1, "k")
+    answer({"code": 429, "message": "run out of credits",
+            "status": "error"})
+    with pytest.raises(prices.PriceFetchError, match="8 requests a minute"):
+        prices.fetch_twelvedata("VT", d0, d1, "k")
+    answer({"Error Message": "Invalid API call."})
+    with pytest.raises(prices.PriceFetchError, match="exchange suffix"):
+        prices.fetch_alphavantage("NOPE", d0, d1, "k")
+    answer({"Information": "Thank you for using Alpha Vantage! Our standard "
+            "API rate limit is 25 requests per day."})
+    with pytest.raises(prices.PriceFetchError, match="25 requests a day"):
+        prices.fetch_alphavantage("IBM", d0, d1, "k")
+    monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0,
+                        headers=None: b"<html>down</html>")
+    with pytest.raises(prices.PriceFetchError, match="unreadable"):
+        prices.fetch_alphavantage("IBM", d0, d1, "k")
+
+
 def test_coingecko_parsing(monkeypatch):
     payload = {"prices": [[1762300800000, 90000.0], [1762387200000, 91000.5]]}
     monkeypatch.setattr(prices, "_get",
@@ -259,3 +345,27 @@ def test_reports_and_exports(api):
     assert csv.startswith("﻿".encode()) and b"amount_base" in csv
     nw = api.get("/api/reports/net-worth", params={"months": 6}).json()
     assert len(nw["points"]) >= 6 and "change" in nw["points"][-1]
+
+
+def test_transactions_without_payee_do_not_break_analysis(api):
+    """A hand-entered expense without merchant must not fail any report."""
+    from datetime import date, timedelta
+
+    acc = make_account(api, opening_date="2025-01-01")
+    when = (date.today() - timedelta(days=3)).isoformat()
+    for i in range(4):
+        r = api.post("/api/transactions", json={
+            "account_id": acc, "txn_date": when,
+            "amount": str(-900 - i), "description": f"Cash withdrawal {i}"})
+        assert r.status_code == 201 and r.json()["merchant"] is None
+    # one row with a payee makes pandas infer its string dtype (NaN gaps)
+    api.post("/api/transactions", json={
+        "account_id": acc, "txn_date": when, "amount": "-5",
+        "description": "Coffee", "merchant": "Bakery"})
+    assert api.get("/api/insights").status_code == 200
+    month = date.today().strftime("%Y-%m")
+    rep = api.get("/api/reports/monthly", params={"month": month})
+    assert rep.status_code == 200, rep.text
+    assert rep.json()["largest"][0]["description"].startswith("Cash")
+    csv = api.get("/api/export/transactions.csv")
+    assert csv.status_code == 200 and "nan" not in csv.text.lower()

@@ -219,7 +219,8 @@ def update_one_price(holding_id: int, db: Session = Depends(get_db)):
     if h.price_source == "manual":
         raise HTTPException(
             422, f"{h.symbol} uses manual prices. Edit the holding and "
-            "choose an online price source (stooq or CoinGecko) first.")
+            "choose an online price source (Twelve Data, Alpha "
+            "Vantage, stooq or CoinGecko) first.")
     try:
         added = prices.update_holding(db, h)
     except prices.PriceFetchError as exc:

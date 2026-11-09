@@ -2,10 +2,18 @@
 
 The cluster lives in ``<data_dir>/pgdata``, listens only on 127.0.0.1 and
 uses a random password generated on first start (``<data_dir>/pg_secret``).
+
+In the Microsoft Store package the binaries sit in the protected
+``WindowsApps`` folder. ``initdb`` and ``pg_ctl`` relaunch themselves and
+``postgres`` with a restricted token, and those child processes get "Access
+is denied" there, so the binaries are first copied to
+``<data_dir>/runtime/pgsql-<key>`` (once per app version).
 """
+import hashlib
 import logging
 import os
 import secrets
+import shutil
 import socket
 import subprocess
 import sys
@@ -38,6 +46,73 @@ def _free_port() -> int:
         return sock.getsockname()[1]
 
 
+def in_store_package(bin_dir: Path) -> bool:
+    """Return whether the binaries are in the Microsoft Store install folder.
+
+    Parameters
+    ----------
+    bin_dir : Path
+        The directory containing the PostgreSQL programs.
+    """
+    path = str(bin_dir).replace("/", "\\").lower()
+    return "\\windowsapps\\" in path
+
+
+def relocate_binaries(bin_dir: Path, data_root: Path) -> Path:
+    """Copy the PostgreSQL installation next to the data and return its bin.
+
+    The ``bin``, ``lib`` and ``share`` folders next to ``bin_dir`` are copied
+    to ``<data_root>/runtime/pgsql-<key>``, where the key is derived from the
+    source path (it changes with every app version). An existing complete
+    copy is reused; copies of other versions are removed.
+
+    Parameters
+    ----------
+    bin_dir : Path
+        The directory containing ``initdb``, ``pg_ctl`` and ``postgres``.
+    data_root : Path
+        The application data directory.
+
+    Returns
+    -------
+    Path
+        The ``bin`` directory of the copy.
+
+    Raises
+    ------
+    RuntimeError
+        If the copy cannot be made, e.g. because the disk is full.
+    """
+    source = Path(bin_dir).parent
+    key = hashlib.sha1(str(source).lower().encode("utf-8")).hexdigest()[:12]
+    runtime = Path(data_root) / "runtime"
+    dest = runtime / f"pgsql-{key}"
+    if not (dest / ".complete").is_file():
+        log.info("Copying PostgreSQL from %s to %s", source, dest)
+        tmp = runtime / f"pgsql-{key}.tmp"
+        try:
+            shutil.rmtree(tmp, ignore_errors=True)
+            tmp.mkdir(parents=True)
+            for part in ("bin", "lib", "share"):
+                if (source / part).is_dir():
+                    shutil.copytree(source / part, tmp / part)
+            (tmp / ".complete").write_text(str(source), encoding="utf-8")
+            shutil.rmtree(dest, ignore_errors=True)
+            tmp.rename(dest)
+        except OSError as exc:
+            shutil.rmtree(tmp, ignore_errors=True)
+            raise RuntimeError(
+                f"Could not copy the bundled PostgreSQL to {dest}: {exc}. "
+                "The app runs the database from this copy because Windows "
+                "blocks it inside the Store install folder. Free some disk "
+                "space (about 160 MB are needed) and restart the app.") \
+                from exc
+    for old in runtime.glob("pgsql-*"):
+        if old != dest:
+            shutil.rmtree(old, ignore_errors=True)
+    return dest / "bin"
+
+
 class EmbeddedPostgres:
     """Start, reuse and stop a private PostgreSQL cluster.
 
@@ -49,11 +124,19 @@ class EmbeddedPostgres:
         The application data directory that will hold ``pgdata``.
     port : int
         The preferred TCP port; a free one is chosen if it is taken.
+    relocate : bool or None
+        The flag to run the binaries from a copy in ``data_root``; ``None``
+        copies only when they are in the Store install folder.
     """
 
-    def __init__(self, bin_dir: Path, data_root: Path, port: int) -> None:
-        self.bin_dir = Path(bin_dir)
+    def __init__(self, bin_dir: Path, data_root: Path, port: int,
+                 relocate: bool | None = None) -> None:
         self.data_root = Path(data_root)
+        self.bin_dir = Path(bin_dir)
+        if relocate is None:
+            relocate = in_store_package(self.bin_dir)
+        if relocate:
+            self.bin_dir = relocate_binaries(self.bin_dir, self.data_root)
         self.data_dir = self.data_root / "pgdata"
         self.secret_file = self.data_root / "pg_secret"
         self.log_file = self.data_root / "logs" / "postgres-tools.log"

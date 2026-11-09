@@ -1,24 +1,29 @@
-"""Download market prices for holdings from free, keyless sources.
+"""Download market prices for holdings from free price providers.
 
+* ``twelvedata``: end-of-day closes from Twelve Data. The free plan (800
+  requests a day, 8 a minute) covers US-listed stocks and ETFs; symbols
+  such as ``AAPL`` or ``VT``. Needs a free personal API key.
+* ``alphavantage``: end-of-day closes from Alpha Vantage for stocks and
+  ETFs on many exchanges (``IBM``, ``TSCO.LON``). The free plan allows 25
+  requests a day and returns the last 100 trading days. Needs a free
+  personal API key.
 * ``stooq``: end-of-day closes for stocks, ETFs and funds on many
-  exchanges (symbols such as ``vt.us``, ``vwrl.uk``, ``sap.de``). The
-  daily CSV download also provides history for performance figures.
-  Since 2026 stooq requires a free personal API key (obtained once on
-  stooq.com after a captcha); it is stored in the app's settings and
-  only sent to stooq.
+  exchanges (symbols such as ``vt.us``, ``vwrl.uk``, ``sap.de``). Since
+  2026 stooq requires a personal API key obtained on stooq.com.
 * ``coingecko``: crypto prices by coin id (``bitcoin``, ``ethereum``) in
-  the holding's currency, with up to 365 days of daily history.
+  the holding's currency, with up to 365 days of daily history; no key.
 
-Only the symbol, the currency code and (for stooq) your stooq API key
-are sent. Prices are stored with
+Only the symbol, the date range, the currency code and the provider's own
+API key are sent, each key only to its provider. Prices are stored with
 the provider name as ``source``; a manual price for the same day is never
-overwritten. Prices are delayed (end of day for stooq) and are meant for
-portfolio tracking, not trading.
+overwritten. Prices are delayed (end of day) and are meant for portfolio
+tracking, not trading.
 """
 import csv
 import io
 import json
 import logging
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
@@ -38,6 +43,18 @@ STOOQ_KEY_HELP = (
     "stooq needs a free API key. Open " + STOOQ_KEY_PAGE + ", enter the "
     "captcha, copy the value after 'apikey=' from the CSV download link and "
     "paste it in Settings > Exchange rates & prices > stooq API key.")
+TWELVE_URL = ("https://api.twelvedata.com/time_series?symbol={sym}"
+              "&interval=1day&start_date={d1}&end_date={d2}&outputsize=5000")
+TWELVE_KEY_HELP = (
+    "Twelve Data needs a free API key. Sign up on https://twelvedata.com, "
+    "copy the key from https://twelvedata.com/account/api-keys and paste it "
+    "in Settings > Exchange rates & prices > Twelve Data API key.")
+ALPHA_URL = ("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
+             "&symbol={sym}&outputsize=compact&apikey={key}")
+ALPHA_KEY_HELP = (
+    "Alpha Vantage needs a free API key. Get one on "
+    "https://www.alphavantage.co/support/#api-key and paste it in "
+    "Settings > Exchange rates & prices > Alpha Vantage API key.")
 GECKO_URL = ("https://api.coingecko.com/api/v3/coins/{coin}/market_chart"
              "?vs_currency={cur}&days={days}")
 
@@ -46,10 +63,19 @@ class PriceFetchError(RuntimeError):
     """Raised when a price provider cannot be reached or understood."""
 
 
-def _get(url: str, timeout: float = 20.0) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "PFI/0.3"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return resp.read()
+def _get(url: str, timeout: float = 20.0,
+         headers: dict[str, str] | None = None) -> bytes:
+    req = urllib.request.Request(
+        url, headers={"User-Agent": "PFI/0.3", **(headers or {})})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.read()
+    except urllib.error.HTTPError as exc:
+        # JSON APIs explain errors in the body (bad key, plan, rate limit).
+        body = exc.read()
+        if body:
+            return body
+        raise
 
 
 def fetch_stooq(symbol: str, start: date, end: date,
@@ -106,6 +132,154 @@ def fetch_stooq(symbol: str, start: date, end: date,
         raise PriceFetchError(
             f"stooq returned no prices for '{symbol}'. Check the symbol "
             "and its market suffix on stooq.com (e.g. vt.us, vwrl.uk).")
+    return out
+
+
+def _json(raw: bytes, provider: str, symbol: str) -> dict:
+    try:
+        data = json.loads(raw.decode("utf-8", "replace"))
+    except ValueError as exc:
+        raise PriceFetchError(
+            f"{provider} sent an unreadable answer for '{symbol}'. The "
+            "service may be down; try again later.") from exc
+    if not isinstance(data, dict):
+        raise PriceFetchError(
+            f"{provider} sent an unexpected answer for '{symbol}'. Try "
+            "again later.")
+    return data
+
+
+def fetch_twelvedata(symbol: str, start: date, end: date,
+                     apikey: str = "") -> dict[date, float]:
+    """Return daily closes from Twelve Data.
+
+    Parameters
+    ----------
+    symbol : str
+        The ticker as listed on Twelve Data, e.g. ``AAPL`` or ``VT``.
+    start : date
+        The first day requested.
+    end : date
+        The last day requested.
+    apikey : str
+        The user's Twelve Data API key; sent as a request header.
+
+    Returns
+    -------
+    dict of date to float
+        The closing price per trading day.
+
+    Raises
+    ------
+    PriceFetchError
+        If the key is missing or rejected, the symbol is unknown or not in
+        the user's plan, the rate limit is reached, or the request fails.
+    """
+    if not apikey:
+        raise PriceFetchError(TWELVE_KEY_HELP)
+    # end_date is exclusive on Twelve Data.
+    url = TWELVE_URL.format(sym=urllib.parse.quote(symbol.upper()),
+                            d1=start.isoformat(),
+                            d2=(end + timedelta(days=1)).isoformat())
+    try:
+        raw = _get(url, headers={"Authorization": "apikey " + apikey})
+    except Exception as exc:
+        raise PriceFetchError(f"Twelve Data could not be reached for "
+                              f"{symbol}: {exc}") from exc
+    data = _json(raw, "Twelve Data", symbol)
+    if data.get("status") == "error":
+        code, msg = data.get("code"), str(data.get("message", ""))
+        if code == 401:
+            raise PriceFetchError("Twelve Data did not accept the API key. "
+                                  + TWELVE_KEY_HELP)
+        if code == 429:
+            raise PriceFetchError(
+                "Twelve Data's free limit (8 requests a minute, 800 a day) "
+                "was reached. Try again in a minute, or tomorrow.")
+        if code == 403 or "plan" in msg.lower():
+            raise PriceFetchError(
+                f"'{symbol}' is not included in your Twelve Data plan (the "
+                "free plan covers US listings). Use Alpha Vantage for other "
+                "markets.")
+        raise PriceFetchError(
+            f"Twelve Data returned no prices for '{symbol}': {msg} Check the "
+            "symbol on twelvedata.com.")
+    out = {}
+    for v in data.get("values") or []:
+        try:
+            out[date.fromisoformat(str(v["datetime"])[:10])] = \
+                float(v["close"])
+        except (KeyError, TypeError, ValueError):
+            continue
+    if not out:
+        raise PriceFetchError(
+            f"Twelve Data returned no prices for '{symbol}' in this period. "
+            "Check the symbol on twelvedata.com.")
+    return out
+
+
+def fetch_alphavantage(symbol: str, start: date, end: date,
+                       apikey: str = "") -> dict[date, float]:
+    """Return daily closes from Alpha Vantage (last 100 trading days).
+
+    Parameters
+    ----------
+    symbol : str
+        The Alpha Vantage symbol, with an exchange suffix outside the US,
+        e.g. ``IBM`` or ``TSCO.LON``.
+    start : date
+        The first day kept.
+    end : date
+        The last day kept.
+    apikey : str
+        The user's Alpha Vantage API key.
+
+    Returns
+    -------
+    dict of date to float
+        The closing price per trading day between ``start`` and ``end``.
+
+    Raises
+    ------
+    PriceFetchError
+        If the key is missing or rejected, the symbol is unknown, the daily
+        limit is reached, or the request fails.
+    """
+    if not apikey:
+        raise PriceFetchError(ALPHA_KEY_HELP)
+    url = ALPHA_URL.format(sym=urllib.parse.quote(symbol.upper()),
+                           key=urllib.parse.quote(apikey))
+    try:
+        raw = _get(url)
+    except Exception as exc:
+        raise PriceFetchError(f"Alpha Vantage could not be reached for "
+                              f"{symbol}: {exc}") from exc
+    data = _json(raw, "Alpha Vantage", symbol)
+    series = data.get("Time Series (Daily)")
+    if not series:
+        note = str(data.get("Information") or data.get("Note") or "")
+        if "apikey" in note.lower() and "invalid" in note.lower():
+            raise PriceFetchError("Alpha Vantage did not accept the API "
+                                  "key. " + ALPHA_KEY_HELP)
+        if note:
+            raise PriceFetchError(
+                "Alpha Vantage's free limit (25 requests a day) was "
+                "reached or the request was refused: " + note[:200])
+        raise PriceFetchError(
+            f"Alpha Vantage returned no prices for '{symbol}'. Check the "
+            "symbol and its exchange suffix (e.g. TSCO.LON) with the symbol "
+            "search on alphavantage.co.")
+    out = {}
+    for day, row in series.items():
+        try:
+            d = date.fromisoformat(day[:10])
+            if start <= d <= end:
+                out[d] = float(row["4. close"])
+        except (KeyError, TypeError, ValueError):
+            continue
+    if not out:
+        raise PriceFetchError(
+            f"Alpha Vantage has no prices for '{symbol}' in this period.")
     return out
 
 
@@ -197,6 +371,12 @@ def update_holding(db: Session, holding: Holding,
     if holding.price_source == "stooq":
         prices = fetch_stooq(symbol, start, today,
                              prefs.get(db, "stooq_api_key"))
+    elif holding.price_source == "twelvedata":
+        prices = fetch_twelvedata(symbol, start, today,
+                                  prefs.get(db, "twelvedata_api_key"))
+    elif holding.price_source == "alphavantage":
+        prices = fetch_alphavantage(symbol, start, today,
+                                    prefs.get(db, "alphavantage_api_key"))
     elif holding.price_source == "coingecko":
         prices = fetch_coingecko(symbol, holding.currency,
                                  (today - start).days + 1)

@@ -19,7 +19,11 @@ DEFAULTS: dict[str, str] = {
     "auto_categorize_threshold": "0.8",
     "allocation_targets": "{}",
     "stooq_api_key": "",
+    "twelvedata_api_key": "",
+    "alphavantage_api_key": "",
 }
+#: Personal API keys of price providers; never returned to the UI.
+API_KEYS = ("stooq_api_key", "twelvedata_api_key", "alphavantage_api_key")
 
 
 def get(db: Session, key: str) -> str:
@@ -73,8 +77,8 @@ def snapshot(db: Session) -> dict:
         "auto_categorize_threshold": get_float(db,
                                                "auto_categorize_threshold"),
         "allocation_targets": get_targets(db),
-        # The key itself is never sent back to the UI.
-        "stooq_api_key_set": bool(get(db, "stooq_api_key")),
-        "stooq_api_key_hint": (get(db, "stooq_api_key")[-4:]
-                               if get(db, "stooq_api_key") else None),
+        # Keys themselves are never sent back to the UI: only whether one is
+        # saved and its last four characters.
+        **{f"{k}_set": bool(get(db, k)) for k in API_KEYS},
+        **{f"{k}_hint": (get(db, k)[-4:] or None) for k in API_KEYS},
     }

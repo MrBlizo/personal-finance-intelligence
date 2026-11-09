@@ -1,6 +1,7 @@
 {
   "_comment": "Package identity from Partner Center > your app > Product identity. Not secret. Fill in the three values, then run build.bat to produce dist\\PFI-<version>-x64.msix for Store upload.",
-  "identity_name": "REPLACE.PersonalFinanceIntelligence",
-  "publisher": "CN=REPLACE-WITH-PUBLISHER-ID",
-  "publisher_display_name": "REPLACE with publisher display name"
+  "identity_name": "IbrahimOulkhir.PersonalFinanceIntelligence",
+  "publisher": "CN=51BE7DA8-A7BE-448D-B232-84FA6959CB54",
+  "publisher_display_name": "Ibrahim Oulkhir",
+  "store_id": "9MZKW4H9F0J5"
 }

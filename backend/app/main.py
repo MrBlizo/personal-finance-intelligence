@@ -81,7 +81,7 @@ async def lifespan(app: FastAPI):
     pg = None
     if settings.pg_bin:
         pg = EmbeddedPostgres(settings.pg_bin, settings.data_dir,
-                              settings.pg_port)
+                              settings.pg_port, settings.pg_relocate)
         url = pg.start()
     else:
         url = settings.database_url

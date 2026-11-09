@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy.orm import Session
 
+from ..models import Account, RecurringItem
 from .frame import expenses, load_transactions
 from .fx import FxConverter
 from .planning import add_months
@@ -33,7 +34,9 @@ def _text(title: tuple[str, dict], detail: tuple[str, dict]) -> dict:
 
 def payee_key(description: str, merchant: str | None) -> str:
     """Normalise a payee by dropping digits, dates and punctuation."""
-    text = (merchant or description or "").lower()
+    def clean(v) -> str:
+        return v if isinstance(v, str) else ""
+    text = (clean(merchant) or clean(description)).lower()
     text = re.sub(r"[\d/.\-:#*]+", " ", text)
     return " ".join(text.split()[:4])
 
@@ -81,6 +84,61 @@ def unusual_transactions(df: pd.DataFrame, recent_days: int,
                 "data": {"transaction_id": int(row["id"]),
                          "amount": float(row["spend"]),
                          "median": float(med), "z": float(z[idx])}})
+    return out
+
+
+def _covered(cand: dict, known: list[dict]) -> bool:
+    """Tell whether an active recurring item already tracks a candidate.
+
+    A candidate is covered when an item on the same account charges about
+    the same amount (within 15 %) and shares the category or a name word.
+    """
+    d = cand["data"]
+    words = set(d["payee"].split())
+    for k in known:
+        if k["account_id"] != d["account_id"] or k["spend"] is None:
+            continue
+        if abs(k["spend"] - d["last_amount"]) > 0.15 * d["last_amount"]:
+            continue
+        if (d["category_id"] is not None
+                and k["category_id"] == d["category_id"]) or (
+                words & k["words"]):
+            return True
+    return False
+
+
+def known_recurring(db: Session, fx: FxConverter, base: str,
+                    today: date) -> list[dict]:
+    """Summarise active recurring expenses for matching against candidates.
+
+    Parameters
+    ----------
+    db : Session
+        The open database session.
+    fx : FxConverter
+        The converter used for base-currency amounts.
+    base : str
+        The reporting currency.
+    today : date
+        The valuation date for currency conversion.
+
+    Returns
+    -------
+    list of dict
+        The account, category, name words and base-currency charge of
+        each active recurring expense.
+    """
+    rows = (db.query(RecurringItem, Account.currency)
+            .join(Account, Account.id == RecurringItem.account_id)
+            .filter(RecurringItem.is_active.is_(True),
+                    RecurringItem.amount < 0).all())
+    out = []
+    for item, currency in rows:
+        rate = fx.try_rate(currency, base, today)
+        out.append({
+            "account_id": item.account_id, "category_id": item.category_id,
+            "words": set(payee_key(item.name, None).split()),
+            "spend": None if rate is None else -float(item.amount) * rate})
     return out
 
 
@@ -218,7 +276,9 @@ def build_insights(db: Session, fx: FxConverter, base: str,
     if len(exp):
         items += category_shifts(exp, today)
         items += unusual_transactions(exp, 60, today)
-        items += subscription_candidates(exp)
+        known = known_recurring(db, fx, base, today)
+        items += [c for c in subscription_candidates(exp)
+                  if not _covered(c, known)]
     missing = df.attrs.get("missing_fx", [])
     if missing:
         items.insert(0, {

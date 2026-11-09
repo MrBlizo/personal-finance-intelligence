@@ -22,7 +22,7 @@ param(
     [switch]$SkipInstaller,
     [switch]$SkipMsix,
     [switch]$DebugBuild,
-    [string]$Version = "0.3.0"
+    [string]$Version = "0.3.2"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -78,7 +78,8 @@ function Stop-SmokeDb {
     }
     Start-Sleep -Milliseconds 500
     Get-Process -Name postgres, pfi-api -ErrorAction SilentlyContinue |
-        Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) } |
+        Where-Object { $_.Path -and ($_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) -or
+            $_.Path.StartsWith((Join-Path $Dist "smoke-data"), [StringComparison]::OrdinalIgnoreCase)) } |
         Stop-Process -Force -ErrorAction SilentlyContinue
 }
 
@@ -177,14 +178,24 @@ $running = Get-Process -Name PFI -ErrorAction SilentlyContinue |
     Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) }
 if ($running) { Fail "Personal Finance Intelligence is running from dist\PFI. Close it and run build.bat again." }
 Stop-SmokeDb
-if (Test-Path $Stage) { Remove-Item $Stage -Recurse -Force }
+if (Test-Path $Stage) {
+    try { Remove-Item $Stage -Recurse -Force -ErrorAction Stop }
+    catch {
+        Fail ("dist\PFI could not be replaced because another program still uses it ($($_.Exception.Message)). " +
+              "A program started from a test run of the app (for example a PDF viewer opened from an export, " +
+              "or a File Explorer window inside dist\PFI) keeps the folder open. Close it and run build.bat again.")
+    }
+}
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 # The Windows App SDK ships its on-device AI runtime (ONNX Runtime, DirectML,
 # ~42 MB); PFI does not use it.
 Run "robocopy `"$($exe.DirectoryName)`" `"$Stage`" /E /XF *.pdb *.lib *.exp *.ilk pfi.ini onnxruntime.dll DirectML.dll /XD AppX /NFL /NDL /NJH /NJS" $Root "Copying PFI.exe" -Robocopy
 Run "robocopy `"$be\dist\pfi-api`" `"$Stage\backend`" /E /NFL /NDL /NJH /NJS" $Root "Copying backend" -Robocopy
 Run "robocopy `"$fe\out`" `"$Stage\web`" /E /NFL /NDL /NJH /NJS" $Root "Copying screens" -Robocopy
-Run "robocopy `"$($pgRoot.FullName)`" `"$Stage\pgsql`" /E /XD doc include symbols `"pgAdmin 4`" StackBuilder installer scripts data /XF *.pdb /NFL /NDL /NJH /NJS" $Root "Copying PostgreSQL" -Robocopy
+# The PostgreSQL installer leaves its uninstaller (whose signature block is
+# malformed: the Store fails to sign the MSIX with 0x800700C1) and two
+# files with this machine's paths; PFI needs none of them.
+Run "robocopy `"$($pgRoot.FullName)`" `"$Stage\pgsql`" /E /XD doc include symbols `"pgAdmin 4`" StackBuilder installer scripts data /XF *.pdb uninstall-postgresql.exe uninstall-postgresql.dat installation_summary.log pg_env.bat /NFL /NDL /NJH /NJS" $Root "Copying PostgreSQL" -Robocopy
 if ($crt) {
     foreach ($dest in @($Stage, (Join-Path $Stage "pgsql\bin"))) {
         Get-ChildItem $crt.FullName -Filter *.dll | ForEach-Object {
@@ -204,6 +215,9 @@ $token = [guid]::NewGuid().ToString("N")
 $port = 8799
 $env:PFI_PG_BIN = Join-Path $Stage "pgsql\bin"; $env:PFI_DATA_DIR = $smoke
 $env:PFI_FRONTEND_DIST = Join-Path $Stage "web"; $env:PFI_API_TOKEN = $token; $env:PFI_PG_PORT = "54398"
+# Run PostgreSQL from a copy in the data folder, as the Store package does
+# (Windows blocks it inside the protected WindowsApps install folder).
+$env:PFI_PG_RELOCATE = "1"
 $proc = Start-Process -FilePath (Join-Path $Stage "backend\pfi-api.exe") -ArgumentList "--port $port --log-file `"$smoke\logs\api.log`"" `
     -WindowStyle Hidden -PassThru
 $h = @{ "X-PFI-Token" = $token }; $base = "http://127.0.0.1:$port"; $ok = $false
@@ -241,6 +255,10 @@ try {
     if ($ctype -notmatch "javascript") { throw "UI scripts are served as '$ctype' instead of JavaScript; the app window would stay blank." }
     try { Invoke-RestMethod "$base/api/settings" | Out-Null; throw "API answered without the token" } catch { if ($_.Exception.Message -like "*without the token*") { throw } }
     $results += "token check: ok"
+    $copied = Get-ChildItem (Join-Path $smoke "runtime") -Filter "pgsql-*" -Directory -ErrorAction SilentlyContinue |
+        Where-Object { Test-Path (Join-Path $_.FullName "bin\postgres.exe") }
+    if (-not $copied) { throw "PostgreSQL did not run from its copy in smoke-data\runtime (Store mode)." }
+    $results += "store mode: PostgreSQL ran from runtime\$($copied[0].Name)"
 } catch {
     $err = $_.Exception.Message
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
@@ -250,7 +268,7 @@ try {
 }
 Invoke-RestMethod "$base/api/system/shutdown" -Method Post -Headers $h | Out-Null
 if (-not $proc.WaitForExit(30000)) { Stop-Process -Id $proc.Id -Force; Fail "Backend did not stop within 30 s after shutdown." }
-Remove-Item Env:PFI_PG_BIN, Env:PFI_DATA_DIR, Env:PFI_FRONTEND_DIST, Env:PFI_API_TOKEN, Env:PFI_PG_PORT
+Remove-Item Env:PFI_PG_BIN, Env:PFI_DATA_DIR, Env:PFI_FRONTEND_DIST, Env:PFI_API_TOKEN, Env:PFI_PG_PORT, Env:PFI_PG_RELOCATE
 $results | ForEach-Object { Write-Host "  $_"; Add-Content $Log -Encoding UTF8 -Value "  $_" }
 
 # ---------------------------------------------------------------- installer

@@ -154,7 +154,7 @@ export function Modal({ title, children, onClose, actions, wide }: {
 }) {
   return (
     <Dialog open onOpenChange={(_, d) => { if (!d.open) onClose(); }}>
-      <DialogSurface style={{ maxWidth: wide ? 900 : 560 }}>
+      <DialogSurface style={{ maxWidth: `min(${wide ? 900 : 560}px, calc(100vw - 32px))` }}>
         <DialogBody>
           <DialogTitle>{title}</DialogTitle>
           <DialogContent className="dialog-content">{children}</DialogContent>

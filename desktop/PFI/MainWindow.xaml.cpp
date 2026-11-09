@@ -5,6 +5,8 @@
 #endif
 #include "Strings.h"
 
+#include <fstream>
+
 #include <microsoft.ui.xaml.window.h>       // IWindowNative
 #include <UserConsentVerifierInterop.h>     // Windows Hello for desktop windows
 
@@ -161,6 +163,14 @@ namespace winrt::PFI::implementation
             a.Handled(true);
             winrt::Windows::System::Launcher::LaunchUriAsync(winrt::Windows::Foundation::Uri(a.Uri()));
         });
+        // Exports and backups: save straight to Downloads and let the page
+        // confirm it, instead of showing the browser's download flyout.
+        core.DownloadStarting([this](CoreWebView2 const&, CoreWebView2DownloadStartingEventArgs const& a)
+        {
+            a.Handled(true);
+            ShellLog(L"download starting: " + std::wstring(a.ResultFilePath()));
+            WatchDownload(a.DownloadOperation());
+        });
 
         if (m_lockEnabled) Lock();
         std::wstring next = m_initialPath.empty() ? L"/" : m_initialPath;
@@ -201,6 +211,76 @@ namespace winrt::PFI::implementation
         ErrorBar().IsOpen(true);
     }
 
+    void MainWindow::WatchDownload(CoreWebView2DownloadOperation const& op)
+    {
+        // StateChanged is not raised reliably for downloads in this host, so
+        // keep the operation alive and poll its state until it settles.
+        m_downloads.push_back(op);
+        if (!m_downloadTimer)
+        {
+            m_downloadTimer = DispatcherQueue().CreateTimer();
+            m_downloadTimer.Interval(std::chrono::milliseconds(250));
+            m_downloadTimer.Tick([this](auto&&, auto&&)
+            {
+                std::vector<CoreWebView2DownloadOperation> pending;
+                for (auto const& d : m_downloads)
+                {
+                    auto state = d.State();
+                    if (state == CoreWebView2DownloadState::InProgress) pending.push_back(d);
+                    else ShowDownload(std::wstring(d.ResultFilePath()),
+                                      state == CoreWebView2DownloadState::Completed);
+                }
+                m_downloads = std::move(pending);
+                if (m_downloads.empty()) m_downloadTimer.Stop();
+            });
+        }
+        m_downloadTimer.Start();
+    }
+
+    void MainWindow::ShowDownload(std::wstring const& path, bool ok)
+    {
+        // The page shows the confirmation (XAML drawn over WebView2 can be
+        // hidden behind it); the shell only remembers the file.
+        m_lastDownload = ok ? path : L"";
+        auto core = Web().CoreWebView2();
+        if (!core) return;
+        JsonObject msg;
+        msg.SetNamedValue(L"type", JsonValue::CreateStringValue(L"downloaded"));
+        msg.SetNamedValue(L"name", JsonValue::CreateStringValue(
+            std::filesystem::path(path).filename().wstring()));
+        msg.SetNamedValue(L"ok", JsonValue::CreateBooleanValue(ok));
+        core.PostWebMessageAsJson(msg.Stringify());
+        ShellLog(L"download notice sent: " + path);
+    }
+
+    void MainWindow::ShellLog(std::wstring const& line)
+    {
+        // Small diagnostics file next to the backend logs (logs\shell.log).
+        if (!m_backend) return;
+        std::ofstream f(m_backend->LogDir() / L"shell.log", std::ios::app | std::ios::binary);
+        if (!f) return;
+        auto utf8 = winrt::to_string(line);
+        f << utf8 << "\r\n";
+    }
+
+    void MainWindow::OpenLastDownload(bool inFolder)
+    {
+        std::error_code ec;
+        if (m_lastDownload.empty() || !std::filesystem::exists(m_lastDownload, ec)) return;
+        // Start the viewer in the file's folder so it never inherits (and
+        // locks) the app's own working directory.
+        auto dir = std::filesystem::path(m_lastDownload).parent_path().wstring();
+        if (inFolder)
+        {
+            std::wstring args = L"/select,\"" + m_lastDownload + L"\"";
+            ShellExecuteW(nullptr, L"open", L"explorer.exe", args.c_str(), dir.c_str(), SW_SHOWNORMAL);
+        }
+        else
+        {
+            ShellExecuteW(nullptr, L"open", m_lastDownload.c_str(), nullptr, dir.c_str(), SW_SHOWNORMAL);
+        }
+    }
+
     void MainWindow::OnWebMessage(CoreWebView2 const&, CoreWebView2WebMessageReceivedEventArgs const& args)
     {
         try
@@ -228,6 +308,14 @@ namespace winrt::PFI::implementation
             else if (type == L"queryHello")
             {
                 ReplyHelloStatus();
+            }
+            else if (type == L"downloadSeen")
+            {
+                ShellLog(L"page showed the download notice");
+            }
+            else if (type == L"openDownload" || type == L"showDownload")
+            {
+                OpenLastDownload(type == L"showDownload");
             }
         }
         catch (...)

@@ -20,6 +20,10 @@ export interface Settings {
   allocation_targets: Record<string, number>;
   stooq_api_key_set: boolean;
   stooq_api_key_hint: string | null;
+  twelvedata_api_key_set: boolean;
+  twelvedata_api_key_hint: string | null;
+  alphavantage_api_key_set: boolean;
+  alphavantage_api_key_hint: string | null;
 }
 export interface Backup { name: string; kind: string; size: number; created: string }
 export interface Account {
@@ -126,7 +130,7 @@ export interface Holding {
   market_value: number | null; unrealized_pl: number | null;
   unrealized_pl_pct: number | null; realized_pl: number; dividends: number;
   market_value_base: number | null; cost_basis_base: number | null;
-  price_source: "manual" | "stooq" | "coingecko"; price_symbol: string | null;
+  price_source: "manual" | "stooq" | "twelvedata" | "alphavantage" | "coingecko"; price_symbol: string | null;
   notes: string | null;
 }
 export interface Trade {

@@ -50,6 +50,10 @@ class SettingsOut(BaseModel):
     allocation_targets: dict[str, float] = {}
     stooq_api_key_set: bool = False
     stooq_api_key_hint: str | None = None
+    twelvedata_api_key_set: bool = False
+    twelvedata_api_key_hint: str | None = None
+    alphavantage_api_key_set: bool = False
+    alphavantage_api_key_hint: str | None = None
 
 
 class SettingsIn(_UpperCurrency):
@@ -67,6 +71,10 @@ class SettingsIn(_UpperCurrency):
     allocation_targets: dict[AssetClass, Annotated[
         float, Field(ge=0, le=100)]] | None = None
     stooq_api_key: Annotated[str | None, Field(
+        max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
+    twelvedata_api_key: Annotated[str | None, Field(
+        max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
+    alphavantage_api_key: Annotated[str | None, Field(
         max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
 
     @field_validator("base_currency", mode="before")
@@ -320,7 +328,8 @@ class HoldingIn(_UpperCurrency):
     asset_class: AssetClass
     currency: Currency
     notes: str | None = None
-    price_source: Literal["manual", "stooq", "coingecko"] = "manual"
+    price_source: Literal["manual", "stooq", "twelvedata", "alphavantage",
+                          "coingecko"] = "manual"
     price_symbol: Annotated[str | None, Field(max_length=64)] = None
 
 

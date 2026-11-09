@@ -137,7 +137,8 @@ def monthly_data(db: Session, fx: FxConverter, base: str, month: date,
                         "avg3": float(avg3.get(c, 0))} for c in cats],
         "budgets": budget_status(db, fx, base, first, today)["items"],
         "largest": [{"date": r.txn_date.date(), "description":
-                     (r.merchant or r.description)[:60],
+                     (r.merchant if isinstance(r.merchant, str) and r.merchant
+                      else r.description)[:60],
                      "category": r.category, "amount": r.spend}
                     for r in largest.itertuples()],
         "payees": [{"payee": k, "amount": float(v["sum"]),
@@ -369,7 +370,9 @@ def transaction_rows(db: Session, fx: FxConverter, base: str,
     for r in df.itertuples():
         rows.append([r.txn_date.date(), r.account_name, r.currency,
                      round(r.amount, 2), r.kind, r.category,
-                     r.description, r.merchant or "", notes.get(r.id, ""),
+                     r.description,
+                     r.merchant if isinstance(r.merchant, str) else "",
+                     notes.get(r.id, ""),
                      None if pd.isna(r.amount_base)
                      else round(r.amount_base, 2), base])
     return rows
