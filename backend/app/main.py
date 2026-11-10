@@ -1,4 +1,5 @@
 """FastAPI application: startup (database, migrations), routers, UI."""
+import html
 import logging
 import mimetypes
 import threading
@@ -7,7 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import __version__
@@ -90,11 +91,10 @@ async def lifespan(app: FastAPI):
     db_path = settings.sqlite_path
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if not db_path.exists() and legacy.has_cluster(settings.data_dir):
-        counts = legacy.migrate_cluster(settings.pg_bin, settings.data_dir,
-                                        db_path, settings.pg_port,
-                                        settings.pg_relocate)
-        log.info("Moved the 0.3 database to SQLite: %d transactions",
-                 counts.get("transactions", 0))
+        log.error(legacy.UNMOVED_MESSAGE)
+        app.state.blocked = legacy.UNMOVED_MESSAGE
+        yield
+        return
     engine = init_engine(sqlite_url(db_path))
     version = run_migrations(engine)
     with SessionLocal() as db:
@@ -110,6 +110,18 @@ async def lifespan(app: FastAPI):
         engine.dispose()
 
 
+def _blocked_page(message: str) -> str:
+    """Return the page shown instead of the app when it cannot start."""
+    text = html.escape(message)
+    link = html.escape(legacy.CONVERTER_URL)
+    text = text.replace(link, f'<a href="{link}">{link}</a>')
+    return ("<!doctype html><meta charset=utf-8><title>PFI</title>"
+            "<body style='font:15px Segoe UI,sans-serif;max-width:560px;"
+            "margin:15vh auto;padding:0 24px;line-height:1.5'>"
+            "<h2>Your data needs one more step</h2>"
+            f"<p>{text}</p></body>")
+
+
 def create_app() -> FastAPI:
     """Build the FastAPI application with all routers and the static UI."""
     settings = get_settings()
@@ -122,6 +134,20 @@ def create_app() -> FastAPI:
             allow_origins=[o.strip() for o in
                            settings.cors_origins.split(",") if o.strip()],
             allow_methods=["*"], allow_headers=["*"])
+
+    @app.middleware("http")
+    async def _blocked(request: Request, call_next):
+        message = getattr(request.app.state, "blocked", None)
+        if not message:
+            return await call_next(request)
+        path = request.url.path
+        if path == "/api/health":
+            return JSONResponse({"status": "blocked", "detail": message})
+        if path == "/api/system/shutdown":
+            return await call_next(request)
+        if path.startswith("/api"):
+            return JSONResponse({"detail": message}, status_code=503)
+        return HTMLResponse(_blocked_page(message), status_code=503)
 
     @app.exception_handler(FxRateMissing)
     async def _fx_missing(_: Request, exc: FxRateMissing):

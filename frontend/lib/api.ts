@@ -34,6 +34,9 @@ export interface BackupList {
   folder_warning: string | null; encrypt: boolean; has_password: boolean;
   available: boolean; backups: Backup[];
 }
+export interface LegacyData {
+  size: number; items: string[]; dumps: number; dump_size: number;
+}
 export interface SplitPart {
   category_id: Id | null; amount: number; note: string | null;
   category_name?: string | null;

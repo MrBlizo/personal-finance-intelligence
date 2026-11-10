@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-icons";
 import { usePrefs } from "@/components/AppFrame";
 import { BackupPanel } from "@/components/BackupPanel";
+import { OldDataRow } from "@/components/OldDataRow";
 import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, PageHead, SettingRow, Spinner, useLoad,
@@ -312,6 +313,7 @@ export default function SettingsPage() {
             <BackupPanel onMessage={setMsg} onRestored={() => {
               refs.reload(); rates.reload(); rules.reload(); presets.reload();
             }} />
+            <OldDataRow onMessage={setMsg} />
             <SettingRow icon={""} title={t("Import presets")}
               description={t("Saved column settings per bank file format, applied automatically to files with the same columns.")}>
               {presets.data?.length === 0 && <span className="caption">{t("None yet")}</span>}

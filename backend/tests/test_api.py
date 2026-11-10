@@ -1,4 +1,4 @@
-"""API tests against a real (embedded) PostgreSQL database."""
+"""API tests against a throw-away SQLite database."""
 import json
 import os
 import stat

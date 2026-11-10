@@ -26,7 +26,6 @@ Thanks for helping improve Personal Finance Intelligence.
 
 ```bat
 cd backend
-set PFI_TEST_PG_BIN=C:\Program Files\PostgreSQL\18\bin
 pytest -q
 cd ..\frontend
 npx tsc --noEmit

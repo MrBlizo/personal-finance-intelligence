@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   backend:
-    name: Backend tests (PostgreSQL 16)
+    name: Backend tests
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -26,8 +26,6 @@ jobs:
         run: flake8 --max-line-length 79 --extend-ignore E203 app tests
       - name: Tests
         working-directory: backend
-        env:
-          PFI_TEST_PG_BIN: /usr/lib/postgresql/16/bin
         run: python -m pytest -q -p no:cacheprovider
 
   frontend:

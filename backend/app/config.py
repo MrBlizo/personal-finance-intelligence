@@ -26,18 +26,8 @@ class Settings(BaseSettings):
     database_url : str
         The SQLAlchemy URL of a SQLite database. Empty (default) uses
         ``<data_dir>/pfi.sqlite``.
-    pg_bin : Path or None
-        The directory holding the bundled PostgreSQL binaries. Only used
-        to move a 0.3.x database (``<data_dir>/pgdata``) or an old ``.dump``
-        backup into SQLite.
-    pg_port : int
-        The preferred TCP port of the embedded PostgreSQL cluster.
-    pg_relocate : bool or None
-        The flag to run PostgreSQL from a copy in the data directory.
-        ``None`` (default) copies only when the binaries are in the
-        protected Microsoft Store folder (``WindowsApps``).
     data_dir : Path
-        The directory for the database cluster, archived imports and logs.
+        The directory for the database file, backups, receipts and logs.
     frontend_dist : Path
         The directory containing the static Next.js export.
     api_token : str
@@ -55,9 +45,6 @@ class Settings(BaseSettings):
         env_file=BACKEND_DIR / ".env", env_prefix="PFI_", extra="ignore")
 
     database_url: str = ""
-    pg_bin: Path | None = None
-    pg_port: int = 54329
-    pg_relocate: bool | None = None
     data_dir: Path = _default_data_dir()
     frontend_dist: Path = PROJECT_DIR / "frontend" / "out"
     api_token: str = ""

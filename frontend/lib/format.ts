@@ -69,3 +69,10 @@ export const FREQUENCIES: Record<string, string> = {
 };
 export const CURRENCIES = ["CHF", "EUR", "MAD", "USD", "GBP", "JPY", "CAD",
   "SEK", "NOK", "DKK", "PLN", "CZK", "AUD", "CNY", "TRY", "AED", "SAR"];
+
+/** File size for people: "820 KB", "1.4 MB", "1.2 GB". */
+export function bytes(n: number): string {
+  if (n < 1048576) return `${num(Math.max(n, 1024) / 1024, 0)} KB`;
+  if (n < 1073741824) return `${num(n / 1048576, 1)} MB`;
+  return `${num(n / 1073741824, 1)} GB`;
+}

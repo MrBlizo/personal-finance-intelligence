@@ -9,7 +9,7 @@ import {
 } from "@fluentui/react-icons";
 import { Banner, Confirm, Empty, Modal, SettingRow, useLoad } from "@/components/ui";
 import { ApiError, Backup, BackupList, api, downloadUrl, get, post, put } from "@/lib/api";
-import { num } from "@/lib/format";
+import { bytes } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { inShell, pickFolder } from "@/lib/shell";
 
@@ -57,7 +57,7 @@ export function useRestore(onDone: (safety: string) => void, onError: (m: string
   return { restore, dialog };
 }
 
-/** Upload a .pfibak / .dump file, then confirm and restore it. */
+/** Upload a .pfibak file, then confirm and restore it. */
 export function RestoreFromFile({ label, appearance, onDone, onError }: {
   label?: string; appearance?: "primary" | "secondary";
   onDone: (safety: string) => void; onError: (m: string) => void;
@@ -67,7 +67,7 @@ export function RestoreFromFile({ label, appearance, onDone, onError }: {
   const [pending, setPending] = useState<{ name: string; file: string } | null>(null);
   const { restore, dialog } = useRestore(onDone, onError);
   return (<>
-    <input ref={input} type="file" accept=".pfibak,.dump" hidden onChange={async (e) => {
+    <input ref={input} type="file" accept=".pfibak" hidden onChange={async (e) => {
       const f = e.target.files?.[0]; e.target.value = "";
       if (!f) return;
       const d = new FormData(); d.append("file", f);
@@ -185,12 +185,14 @@ export function BackupPanel({ onMessage, onRestored }: {
                 {b.encrypted && <Tooltip content={t("Protected with a password")} relationship="label">
                   <LockClosed16Regular style={{ marginInlineStart: 6, verticalAlign: "middle" }} /></Tooltip>}
                 {b.legacy && <Badge appearance="outline" size="small" style={{ marginInlineStart: 6 }}>0.3</Badge>}</td>
-              <td className="num">{b.size < 1048576 ? `${num(b.size / 1024, 0)} KB` : `${num(b.size / 1048576, 1)} MB`}</td>
+              <td className="num">{bytes(b.size)}</td>
               <td className="actions">
                 <Tooltip content={t("Download")} relationship="label">
                   <Button appearance="subtle" size="small" icon={<ArrowDownload20Regular />} as="a"
                     href={downloadUrl(`/api/backups/${b.name}/download`)} /></Tooltip>
-                <Button appearance="subtle" size="small" onClick={() => setConfirm(b)}>{t("Restore")}</Button></td></tr>))}
+                {!b.legacy && <Button appearance="subtle" size="small" onClick={() => setConfirm(b)}>{t("Restore")}</Button>}
+                {b.legacy && <Tooltip content={t("Backups from PFI 0.3 can only be restored with PFI 0.4.0.")} relationship="label">
+                  <Button appearance="subtle" size="small" disabled>{t("Restore")}</Button></Tooltip>}</td></tr>))}
           </tbody></table>)}
     </div>
     {confirm && <Confirm danger text={t("Restore the backup from {d}? Your current data is backed up first, then replaced.",

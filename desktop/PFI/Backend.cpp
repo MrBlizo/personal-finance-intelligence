@@ -116,7 +116,6 @@ namespace pfi
         c.exe = Resolve(exeDir, IniValue(ini, L"Exe", L"backend\\pfi-api.exe"));
         c.args = IniValue(ini, L"Args", L"");
         c.workDir = Resolve(exeDir, IniValue(ini, L"WorkDir", L"backend"));
-        c.pgBin = Resolve(exeDir, IniValue(ini, L"PgBin", L"pgsql\\bin"));
         c.webDir = Resolve(exeDir, IniValue(ini, L"WebDir", L"web"));
         c.dataDir = Resolve(exeDir, IniValue(ini, L"DataDir",
                                              L"%LOCALAPPDATA%\\PersonalFinanceIntelligence"));
@@ -150,10 +149,6 @@ namespace pfi
             return L"The backend program was not found at \"" + m_cfg.exe.wstring() +
                    L"\". The installation is incomplete; reinstall Personal Finance "
                    L"Intelligence (or fix the Exe= entry in pfi.ini).";
-        if (!fs::exists(m_cfg.pgBin / L"pg_ctl.exe"))
-            return L"The bundled PostgreSQL was not found in \"" + m_cfg.pgBin.wstring() +
-                   L"\". Reinstall the app, or set PgBin= in pfi.ini to a PostgreSQL "
-                   L"bin folder.";
 
         std::error_code ec;
         fs::create_directories(LogDir(), ec);
@@ -165,7 +160,6 @@ namespace pfi
         m_port = FreePort();
         m_token = RandomToken();
         SetEnvironmentVariableW(L"PFI_API_TOKEN", m_token.c_str());
-        SetEnvironmentVariableW(L"PFI_PG_BIN", m_cfg.pgBin.c_str());
         SetEnvironmentVariableW(L"PFI_FRONTEND_DIST", m_cfg.webDir.c_str());
         SetEnvironmentVariableW(L"PFI_DATA_DIR", m_cfg.dataDir.c_str());
         SetEnvironmentVariableW(L"PYTHONUNBUFFERED", L"1");
