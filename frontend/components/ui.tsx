@@ -233,7 +233,7 @@ export function FormModal({ title, fields: fieldsProp, initial, onSubmit, onClos
             input = (
               <Select value={v === null ? "" : String(v ?? "")}
                 onChange={(_, d) => set(f.name, d.value)}>
-                {!f.required && <option value="">—</option>}
+                {!f.required && <option value="">{f.placeholder ?? "—"}</option>}
                 {f.options?.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>))}
               </Select>);

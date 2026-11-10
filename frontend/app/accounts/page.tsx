@@ -2,7 +2,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Badge, Button, Link as FLink, Switch, Tooltip } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular } from "@fluentui/react-icons";
+import {
+  Add20Regular, CheckmarkCircle20Regular, Delete20Regular, Edit20Regular,
+} from "@fluentui/react-icons";
+import { ReconcileDialog } from "@/components/Reconcile";
 import { useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, Kpi, PageHead, Spinner, clean,
@@ -21,6 +24,8 @@ export default function Accounts() {
   const refs = useRefs();
   const [edit, setEdit] = useState<Account | "new" | null>(null);
   const [remove, setRemove] = useState<Account | null>(null);
+  const [recon, setRecon] = useState<Account | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const base = refs.data?.settings.base_currency ?? "CHF";
   const accounts = (refs.data?.accounts ?? []).filter((a) => showArchived || !a.is_archived);
@@ -37,6 +42,7 @@ export default function Accounts() {
           {t("Add account")}</Button>
       </PageHead>
       {refs.error && <Banner kind="error">{refs.error}</Banner>}
+      {msg && <Banner kind="success" onClose={() => setMsg(null)}>{msg}</Banner>}
       {missing.length > 0 && (
         <Banner kind="warning"
           action={<Link href="/settings/"><Button size="small">{t("Open settings")}</Button></Link>}>
@@ -79,6 +85,10 @@ export default function Accounts() {
                           {t("+ holdings {v}", { v: money(a.holdings_base, base) })}</span>}</td>
                       <td className="num">{money((a.balance_base ?? NaN) + a.holdings_base)}</td>
                       <td className="actions">
+                        {a.type !== "investment" && (
+                          <Tooltip content={t("Reconcile with a bank statement")} relationship="label">
+                            <Button appearance="subtle" size="small" icon={<CheckmarkCircle20Regular />}
+                              onClick={() => setRecon(a)} /></Tooltip>)}
                         <Tooltip content={t("Edit")} relationship="label">
                           <Button appearance="subtle" size="small" icon={<Edit20Regular />}
                             onClick={() => setEdit(a)} /></Tooltip>
@@ -123,6 +133,8 @@ export default function Accounts() {
               refs.reload();
             }} />);
       })()}
+      {recon && <ReconcileDialog account={recon} onClose={() => setRecon(null)}
+        onDone={(m) => { setMsg(m); refs.reload(); }} />}
       {remove && (
         <Confirm danger yesLabel={t("Delete")} onClose={() => setRemove(null)}
           text={t("Delete “{name}” and all its transactions? This cannot be undone. To keep the history, edit the account and switch on “Archived” instead.",

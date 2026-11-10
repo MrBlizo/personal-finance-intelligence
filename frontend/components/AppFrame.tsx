@@ -21,10 +21,12 @@ export const NAV = [
   { href: "/import/", label: "Import", glyph: "" },
   { href: "/budgets/", label: "Budgets", glyph: "" },
   { href: "/goals/", label: "Goals", glyph: "" },
+  { href: "/debts/", label: "Debt payoff", glyph: "\uE8C7" },
   { href: "/recurring/", label: "Bills & recurring", glyph: "" },
   { href: "/investments/", label: "Investments", glyph: "" },
   { href: "/forecast/", label: "Forecast", glyph: "" },
   { href: "/insights/", label: "Insights", glyph: "" },
+  { href: "/calendar/", label: "Calendar", glyph: "\uE787" },
   { href: "/reports/", label: "Reports", glyph: "" },
   { href: "/settings/", label: "Settings", glyph: "" },
 ];

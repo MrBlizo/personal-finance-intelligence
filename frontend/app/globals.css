@@ -273,3 +273,27 @@ mark.diff { background: var(--caution-bg); color: inherit; border-radius: 2px;
 .detail-head { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
 .table-wrap td a { color: var(--accent-text); text-decoration: none; }
 .table-wrap td a:hover { text-decoration: underline; }
+
+/* 0.5: bulk edit, reconcile flags, theme button, calendar, debts */
+.bulk-bar { padding: 8px 12px; position: sticky; top: 0; z-index: 2; }
+.txn-flag { vertical-align: middle; margin-inline-end: 6px; color: var(--success); }
+.theme-btn { margin-inline-start: 4px; }
+.recon-kpis { margin-top: 16px; }
+.heat-wrap { overflow-x: auto; padding-bottom: 4px; }
+.heat { display: grid; gap: 3px; align-items: center; min-width: 720px; }
+.heat-month, .heat-day { font-size: 11px; line-height: 14px; color: var(--text-2); white-space: nowrap; }
+.heat-day { padding-inline-end: 6px; }
+.heat-cell { display: block; aspect-ratio: 1; min-width: 10px; border-radius: 3px; }
+a.heat-cell:hover { outline: 2px solid var(--text-2); outline-offset: 1px; }
+.heat-0 { background: var(--divider); }
+.heat-1 { background: color-mix(in srgb, var(--accent) 25%, transparent); }
+.heat-2 { background: color-mix(in srgb, var(--accent) 50%, transparent); }
+.heat-3 { background: color-mix(in srgb, var(--accent) 75%, transparent); }
+.heat-4 { background: var(--accent); }
+.heat-future { background: transparent; border: 1px dashed var(--divider); }
+.heat-legend { display: flex; align-items: center; gap: 4px; justify-content: flex-end; margin-top: 8px; }
+.heat-legend .heat-cell { width: 12px; min-width: 12px; }
+.bar-row { margin-bottom: 12px; }
+.bar-row .row { margin-bottom: 4px; }
+table.facts td { padding: 6px 0; border: 0; vertical-align: top; }
+table.facts td:first-child { color: var(--text-2); padding-inline-end: 16px; white-space: nowrap; }
