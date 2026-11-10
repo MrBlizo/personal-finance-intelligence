@@ -7,8 +7,10 @@ import {
 import { ArrowUpload20Regular, DocumentTable20Regular } from "@fluentui/react-icons";
 import { accountOptions, useRefs } from "@/components/refs";
 import { Banner, Confirm, Empty, PageHead, Section, Spinner, useLoad } from "@/components/ui";
-import { ImportBatch, ImportPreview, ImportResult, api, del, get } from "@/lib/api";
-import { date } from "@/lib/format";
+import {
+  ImportBatch, ImportCheck, ImportPreview, ImportResult, PossibleDuplicate, api, del, get,
+} from "@/lib/api";
+import { date, money } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 
 type Mapping = {
@@ -17,6 +19,52 @@ type Mapping = {
   merchant_column: string; date_format: string; dayfirst: boolean;
   decimal: "." | ","; invert_sign: boolean; skip_rows: number;
 };
+
+const FORMAT_NAMES: Record<string, string> = { ofx: "OFX/QFX", qif: "QIF", camt: "CAMT.053" };
+
+const SEP = /([\s\-_/.,;:*#()]+)/;
+
+/** Words of ``text`` that the other text lacks are marked (punctuation ignored). */
+function Diff({ text, other }: { text: string; other: string }) {
+  const theirs = new Set(other.toLowerCase().split(SEP).filter((w) => w && !SEP.test(w)));
+  return <>{text.split(SEP).map((w, i) => (
+    w && !SEP.test(w) && !theirs.has(w.toLowerCase())
+      ? <mark key={i} className="diff">{w}</mark> : <span key={i}>{w}</span>))}</>;
+}
+
+function DuplicateReview({ items, skipped, setSkipped, currency }: {
+  items: PossibleDuplicate[]; skipped: Set<number>;
+  setSkipped: (s: Set<number>) => void; currency: string;
+}) {
+  const t = useT();
+  const toggle = (line: number, skip: boolean) => {
+    const next = new Set(skipped);
+    if (skip) next.add(line); else next.delete(line);
+    setSkipped(next);
+  };
+  return (
+    <div className="dup-list">
+      {items.map((d) => {
+        const skip = skipped.has(d.line);
+        return (
+          <div key={d.line} className={`dup-row card${skip ? " dup-skip" : ""}`}>
+            <div className="dup-meta"><strong>{date(d.txn_date)}</strong><span className="num">{money(d.amount, currency)}</span></div>
+            <div className="dup-sides">
+              <div><div className="caption">{t("Already in PFI")}</div>
+                <div><Diff text={d.existing.description} other={d.description} /></div></div>
+              <div><div className="caption">{t("In this file (line {n})", { n: d.line })}</div>
+                <div><Diff text={d.description} other={d.existing.description} /></div></div>
+            </div>
+            <div className="dup-actions">
+              <Button size="small" appearance={skip ? "secondary" : "primary"} onClick={() => toggle(d.line, false)}>
+                {t("Import anyway")}</Button>
+              <Button size="small" appearance={skip ? "primary" : "secondary"} onClick={() => toggle(d.line, true)}>
+                {t("Skip")}</Button>
+            </div>
+          </div>);
+      })}
+    </div>);
+}
 
 export default function Import() {
   const t = useT();
@@ -33,13 +81,15 @@ export default function Import() {
   const [undo, setUndo] = useState<ImportBatch | null>(null);
   const [presetName, setPresetName] = useState("");
   const [savePreset, setSavePreset] = useState(true);
+  const [check, setCheck] = useState<ImportCheck | null>(null);
+  const [skipped, setSkipped] = useState<Set<number>>(new Set());
   const accounts = refs.data?.accounts ?? [];
   const accName = (id: number) => accounts.find((a) => a.id === id)?.name ?? `#${id}`;
 
   const form = (f: File) => { const d = new FormData(); d.append("file", f); return d; };
   const preview = async (f: File | null = file) => {
     if (!f) return;
-    setBusy(true); setError(null); setResult(null);
+    setBusy(true); setError(null); setResult(null); setCheck(null); setSkipped(new Set());
     try {
       const p = await api<ImportPreview>("/api/import/preview",
         { method: "POST", body: form(f), query: { skip_rows: skip } });
@@ -65,7 +115,8 @@ export default function Import() {
           amount_column: s("amount_column"),
           debit_column: s("amount_column") ? "" : s("debit_column"),
           credit_column: s("amount_column") ? "" : s("credit_column"),
-          merchant_column: s("merchant_column"), date_format: "", dayfirst: true,
+          merchant_column: s("merchant_column"), date_format: s("date_format"),
+          dayfirst: g.dayfirst !== false,
           decimal: g.decimal === "," ? "," : ".", invert_sign: g.mostly_positive === true,
           skip_rows: skip,
         });
@@ -74,22 +125,39 @@ export default function Import() {
     } catch (e) { setError((e as Error).message); setPrev(null); }
     finally { setBusy(false); }
   };
+  const mappingJson = () => {
+    const body: Record<string, unknown> = { ...m, account_id: Number(m!.account_id) };
+    for (const k of ["amount_column", "debit_column", "credit_column", "merchant_column", "date_format"]) {
+      if (!body[k]) body[k] = null;
+    }
+    return JSON.stringify(body);
+  };
   const commit = async () => {
     if (!file || !m) return;
     setBusy(true); setError(null);
     try {
       const d = form(file);
-      const body: Record<string, unknown> = { ...m, account_id: Number(m.account_id) };
-      for (const k of ["amount_column", "debit_column", "credit_column", "merchant_column", "date_format"]) {
-        if (!body[k]) body[k] = null;
-      }
-      d.append("mapping", JSON.stringify(body));
+      d.append("mapping", mappingJson());
       if (savePreset && presetName.trim()) d.append("save_preset", presetName.trim());
+      if (skipped.size) d.append("skip_lines", JSON.stringify([...skipped]));
       setResult(await api<ImportResult>("/api/import/commit", { method: "POST", body: d }));
-      setPrev(null); setFile(null); batches.reload();
+      setPrev(null); setFile(null); setCheck(null); setSkipped(new Set()); batches.reload();
     } catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   };
+  const review = async () => {
+    if (!file || !m) return;
+    setBusy(true); setError(null);
+    try {
+      const d = form(file);
+      d.append("mapping", mappingJson());
+      const c = await api<ImportCheck>("/api/import/check", { method: "POST", body: d });
+      if (c.possible.length === 0) { setBusy(false); await commit(); return; }
+      setCheck(c); setSkipped(new Set());
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  };
+  const currency = accounts.find((a) => String(a.id) === m?.account_id)?.currency ?? "";
   const col = (key: keyof Mapping, label: string, required = false) => (
     <Field label={label} required={required}>
       <Select value={String(m?.[key] ?? "")} onChange={(_, d) => setM({ ...m!, [key]: d.value })}>
@@ -101,7 +169,7 @@ export default function Import() {
   return (
     <>
       <PageHead title={t("Import bank statement")}
-        sub={t("CSV export from your bank. The original file is archived unchanged (read-only).")} />
+        sub={t("CSV, OFX/QFX, QIF or CAMT.053 export from your bank. The original file is archived unchanged (read-only).")} />
       {error && <Banner kind="error" onClose={() => setError(null)}>{error}</Banner>}
       {result && (
         <Banner kind={result.rows_failed ? "warning" : "success"} onClose={() => setResult(null)}
@@ -111,7 +179,8 @@ export default function Import() {
           {t("{r} categorised by rules, {l} by learned suggestions, {d} duplicates skipped, {f} failed.", {
             r: result.categorized, l: result.learned ?? 0, d: result.rows_duplicate,
             f: result.rows_failed })}
-          {result.preset ? " " + t("Settings saved as “{p}”.", { p: result.preset }) : ""}
+          {result.rows_skipped ? " " + t("{s} possible duplicates skipped as you chose.", { s: result.rows_skipped }) : ""}
+          {result.preset ? " " + t("Column mapping saved for this bank as “{p}”: next time it is filled in automatically.", { p: result.preset }) : ""}
           {result.errors.length > 0 && (
             <ul className="hint-list">{result.errors.slice(0, 10).map((e) => <li key={e}>{e}</li>)}</ul>)}
         </Banner>)}
@@ -120,7 +189,7 @@ export default function Import() {
           <Banner kind="info" action={<Link href="/accounts/"><Button size="small">{t("Accounts")}</Button></Link>}>
             {t("Create an account first.")}</Banner>)}
         <div className="row" style={{ alignItems: "flex-end", gap: 16 }}>
-          <input ref={fileInput} type="file" accept=".csv,.txt,text/csv" hidden
+          <input ref={fileInput} type="file" accept=".csv,.txt,.ofx,.qfx,.qif,.xml,.053,text/csv" hidden
             onChange={(e) => {
               const f = e.target.files?.[0] ?? null;
               setFile(f); setPrev(null);
@@ -140,13 +209,17 @@ export default function Import() {
       </Section>
       {prev && m && (
         <Section title={t("2. Map columns")}
-          sub={t("Detected: delimiter “{d}”, encoding {e}, {n} columns.", {
-            d: prev.delimiter === "\t" ? "tab" : prev.delimiter, e: prev.encoding,
-            n: prev.columns.length })}>
+          sub={prev.format !== "csv" ? t("Detected: {f} statement.", { f: FORMAT_NAMES[prev.format] })
+            : t("Detected: delimiter “{d}”, encoding {e}, {n} columns.", {
+              d: prev.delimiter === "\t" ? "tab" : prev.delimiter, e: prev.encoding,
+              n: prev.columns.length })}>
+          {prev.format !== "csv" && (
+            <Banner kind="success">{t("This is a {f} statement, so the columns are filled in for you. Choose the account and click Import.",
+              { f: FORMAT_NAMES[prev.format] })}</Banner>)}
           {prev.preset && (
             <Banner kind="success">{t("Recognised this file format: settings from “{p}” were applied. Check them and click Import.",
               { p: prev.preset.name })}</Banner>)}
-          {!prev.preset && prev.guess.mostly_positive === true && (
+          {!prev.preset && prev.format === "csv" && prev.guess.mostly_positive === true && (
             <Banner kind="info">{t("Most amounts in this file are positive, so purchases are probably listed as positive numbers. “Invert signs” has been switched on for you; switch it off if the positive amounts are income.")}</Banner>)}
           {prev.already_imported && (
             <Banner kind="warning">{t("This exact file was imported before. Rows already present will be skipped as duplicates.")}</Banner>)}
@@ -188,11 +261,27 @@ export default function Import() {
               onChange={(_, d) => setPresetName(d.value)} disabled={!savePreset} />
             <span className="caption">{t("Files with the same columns are recognised next time.")}</span>
           </div>
-          <div className="row" style={{ marginTop: 16 }}>
+          {!check && <div className="row" style={{ marginTop: 16 }}>
             <Button appearance="primary" disabled={busy || !m.account_id || !m.date_column
               || !m.description_column || !(m.amount_column || m.debit_column || m.credit_column)}
-              onClick={commit}>{busy ? t("Importing…") : t("Import")}</Button>
+              onClick={review}>{busy ? t("Checking…") : t("Import")}</Button>
             <Button onClick={() => setPrev(null)}>{t("Cancel")}</Button>
+          </div>}
+        </Section>)}
+      {prev && m && check && (
+        <Section title={t("3. Possible duplicates")}
+          sub={t("{n} new rows, {d} already imported (skipped automatically), {p} possible duplicates: same date and amount, but the text differs.", {
+            n: check.rows_new, d: check.rows_duplicate, p: check.possible.length })}>
+          <div className="row" style={{ marginBottom: 12 }}>
+            <Button size="small" onClick={() => setSkipped(new Set(check.possible.map((x) => x.line)))}>{t("Skip all")}</Button>
+            <Button size="small" onClick={() => setSkipped(new Set())}>{t("Import all")}</Button>
+            <span className="caption">{t("Nothing is skipped unless you choose Skip.")}</span>
+          </div>
+          <DuplicateReview items={check.possible} skipped={skipped} setSkipped={setSkipped} currency={currency} />
+          <div className="row" style={{ marginTop: 16 }}>
+            <Button appearance="primary" disabled={busy} onClick={commit}>
+              {busy ? t("Importing…") : t("Import {n} rows", { n: check.rows_new + check.possible.length - skipped.size })}</Button>
+            <Button onClick={() => { setCheck(null); setSkipped(new Set()); }}>{t("Back")}</Button>
           </div>
         </Section>)}
       <Section title={t("Import history")}>

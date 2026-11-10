@@ -1,17 +1,21 @@
 # Privacy policy
 
-*Personal Finance Intelligence (PFI) · last updated 8 November 2026*
+*Personal Finance Intelligence (PFI) · last updated 10 November 2026*
 
 PFI is a desktop app that keeps your financial data on your own computer.
 
 ## What PFI stores
 
 Everything you enter or import (accounts, transactions, budgets, goals,
-investments, settings) is stored in a private database in your Windows user
-profile (`%LOCALAPPDATA%\PersonalFinanceIntelligence`, or the app's private
-storage when installed from the Microsoft Store). Imported bank files are
-archived unchanged in the same folder. Backups are written to its `backups`
-subfolder. Nothing is sent to the developer or to any server operated by the
+investments, settings) is stored in a private database file in your Windows
+user profile (`%LOCALAPPDATA%\PersonalFinanceIntelligence`, or the app's
+private storage when installed from the Microsoft Store). Imported bank
+files and receipts you attach are kept in the same folder. Backups are
+written to its `backups` subfolder, or to a folder you choose (for example
+in OneDrive); if you set a backup password they are encrypted (AES-256) and
+the password is kept on this PC, protected by Windows for your user
+account. When you choose a OneDrive folder, OneDrive (not PFI) uploads those
+backup files under Microsoft's terms. Nothing is sent to the developer or to any server operated by the
 developer. There is no account, no analytics, no advertising and no
 telemetry.
 

@@ -4,6 +4,7 @@
 #include <restrictederrorinfo.h>
 #include <hstring.h>
 #include <shellapi.h>
+#include <shobjidl_core.h>
 
 // Undefine GetCurrentTime macro to prevent
 // conflict with Storyboard::GetCurrentTime

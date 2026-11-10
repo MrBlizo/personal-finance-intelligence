@@ -2,11 +2,11 @@
 from typing import TypeVar
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..models import Category
+from ..models import Category, Transaction, TransactionSplit
 
 T = TypeVar("T")
 
@@ -64,3 +64,8 @@ def category_with_children(db: Session, category_id: int) -> list[int]:
     children = db.scalars(select(Category.id).where(
         Category.parent_id == category_id))
     return [category_id, *children]
+
+
+def not_split():
+    """Return a filter that keeps transactions without split parts."""
+    return ~exists().where(TransactionSplit.transaction_id == Transaction.id)

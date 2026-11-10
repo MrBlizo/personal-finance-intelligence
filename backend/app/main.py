@@ -12,10 +12,11 @@ from fastapi.staticfiles import StaticFiles
 
 from . import __version__
 from .config import get_settings
-from .db import SessionLocal, init_engine
+from . import legacy
+from .db import SessionLocal, init_engine, sqlite_url
 from .migrations import run_migrations
-from .pg_embedded import EmbeddedPostgres
-from .routers import analytics, automation, core, investments, planning, system
+from .routers import analytics, automation, core, extras, investments
+from .routers import planning, system
 from .routers import reports
 from .routers import transactions
 from .security import TokenMiddleware
@@ -39,19 +40,27 @@ for _ext, _type in ((".js", "text/javascript"), (".mjs", "text/javascript"),
     mimetypes.add_type(_type, _ext)
 
 
-def background_tasks(pg: EmbeddedPostgres | None, data_dir: Path) -> None:
+def background_tasks(data_dir: Path, db_path: Path) -> None:
     """Weekly backup, recurring auto-posting, daily rate and price update.
 
     Runs in a daemon thread after start-up; failures are logged only, so a
     missing internet connection never blocks the app.
     """
-    if pg is not None:
-        try:
-            made = auto_backup_if_due(pg, data_dir)
-            if made:
-                log.info("Automatic backup created: %s", made.name)
-        except Exception:
-            log.exception("Automatic backup failed")
+    try:
+        made = auto_backup_if_due(data_dir, db_path)
+        if made:
+            log.info("Automatic backup created: %s", made.name)
+            if made.warning:
+                log.warning(made.warning)
+    except Exception:
+        log.exception("Automatic backup failed")
+    try:
+        with SessionLocal() as db:
+            removed = extras.sweep_orphans(db, data_dir / "attachments")
+            if removed:
+                log.info("Removed %d unused attachment files", removed)
+    except Exception:
+        log.exception("Attachment clean-up failed")
     try:
         with SessionLocal() as db:
             posted = post_due(db)
@@ -78,28 +87,27 @@ def background_tasks(pg: EmbeddedPostgres | None, data_dir: Path) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
-    pg = None
-    if settings.pg_bin:
-        pg = EmbeddedPostgres(settings.pg_bin, settings.data_dir,
-                              settings.pg_port, settings.pg_relocate)
-        url = pg.start()
-    else:
-        url = settings.database_url
-    engine = init_engine(url)
+    db_path = settings.sqlite_path
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    if not db_path.exists() and legacy.has_cluster(settings.data_dir):
+        counts = legacy.migrate_cluster(settings.pg_bin, settings.data_dir,
+                                        db_path, settings.pg_port,
+                                        settings.pg_relocate)
+        log.info("Moved the 0.3 database to SQLite: %d transactions",
+                 counts.get("transactions", 0))
+    engine = init_engine(sqlite_url(db_path))
     version = run_migrations(engine)
     with SessionLocal() as db:
         seed_defaults(db, settings.base_currency_default)
-    log.info("Database ready (schema v%s)", version)
-    app.state.pg = pg
+    log.info("Database ready: %s (schema v%s)", db_path, version)
     if settings.background_tasks:
         threading.Thread(target=background_tasks,
-                         args=(pg, settings.data_dir), daemon=True).start()
+                         args=(settings.data_dir, db_path),
+                         daemon=True).start()
     try:
         yield
     finally:
         engine.dispose()
-        if pg is not None:
-            pg.stop()
 
 
 def create_app() -> FastAPI:
@@ -119,8 +127,8 @@ def create_app() -> FastAPI:
     async def _fx_missing(_: Request, exc: FxRateMissing):
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
-    for module in (system, core, transactions, planning, investments,
-                   analytics, automation, reports):
+    for module in (system, core, transactions, extras, planning,
+                   investments, analytics, automation, reports):
         app.include_router(module.router)
     if settings.frontend_dist.is_dir():
         app.mount("/", StaticFiles(directory=settings.frontend_dist,

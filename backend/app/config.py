@@ -24,11 +24,12 @@ class Settings(BaseSettings):
     Attributes
     ----------
     database_url : str
-        The SQLAlchemy URL of an external PostgreSQL server. Ignored when
-        ``pg_bin`` is set (embedded mode).
+        The SQLAlchemy URL of a SQLite database. Empty (default) uses
+        ``<data_dir>/pfi.sqlite``.
     pg_bin : Path or None
-        The directory holding the bundled PostgreSQL binaries (``initdb``,
-        ``pg_ctl``). When set, the backend runs its own private cluster.
+        The directory holding the bundled PostgreSQL binaries. Only used
+        to move a 0.3.x database (``<data_dir>/pgdata``) or an old ``.dump``
+        backup into SQLite.
     pg_port : int
         The preferred TCP port of the embedded PostgreSQL cluster.
     pg_relocate : bool or None
@@ -53,7 +54,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env", env_prefix="PFI_", extra="ignore")
 
-    database_url: str = "postgresql+psycopg://pfi:pfi@localhost:5432/pfi"
+    database_url: str = ""
     pg_bin: Path | None = None
     pg_port: int = 54329
     pg_relocate: bool | None = None
@@ -63,6 +64,20 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     base_currency_default: str = "CHF"
     background_tasks: bool = True
+
+    @property
+    def sqlite_path(self) -> Path:
+        """Return the path of the application database file."""
+        if self.database_url:
+            if not self.database_url.startswith("sqlite:///"):
+                raise ValueError(
+                    f"PFI_DATABASE_URL must be a SQLite URL "
+                    f"(sqlite:///C:/path/pfi.sqlite), not "
+                    f"'{self.database_url.split(':')[0]}'. Since 0.4 PFI "
+                    "stores its data in SQLite; remove the setting to use "
+                    "the default file in the data folder.")
+            return Path(self.database_url.removeprefix("sqlite:///"))
+        return self.data_dir / "pfi.sqlite"
 
     def subdir(self, name: str) -> Path:
         """Return (and create) a subdirectory of the data directory.

@@ -2,15 +2,17 @@
 
 Sign convention: ``Transaction.amount`` is signed in the account currency.
 Positive values are money flowing into the account, negative values are
-money flowing out. Money is stored as ``NUMERIC`` (exact decimal).
+money flowing out. Money and other decimals are stored as scaled integers
+(``ExactDecimal``): SQLite has no exact decimal type, and integer cents keep
+sums and comparisons exact.
 """
 import uuid
 from datetime import date, datetime
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 
 from sqlalchemy import (
-    Boolean, CheckConstraint, Date, DateTime, ForeignKey, Index, Integer,
-    Numeric, String, Text, UniqueConstraint, Uuid, func)
+    BigInteger, Boolean, CheckConstraint, Date, DateTime, ForeignKey, Index,
+    Integer, String, Text, TypeDecorator, UniqueConstraint, Uuid, func)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -29,7 +31,42 @@ PRICE_SOURCES = ("manual", "stooq", "twelvedata", "alphavantage",
 CATEGORY_SOURCES = ("user", "rule", "model", "recurring", "system")
 MATCH_FIELDS = ("description", "merchant", "any")
 
-Money = Numeric(14, 2)
+
+class ExactDecimal(TypeDecorator):
+    """A decimal stored as an integer scaled by ``10 ** scale``.
+
+    Values are rounded half-to-even to ``scale`` places when stored, as a
+    ``NUMERIC(p, scale)`` column would. ``SUM`` and comparisons run on the
+    integers, so they are exact; results come back as ``Decimal``.
+
+    Parameters
+    ----------
+    scale : int
+        The number of decimal places kept.
+    """
+
+    impl = BigInteger
+    cache_ok = True
+
+    def __init__(self, scale: int) -> None:
+        super().__init__()
+        self.scale = scale
+        self._factor = Decimal(10) ** scale
+        self._quantum = Decimal(1).scaleb(-scale)
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        return int((Decimal(str(value)) * self._factor).to_integral_value(
+            ROUND_HALF_EVEN))
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return (Decimal(int(value)) / self._factor).quantize(self._quantum)
+
+
+Money = ExactDecimal(2)
 
 
 def _in(column: str, values: tuple[str, ...]) -> str:
@@ -64,7 +101,7 @@ class ExchangeRate(Base):
     rate_date: Mapped[date] = mapped_column(Date, index=True)
     from_currency: Mapped[str] = mapped_column(String(3))
     to_currency: Mapped[str] = mapped_column(String(3))
-    rate: Mapped[Decimal] = mapped_column(Numeric(18, 8))
+    rate: Mapped[Decimal] = mapped_column(ExactDecimal(8))
     source: Mapped[str] = mapped_column(String(50), default="manual")
 
 
@@ -161,8 +198,8 @@ class InvestmentTrade(Base):
         ForeignKey("holdings.id", ondelete="CASCADE"), index=True)
     trade_date: Mapped[date] = mapped_column(Date)
     trade_type: Mapped[str] = mapped_column(String(10))
-    quantity: Mapped[Decimal] = mapped_column(Numeric(20, 8), default=0)
-    price: Mapped[Decimal] = mapped_column(Numeric(18, 6), default=0)
+    quantity: Mapped[Decimal] = mapped_column(ExactDecimal(8), default=0)
+    price: Mapped[Decimal] = mapped_column(ExactDecimal(6), default=0)
     fees: Mapped[Decimal] = mapped_column(Money, default=0)
     cash_amount: Mapped[Decimal | None] = mapped_column(Money)
     notes: Mapped[str | None] = mapped_column(Text)
@@ -176,7 +213,7 @@ class AssetPrice(Base):
     holding_id: Mapped[int] = mapped_column(
         ForeignKey("holdings.id", ondelete="CASCADE"), index=True)
     price_date: Mapped[date] = mapped_column(Date)
-    price: Mapped[Decimal] = mapped_column(Numeric(18, 6))
+    price: Mapped[Decimal] = mapped_column(ExactDecimal(6))
     source: Mapped[str] = mapped_column(String(50), default="manual")
 
 
@@ -281,5 +318,57 @@ class SavingsGoal(Base):
     saved_amount: Mapped[Decimal] = mapped_column(Money, default=0)
     priority: Mapped[int] = mapped_column(Integer, default=0)
     notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+
+
+class TransactionSplit(Base):
+    """One part of a transaction split across several categories.
+
+    The parts of a transaction always add up to its amount; analytics use
+    the parts instead of the transaction's own category.
+    """
+
+    __tablename__ = "transaction_splits"
+    __table_args__ = (CheckConstraint("amount <> 0", name="ck_split_nz"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    transaction_id: Mapped[int] = mapped_column(
+        ForeignKey("transactions.id", ondelete="CASCADE"), index=True)
+    category_id: Mapped[int | None] = mapped_column(
+        ForeignKey("categories.id", ondelete="SET NULL"))
+    amount: Mapped[Decimal] = mapped_column(Money)
+    note: Mapped[str | None] = mapped_column(String(200))
+
+
+class Tag(Base):
+    """A free label that cuts across categories, e.g. "Holiday 2026"."""
+
+    __tablename__ = "tags"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(60), unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+
+
+class TransactionTag(Base):
+    __tablename__ = "transaction_tags"
+    transaction_id: Mapped[int] = mapped_column(
+        ForeignKey("transactions.id", ondelete="CASCADE"), primary_key=True)
+    tag_id: Mapped[int] = mapped_column(
+        ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True,
+        index=True)
+
+
+class Attachment(Base):
+    """A receipt or document stored in ``<data_dir>/attachments``."""
+
+    __tablename__ = "attachments"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    transaction_id: Mapped[int] = mapped_column(
+        ForeignKey("transactions.id", ondelete="CASCADE"), index=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    stored_name: Mapped[str] = mapped_column(String(80), unique=True)
+    content_type: Mapped[str] = mapped_column(String(100))
+    size: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())

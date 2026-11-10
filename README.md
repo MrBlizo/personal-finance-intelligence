@@ -2,8 +2,8 @@
 
 A Windows 11 desktop app to track income, expenses, investments and savings
 goals, forecast cash flow and analyse spending. Everything runs and stays on
-your PC: a private PostgreSQL database is bundled with the app, there is no
-account and no cloud.
+your PC: the data lives in one local SQLite file, there is no account and no
+cloud.
 
 **English · Français · العربية**, base currency of your choice (CHF, EUR,
 MAD, USD…) with accounts in any currency.
@@ -50,10 +50,15 @@ Shown with the built-in demo data (Settings → Load demo data).
   threshold.
 - **Insights:** unusual expenses (robust z-score), detected subscriptions,
   category shifts.
+- **Splits & tags:** split one payment across several categories (budgets
+  and reports count each part); free tags such as "Holiday 2026" with a
+  spending-by-tag report; photos or PDFs of receipts attached to
+  transactions.
 - **Reports:** monthly PDF report, Excel workbook, CSV export, net-worth
   history.
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
-  backups, manual backup and restore.
+  backups to a folder you choose (e.g. OneDrive), optionally encrypted with
+  a password (AES-256); one-click "Move to another PC".
 
 ## Architecture
 
@@ -62,26 +67,33 @@ Shown with the built-in demo data (Settings → Load demo data).
 | Desktop shell | WinUI 3 (C++/WinRT, Windows App SDK), NavigationView, Mica, WebView2, Windows Hello, app notifications | `desktop/` |
 | Screens | Next.js 16 (static export), TypeScript, Fluent UI React v9, plotly.js | `frontend/` |
 | API & analytics | Python 3.12, FastAPI, SQLAlchemy, pandas, numpy, Plotly, reportlab, openpyxl | `backend/` |
-| Database | PostgreSQL, a private cluster started by the app | created at runtime |
+| Database | SQLite (`pfi.sqlite` in the data folder); money stored as exact integer cents | created at runtime |
 | Packaging | PyInstaller, Inno Setup (`.exe` installer), MakeAppx (`.msix` for the Microsoft Store) | `scripts/`, `installer/`, `packaging/` |
 
 The shell starts the backend (`pfi-api.exe`) in a Windows job object on a
 free localhost port with a per-launch token, then shows the screens in
-WebView2. The backend starts PostgreSQL on 127.0.0.1 with a random password
-stored in the data folder (`%LOCALAPPDATA%\PersonalFinanceIntelligence`).
+WebView2. The data folder is `%LOCALAPPDATA%\PersonalFinanceIntelligence`
+(or the app's private storage when installed from the Store).
+
+Up to 0.3 the app ran a private PostgreSQL server. Version 0.4 still bundles
+PostgreSQL once: on the first start it copies a 0.3 database into SQLite,
+checks row counts and totals, and keeps the old folder as `pgdata-0.3`. Old
+`.dump` backups can be restored the same way.
 
 ## Build
 
 Requirements: Windows 11, Visual Studio 2022/2026 with *Desktop development
 with C++* and *WinUI application development* (includes a Windows SDK),
-Miniconda, Node.js LTS, PostgreSQL 18 (EDB installer) and Inno Setup.
+Miniconda, Node.js LTS, PostgreSQL 18 (EDB installer, bundled for moving 0.3
+data) and Inno Setup.
 
-Double-click **`build.bat`**. It runs the backend tests against PostgreSQL,
-builds the screens, packages the backend, builds `PFI.exe`, smoke-tests the
-packaged app and creates:
+Double-click **`build.bat`**. It runs the backend tests (SQLite, plus the
+PostgreSQL move tests), builds the screens, packages the backend, builds
+`PFI.exe`, smoke-tests the packaged app (including moving a 0.3 database
+with the bundled PostgreSQL) and creates:
 
-- `dist\PFI-Setup-0.3.2.exe`: installer for direct download;
-- `dist\PFI-0.3.2.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.4.0.exe`: installer for direct download;
+- `dist\PFI-0.4.0.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:
@@ -94,6 +106,7 @@ Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:
 cd backend
 conda env create -f environment.yml
 conda activate pfi
+:: optional, for the tests that move 0.3 PostgreSQL data:
 set PFI_TEST_PG_BIN=C:\Program Files\PostgreSQL\18\bin
 pytest -q
 python run.py --port 8765          :: API docs at http://127.0.0.1:8765/docs

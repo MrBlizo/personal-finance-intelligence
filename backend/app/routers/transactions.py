@@ -16,13 +16,16 @@ from .. import schemas as s
 from ..config import get_settings
 from ..db import get_db
 from ..models import (
-    Account, Category, ImportBatch, ImportPreset, Transaction)
+    Account, Attachment, Category, ImportBatch, ImportPreset, Tag,
+    Transaction, TransactionSplit, TransactionTag)
 from ..services import importer
 from ..services.learn_apply import auto_categorize_batch
 from ..services.fx import FxConverter
 from ..services.ledger import base_currency
+from .extras import sweep_orphans
 from .common import (
-    category_names, category_with_children, commit_or_409, get_or_404)
+    category_names, category_with_children, commit_or_409, get_or_404,
+    not_split)
 
 router = APIRouter(prefix="/api")
 MAX_UPLOAD = 20 * 1024 * 1024
@@ -31,6 +34,27 @@ MAX_UPLOAD = 20 * 1024 * 1024
 def _to_out(db: Session, txns: list[Transaction]) -> list[s.TransactionOut]:
     fx, base = FxConverter.from_db(db), base_currency(db)
     names = category_names(db)
+    ids = [t.id for t in txns]
+    splits: dict[int, list[dict]] = {}
+    tags: dict[int, list[str]] = {}
+    files: dict[int, int] = {}
+    if ids:
+        for sp in db.scalars(select(TransactionSplit).where(
+                TransactionSplit.transaction_id.in_(ids)).order_by(
+                TransactionSplit.id)):
+            splits.setdefault(sp.transaction_id, []).append({
+                "category_id": sp.category_id, "amount": float(sp.amount),
+                "category_name": names.get(sp.category_id),
+                "note": sp.note})
+        for txn_id, name in db.execute(
+                select(TransactionTag.transaction_id, Tag.name).join(Tag)
+                .where(TransactionTag.transaction_id.in_(ids))
+                .order_by(Tag.name)):
+            tags.setdefault(txn_id, []).append(name)
+        files = dict(db.execute(
+            select(Attachment.transaction_id, func.count())
+            .where(Attachment.transaction_id.in_(ids))
+            .group_by(Attachment.transaction_id)).all())
     out = []
     for t in txns:
         item = s.TransactionOut.model_validate(t)
@@ -40,6 +64,9 @@ def _to_out(db: Session, txns: list[Transaction]) -> list[s.TransactionOut]:
         item.amount_base = (float(t.amount) * rate
                             if rate is not None else None)
         item.category_name = names.get(t.category_id)
+        item.splits = splits.get(t.id, [])
+        item.tags = tags.get(t.id, [])
+        item.attachments = files.get(t.id, 0)
         out.append(item)
     return out
 
@@ -56,7 +83,7 @@ def list_transactions(
         start: date | None = None, end: date | None = None,
         account_id: int | None = None, category_id: int | None = None,
         kind: str | None = None, q: str | None = None,
-        uncategorized: bool = False,
+        uncategorized: bool = False, tag: str | None = None,
         limit: int = Query(100, ge=1, le=5000), offset: int = 0,
         db: Session = Depends(get_db)):
     stmt = select(Transaction)
@@ -67,13 +94,20 @@ def list_transactions(
     if account_id:
         stmt = stmt.where(Transaction.account_id == account_id)
     if category_id:
-        stmt = stmt.where(Transaction.category_id.in_(
-            category_with_children(db, category_id)))
+        wanted = category_with_children(db, category_id)
+        stmt = stmt.where(or_(
+            Transaction.category_id.in_(wanted),
+            Transaction.id.in_(select(TransactionSplit.transaction_id).where(
+                TransactionSplit.category_id.in_(wanted)))))
+    if tag:
+        stmt = stmt.where(Transaction.id.in_(
+            select(TransactionTag.transaction_id).join(Tag).where(
+                func.lower(Tag.name) == tag.strip().lower())))
     if kind:
         stmt = stmt.where(Transaction.kind == kind)
     if uncategorized:
         stmt = stmt.where(Transaction.category_id.is_(None),
-                          Transaction.kind != "transfer")
+                          Transaction.kind != "transfer", not_split())
     if q:
         like = f"%{q}%"
         stmt = stmt.where(or_(Transaction.description.ilike(like),
@@ -120,6 +154,14 @@ def update_transaction(txn_id: int, body: s.TransactionPatch,
             "leg by leg. Delete the transfer and create it again.")
     if "amount" in patch and patch["amount"] == 0:
         raise HTTPException(422, "Amount must not be zero.")
+    is_split = db.scalar(select(func.count()).where(
+        TransactionSplit.transaction_id == txn.id))
+    if is_split and (("amount" in patch and patch["amount"] != txn.amount)
+                     or "category_id" in patch or clear):
+        raise HTTPException(
+            409, "This transaction is split across categories. Change the "
+            "amounts or categories in the split, or remove the split "
+            "first.")
     for key, value in patch.items():
         setattr(txn, key, value)
     if clear:
@@ -151,6 +193,7 @@ def delete_transaction(txn_id: int, db: Session = Depends(get_db)):
     else:
         db.delete(txn)
     db.commit()
+    sweep_orphans(db, get_settings().subdir("attachments"))
     return Response(status_code=204)
 
 
@@ -161,7 +204,7 @@ def bulk_categorize(body: s.BulkCategorize, db: Session = Depends(get_db)):
     changed = 0
     for txn in db.scalars(select(Transaction).where(
             Transaction.id.in_(body.ids), Transaction.kind != "transfer",
-            Transaction.trade_id.is_(None))):
+            Transaction.trade_id.is_(None), not_split())):
         txn.category_id = body.category_id
         txn.category_source = "user" if body.category_id else None
         txn.kind = kind or ("income" if txn.amount > 0 else "expense")
@@ -243,7 +286,7 @@ async def import_preview(file: UploadFile = File(...), skip_rows: int = 0,
                          db: Session = Depends(get_db)):
     raw = await _read_upload(file)
     try:
-        df, delimiter, encoding = importer.read_csv(raw, skip_rows)
+        df, delimiter, encoding, fmt = importer.read_statement(raw, skip_rows)
     except importer.ImportError_ as exc:
         raise HTTPException(422, str(exc)) from exc
     sha = hashlib.sha256(raw).hexdigest()
@@ -251,39 +294,67 @@ async def import_preview(file: UploadFile = File(...), skip_rows: int = 0,
     rows = df.head(20).to_dict(orient="records")
     preset = db.scalar(select(ImportPreset).where(
         ImportPreset.header_signature == header_signature(list(df.columns)))
-        .order_by(ImportPreset.created_at.desc()).limit(1))
+        .order_by(ImportPreset.created_at.desc(), ImportPreset.id.desc())
+        .limit(1))
     return {"filename": file.filename or "upload.csv", "sha256": sha,
             "already_imported": bool(seen), "delimiter": delimiter,
             "encoding": encoding, "columns": list(df.columns),
-            "rows": rows, "guess": importer.guess_mapping(df),
+            "rows": rows, "format": fmt,
+            "guess": (importer.guess_mapping(df) if fmt == "csv"
+                      else importer.structured_mapping()),
             "preset": ({"id": preset.id, "name": preset.name,
                         "mapping": json.loads(preset.mapping_json)}
                        if preset else None)}
+
+
+def _mapping(mapping: str) -> s.ImportMapping:
+    try:
+        return s.ImportMapping.model_validate(json.loads(mapping))
+    except (ValueError, ValidationError) as exc:
+        raise HTTPException(
+            422, f"The column mapping is invalid: {exc}. Re-run the "
+            "preview and choose the columns again.") from exc
+
+
+@router.post("/import/check")
+async def import_check(file: UploadFile = File(...),
+                       mapping: str = Form(...),
+                       db: Session = Depends(get_db)):
+    """Count new and duplicate rows and list possible duplicates."""
+    m = _mapping(mapping)
+    get_or_404(db, Account, m.account_id)
+    raw = await _read_upload(file)
+    try:
+        return importer.check_import(db, raw, m)
+    except importer.ImportError_ as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @router.post("/import/commit", response_model=s.ImportResult)
 async def import_commit(file: UploadFile = File(...),
                         mapping: str = Form(...),
                         save_preset: str | None = Form(None),
+                        skip_lines: str | None = Form(None),
                         db: Session = Depends(get_db)):
-    try:
-        m = s.ImportMapping.model_validate(json.loads(mapping))
-    except (ValueError, ValidationError) as exc:
-        raise HTTPException(
-            422, f"The column mapping is invalid: {exc}. Re-run the "
-            "preview and choose the columns again.") from exc
+    m = _mapping(mapping)
     get_or_404(db, Account, m.account_id)
+    try:
+        skip = {int(x) for x in json.loads(skip_lines or "[]")}
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(
+            422, "skip_lines must be a JSON list of line numbers from the "
+            "duplicate review.") from exc
     raw = await _read_upload(file)
     try:
         result = importer.commit_import(
             db, raw, file.filename or "upload.csv", m,
-            get_settings().subdir("imports"))
+            get_settings().subdir("imports"), skip)
     except importer.ImportError_ as exc:
         db.rollback()
         raise HTTPException(422, str(exc)) from exc
     result["learned"] = auto_categorize_batch(db, result["batch_id"])
     if save_preset and save_preset.strip():
-        df, _, _ = importer.read_csv(raw, m.skip_rows)
+        df = importer.read_statement(raw, m.skip_rows)[0]
         name = save_preset.strip()[:120]
         preset = db.scalar(select(ImportPreset).where(
             ImportPreset.name == name))
@@ -300,7 +371,7 @@ async def import_commit(file: UploadFile = File(...),
 @router.get("/import/batches", response_model=list[s.ImportBatchOut])
 def list_batches(db: Session = Depends(get_db)):
     return db.scalars(select(ImportBatch).order_by(
-        ImportBatch.imported_at.desc())).all()
+        ImportBatch.imported_at.desc(), ImportBatch.id.desc())).all()
 
 
 @router.delete("/import/batches/{batch_id}")
@@ -315,4 +386,5 @@ def undo_batch(batch_id: int, db: Session = Depends(get_db)):
         removed += 1
     db.delete(batch)
     db.commit()
+    sweep_orphans(db, get_settings().subdir("attachments"))
     return {"removed": removed}

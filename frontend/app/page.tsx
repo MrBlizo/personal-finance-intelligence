@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, Link as FLink, Tab, TabList } from "@fluentui/react-components";
+import { RestoreFromFile } from "@/components/BackupPanel";
 import Plot from "@/components/Plot";
 import { Banner, Empty, Kpi, PageHead, Section, Spinner, useLoad } from "@/components/ui";
 import { Insight, PlotFigure, Reminder, Summary, get, insightText, post } from "@/lib/api";
@@ -32,6 +33,7 @@ export default function Home() {
   const insights = useLoad(() => get<{ insights: Insight[] }>("/api/insights"));
   const reminders = useLoad(() => get<Reminder[]>("/api/reminders", { days: 14 }));
   const [seeding, setSeeding] = useState(false);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
   const s = dash.data?.summary;
   const cur = s?.currency ?? "CHF";
   const empty = s && s.transactions === 0 && s.net_worth === 0;
@@ -68,6 +70,13 @@ export default function Home() {
             }}>{seeding ? t("Generating…") : t("Load demo data")}</Button>}>
           {t("Add an account and import a bank CSV, or explore with synthetic demo data (removable in Settings).")}
         </Banner>)}
+      {empty && (
+        <Banner kind="info" title={t("Moving from another PC?")}
+          action={<RestoreFromFile appearance="primary" label={t("Restore from a backup")}
+            onDone={() => { window.location.reload(); }} onError={(m) => setRestoreError(m)} />}>
+          {t("Choose the move file (.pfibak) you created on the old PC under Settings → Backups.")}
+        </Banner>)}
+      {restoreError && <Banner kind="error" onClose={() => setRestoreError(null)}>{restoreError}</Banner>}
       {!s && dash.loading && <Spinner label={t("Loading…")} />}
       {s && (
         <>

@@ -204,6 +204,9 @@ class TransactionOut(ORM):
     import_batch_id: int | None
     trade_id: int | None
     notes: str | None
+    splits: list[dict] = []
+    tags: list[str] = []
+    attachments: int = 0
 
 
 class TransactionPage(BaseModel):
@@ -251,6 +254,7 @@ class ImportPreview(BaseModel):
     rows: list[dict[str, str | None]]
     guess: dict[str, str | bool | None]
     preset: dict | None = None
+    format: str = "csv"
 
 
 class ImportResult(BaseModel):
@@ -263,6 +267,7 @@ class ImportResult(BaseModel):
     categorized: int
     learned: int = 0
     preset: str | None = None
+    rows_skipped: int = 0
 
 
 class ImportBatchOut(ORM):

@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from ..models import Category, CategoryRule, ImportBatch, Transaction
 from ..schemas import ImportMapping
+from . import statements
 
 ENCODINGS = ("utf-8-sig", "cp1252", "latin-1")
 DELIMITERS = ",;\t|"
@@ -93,6 +94,47 @@ def read_csv(raw: bytes, skip_rows: int = 0
             "the number of lines before the header.") from exc
     df.columns = [str(c).strip() for c in df.columns]
     return df, delimiter, encoding
+
+
+def read_statement(raw: bytes, skip_rows: int = 0
+                   ) -> tuple[pd.DataFrame, str, str, str]:
+    """Read a CSV, OFX/QFX, QIF or CAMT.053 statement into a text table.
+
+    Parameters
+    ----------
+    raw : bytes
+        The uploaded file content.
+    skip_rows : int
+        The number of leading lines to ignore (CSV only).
+
+    Returns
+    -------
+    tuple of (DataFrame, str, str, str)
+        The table, the delimiter (empty for non-CSV), the encoding and the
+        format: ``csv``, ``ofx``, ``qif`` or ``camt``.
+    """
+    text, encoding = _decode(raw)
+    fmt = statements.detect(text)
+    if fmt is None:
+        df, delimiter, encoding = read_csv(raw, skip_rows)
+        return df, delimiter, encoding, "csv"
+    try:
+        rows = (statements.parse_camt(raw) if fmt == "camt" else
+                statements.parse_ofx(text) if fmt == "ofx" else
+                statements.parse_qif(text))
+    except statements.StatementError as exc:
+        raise ImportError_(str(exc)) from exc
+    return (pd.DataFrame(rows, columns=statements.COLUMNS, dtype=str), "",
+            encoding, fmt)
+
+
+def structured_mapping() -> dict[str, str | bool | None]:
+    """Return the fixed column mapping of OFX, QIF and CAMT statements."""
+    return {"date_column": "Date", "amount_column": "Amount",
+            "debit_column": None, "credit_column": None,
+            "description_column": "Description", "merchant_column": "Payee",
+            "decimal": ".", "date_format": "%Y-%m-%d", "dayfirst": False,
+            "mostly_positive": False}
 
 
 def _find(columns: list[str], kind: str, exclude: set[str]) -> str | None:
@@ -314,7 +356,8 @@ def archive_original(raw: bytes, filename: str, sha256: str,
 
 
 def commit_import(db: Session, raw: bytes, filename: str,
-                  m: ImportMapping, archive_dir: Path) -> dict:
+                  m: ImportMapping, archive_dir: Path,
+                  skip_lines: set[int] | None = None) -> dict:
     """Import parsed rows as transactions and record an import batch.
 
     Parameters
@@ -329,6 +372,8 @@ def commit_import(db: Session, raw: bytes, filename: str,
         The column mapping and parsing options.
     archive_dir : Path
         The directory for the read-only archived original.
+    skip_lines : set of int, optional
+        The file lines the user marked as duplicates in the review.
 
     Returns
     -------
@@ -336,7 +381,7 @@ def commit_import(db: Session, raw: bytes, filename: str,
         The counts of imported, duplicate and failed rows and messages.
     """
     sha = hashlib.sha256(raw).hexdigest()
-    df, _, _ = read_csv(raw, m.skip_rows)
+    df = read_statement(raw, m.skip_rows)[0]
     parsed = parse_rows(df, m)
     archived = archive_original(raw, filename, sha, archive_dir)
     batch = ImportBatch(
@@ -352,6 +397,7 @@ def commit_import(db: Session, raw: bytes, filename: str,
     categorizer = Categorizer(db)
     seen: dict[tuple, int] = {}
     categorized = 0
+    skipped = 0
     for r in parsed.rows:
         key = (r["txn_date"], r["amount"], _normalise(r["description"]))
         seen[key] = seen.get(key, 0) + 1
@@ -359,6 +405,10 @@ def commit_import(db: Session, raw: bytes, filename: str,
                          r["description"], seen[key])
         if fp in existing:
             batch.rows_duplicate += 1
+            continue
+        if skip_lines and r["line"] in skip_lines:
+            batch.rows_duplicate += 1
+            skipped += 1
             continue
         existing.add(fp)
         cat = categorizer.match(r["description"], r["merchant"])
@@ -375,5 +425,73 @@ def commit_import(db: Session, raw: bytes, filename: str,
             "rows_imported": batch.rows_imported,
             "rows_duplicate": batch.rows_duplicate,
             "rows_failed": batch.rows_failed, "errors": parsed.errors[:200],
-            "categorized": categorized,
+            "rows_skipped": skipped, "categorized": categorized,
             "mapping": json.loads(batch.mapping_json)}
+
+
+def check_import(db: Session, raw: bytes, m: ImportMapping) -> dict:
+    """Sort the rows of a statement into new, duplicate and possible.
+
+    *Duplicates* have the same fingerprint as an existing transaction and
+    are always skipped. *Possible duplicates* share account, date and
+    amount with an existing transaction but have a different description
+    (banks sometimes change the text between exports); they are imported
+    unless the user skips them.
+
+    Parameters
+    ----------
+    db : Session
+        The open database session.
+    raw : bytes
+        The uploaded file content.
+    m : ImportMapping
+        The confirmed column mapping.
+
+    Returns
+    -------
+    dict
+        Counts per group, the parse errors and one entry per possible
+        duplicate with the incoming row next to the existing transaction.
+    """
+    parsed = parse_rows(read_statement(raw, m.skip_rows)[0], m)
+    existing = {t.fingerprint: t for t in db.scalars(select(Transaction).where(
+        Transaction.account_id == m.account_id,
+        Transaction.fingerprint.is_not(None)))}
+    seen: dict[tuple, int] = {}
+    incoming, duplicates = [], 0
+    matched: set[int] = set()
+    for r in parsed.rows:
+        key = (r["txn_date"], r["amount"], _normalise(r["description"]))
+        seen[key] = seen.get(key, 0) + 1
+        fp = fingerprint(m.account_id, r["txn_date"], r["amount"],
+                         r["description"], seen[key])
+        if fp in existing:
+            duplicates += 1
+            matched.add(existing[fp].id)
+        else:
+            incoming.append(r)
+    candidates: dict[tuple, list[Transaction]] = {}
+    if incoming:
+        days = {r["txn_date"] for r in incoming}
+        for t in db.scalars(select(Transaction).where(
+                Transaction.account_id == m.account_id,
+                Transaction.txn_date.in_(days)).order_by(Transaction.id)):
+            if t.id not in matched:
+                candidates.setdefault((t.txn_date, t.amount), []).append(t)
+    possible = []
+    for r in incoming:
+        pool = candidates.get((r["txn_date"], r["amount"]))
+        if not pool:
+            continue
+        t = pool.pop(0)
+        possible.append({
+            "line": r["line"], "txn_date": r["txn_date"].isoformat(),
+            "amount": float(r["amount"]), "description": r["description"],
+            "merchant": r["merchant"],
+            "existing": {"id": t.id, "txn_date": t.txn_date.isoformat(),
+                         "description": t.description,
+                         "merchant": t.merchant}})
+    return {"rows_total": len(parsed.rows) + len(parsed.errors),
+            "rows_new": len(incoming) - len(possible),
+            "rows_duplicate": duplicates, "rows_failed": len(parsed.errors),
+            "errors": parsed.errors[:50], "possible": possible}

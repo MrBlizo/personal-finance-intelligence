@@ -85,3 +85,20 @@ export function onShellDownload(cb: (d: ShellDownload) => void): () => void {
 export function openLastDownload(inFolder: boolean) {
   webview()?.postMessage({ type: inFolder ? "showDownload" : "openDownload" });
 }
+
+/** Ask the shell for a folder (Windows folder dialog); null outside it. */
+export function pickFolder(start = ""): Promise<string | null> {
+  const wv = webview();
+  if (!wv) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const handler = (e: { data: unknown }) => {
+      const d = e.data as { type?: string; path?: string };
+      if (d?.type === "folderPicked") {
+        wv.removeEventListener("message", handler);
+        resolve(d.path || null);
+      }
+    };
+    wv.addEventListener("message", handler);
+    wv.postMessage({ type: "pickFolder", start });
+  });
+}

@@ -59,6 +59,8 @@ body {
 }
 html[data-shell="1"] body { background: transparent; }
 .fluent-root { background: transparent !important; min-height: 100%; }
+/* Portal mount nodes copy the provider class; they must not cover the page. */
+.fluent-root[data-portal-node] { min-height: 0; }
 .boot { display: grid; place-items: center; height: 100vh; }
 
 /* ---- frame (sidebar only outside the desktop shell) ---- */
@@ -243,3 +245,32 @@ code { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; }
 /* WinUI buttons use regular weight text */
 .fui-Button, .fui-ToggleButton { font-weight: 400 !important; }
 .fui-Tab .fui-Tab__content { font-weight: 400; }
+
+/* 0.4: duplicate review, split editor, tags, attachments */
+.dup-list { display: grid; gap: 8px; }
+.dup-row { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto;
+  gap: 16px; align-items: center; padding: 12px 16px; }
+.dup-row.dup-skip { opacity: 0.6; }
+.dup-meta { display: grid; gap: 2px; }
+.dup-sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px; overflow-wrap: anywhere; }
+.dup-actions { display: flex; gap: 6px; }
+mark.diff { background: var(--caution-bg); color: inherit; border-radius: 2px;
+  padding: 0 2px; }
+.steps { padding-inline-start: 20px; display: grid; gap: 8px; margin: 0; }
+.tag-chip { display: inline-flex; align-items: center; gap: 2px; padding: 0 8px;
+  border-radius: 10px; font-size: 12px; line-height: 20px;
+  background: var(--hover); color: var(--text-2); margin-inline-end: 4px; }
+.split-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr)
+  minmax(0, 2fr) auto; gap: 8px; align-items: end; }
+.split-total { display: flex; justify-content: space-between; margin-top: 8px; }
+.attach-list { display: grid; gap: 4px; margin-top: 8px; }
+.attach-list a { color: var(--accent-text); }
+@media (max-width: 900px) {
+  .dup-row { grid-template-columns: 1fr; }
+  .split-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) { .dup-sides { grid-template-columns: 1fr; } }
+.detail-head { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+.table-wrap td a { color: var(--accent-text); text-decoration: none; }
+.table-wrap td a:hover { text-decoration: underline; }

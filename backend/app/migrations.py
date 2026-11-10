@@ -1,7 +1,10 @@
 """Minimal, ordered schema migrations tracked in ``schema_version``.
 
 Each migration is applied once, in order, inside a transaction. Append new
-migrations to ``MIGRATIONS``; never edit one that has shipped.
+migrations to ``MIGRATIONS``; never edit one that has shipped. A brand-new
+database is created from the current models in one step and every
+migration is recorded as applied. Migrations 1-3 come from the PostgreSQL
+era (0.1-0.3); they still run when a 0.3.x database is moved to SQLite.
 """
 import logging
 from collections.abc import Callable
@@ -43,10 +46,17 @@ def _v03_automation_investments(conn: Connection) -> None:
         conn.execute(text(stmt))
 
 
+def _v04_splits_tags_attachments(conn: Connection) -> None:
+    for model in (models.TransactionSplit, models.Tag,
+                  models.TransactionTag, models.Attachment):
+        model.__table__.create(conn, checkfirst=True)
+
+
 MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (1, "initial schema", _initial_schema),
     (2, "import presets", _import_presets),
     (3, "automation and investment pricing", _v03_automation_investments),
+    (4, "splits, tags and attachments", _v04_splits_tags_attachments),
 ]
 
 
@@ -64,6 +74,13 @@ def run_migrations(engine: Engine) -> int:
         The schema version after all migrations have been applied.
     """
     with engine.begin() as conn:
+        fresh = not inspect(conn).get_table_names()
+        if fresh:
+            Base.metadata.create_all(conn)
+            conn.execute(models.SchemaVersion.__table__.insert(), [
+                {"version": v, "name": n} for v, n, _ in MIGRATIONS])
+            log.info("Created a new database (schema v%s)",
+                     MIGRATIONS[-1][0])
         models.SchemaVersion.__table__.create(conn, checkfirst=True)
         done = set(conn.scalars(select(models.SchemaVersion.version)))
     for version, name, func in MIGRATIONS:

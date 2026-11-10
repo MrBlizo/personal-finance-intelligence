@@ -5,13 +5,14 @@ import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..models import Account, Category, Transaction
+from ..models import (
+    Account, Category, Tag, Transaction, TransactionSplit, TransactionTag)
 from .fx import FxConverter
 
 COLUMNS = ["id", "txn_date", "account_id", "account_name", "account_type",
            "currency", "amount", "amount_base", "kind", "category_id",
            "category", "top_category_id", "top_category", "description",
-           "merchant", "transfer_group"]
+           "merchant", "transfer_group", "split", "tags"]
 
 
 def load_transactions(db: Session, fx: FxConverter, base: str,
@@ -41,7 +42,10 @@ def load_transactions(db: Session, fx: FxConverter, base: str,
     Returns
     -------
     DataFrame
-        One row per transaction with the columns in ``COLUMNS``.
+        One row per transaction with the columns in ``COLUMNS``. A split
+        transaction gives one row per part (same ``id``, ``split`` = True,
+        the part's amount and category), so totals per category count each
+        part where it belongs. ``tags`` holds the transaction's tag names.
     """
     stmt = (select(Transaction, Account).join(Account)
             .order_by(Transaction.txn_date, Transaction.id))
@@ -52,21 +56,34 @@ def load_transactions(db: Session, fx: FxConverter, base: str,
     if not include_transfers:
         stmt = stmt.where(Transaction.kind != "transfer")
     cats = {c.id: c for c in db.scalars(select(Category))}
+    parts: dict[int, list[TransactionSplit]] = {}
+    for sp in db.scalars(select(TransactionSplit).order_by(
+            TransactionSplit.id)):
+        parts.setdefault(sp.transaction_id, []).append(sp)
+    tags: dict[int, list[str]] = {}
+    for txn_id, name in db.execute(
+            select(TransactionTag.transaction_id, Tag.name).join(Tag)
+            .order_by(Tag.name)):
+        tags.setdefault(txn_id, []).append(name)
     missing: set[str] = set()
     rows = []
     for t, a in db.execute(stmt):
         rate = fx.try_rate(a.currency, base, t.txn_date, missing)
-        cat = cats.get(t.category_id)
-        top = cats.get(cat.parent_id) if cat and cat.parent_id else cat
-        rows.append((
-            t.id, t.txn_date, a.id, a.name, a.type, a.currency,
-            float(t.amount),
-            float(t.amount) * rate if rate is not None else float("nan"),
-            t.kind, t.category_id,
-            cat.name if cat else "Uncategorized",
-            top.id if top else None,
-            top.name if top else "Uncategorized",
-            t.description, t.merchant, t.transfer_group))
+        pieces = parts.get(t.id) or [None]
+        for piece in pieces:
+            cat_id = piece.category_id if piece else t.category_id
+            amount = float(piece.amount if piece else t.amount)
+            cat = cats.get(cat_id)
+            top = cats.get(cat.parent_id) if cat and cat.parent_id else cat
+            rows.append((
+                t.id, t.txn_date, a.id, a.name, a.type, a.currency, amount,
+                amount * rate if rate is not None else float("nan"),
+                t.kind, cat_id,
+                cat.name if cat else "Uncategorized",
+                top.id if top else None,
+                top.name if top else "Uncategorized",
+                t.description, t.merchant, t.transfer_group,
+                piece is not None, tags.get(t.id, [])))
     df = pd.DataFrame(rows, columns=COLUMNS)
     df["txn_date"] = pd.to_datetime(df["txn_date"])
     # pandas 3 stores missing strings as NaN (a float); keep them as None so

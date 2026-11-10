@@ -1,16 +1,17 @@
 """Apply learned category suggestions to stored transactions."""
-from sqlalchemy import select
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
-from ..models import Category, Transaction
+from ..models import Category, Transaction, TransactionSplit
 from . import learner, prefs
 
 
 def _uncategorised(db: Session, batch_id: int | None = None,
                    ids: list[int] | None = None) -> list[Transaction]:
-    stmt = select(Transaction).where(Transaction.category_id.is_(None),
-                                     Transaction.kind != "transfer",
-                                     Transaction.trade_id.is_(None))
+    stmt = select(Transaction).where(
+        Transaction.category_id.is_(None), Transaction.kind != "transfer",
+        Transaction.trade_id.is_(None),
+        ~exists().where(TransactionSplit.transaction_id == Transaction.id))
     if batch_id is not None:
         stmt = stmt.where(Transaction.import_batch_id == batch_id)
     if ids is not None:

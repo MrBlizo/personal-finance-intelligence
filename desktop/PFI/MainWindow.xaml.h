@@ -41,6 +41,7 @@ namespace winrt::PFI::implementation
         void WatchDownload(winrt::Microsoft::Web::WebView2::Core::CoreWebView2DownloadOperation const& op);
         void ShowDownload(std::wstring const& path, bool ok);
         void OpenLastDownload(bool inFolder);
+        void PickFolder(std::wstring const& start);
         void ShellLog(std::wstring const& line);
         winrt::fire_and_forget OpenUi();
         void OnWebMessage(winrt::Microsoft::Web::WebView2::Core::CoreWebView2 const& sender,
