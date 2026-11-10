@@ -186,6 +186,7 @@ class TransactionPatch(BaseModel):
     merchant: str | None = None
     category_id: int | None = None
     notes: str | None = None
+    cleared: bool | None = None
     clear_category: bool = False
 
 
@@ -206,6 +207,8 @@ class TransactionOut(ORM):
     import_batch_id: int | None
     trade_id: int | None
     notes: str | None
+    cleared: bool = False
+    reconciled: bool = False
     splits: list[dict] = []
     tags: list[str] = []
     attachments: int = 0

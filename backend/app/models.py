@@ -246,6 +246,13 @@ class Transaction(Base):
         ForeignKey("recurring_items.id", ondelete="SET NULL"))
     category_source: Mapped[str | None] = mapped_column(String(10))
     notes: Mapped[str | None] = mapped_column(Text)
+    #: Seen on the bank statement; ``reconciliation_id`` is set once a
+    #: reconciliation confirmed the statement balance (then the amount and
+    #: date are locked until that reconciliation is undone).
+    cleared: Mapped[bool] = mapped_column(Boolean, default=False,
+                                          server_default="0")
+    reconciliation_id: Mapped[int | None] = mapped_column(
+        ForeignKey("reconciliations.id", ondelete="SET NULL"), index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -253,6 +260,11 @@ class Transaction(Base):
         onupdate=func.now())
     account: Mapped[Account] = relationship()
     category: Mapped[Category | None] = relationship()
+
+    @property
+    def reconciled(self) -> bool:
+        """Whether a reconciliation confirmed this transaction."""
+        return self.reconciliation_id is not None
 
 
 class CategoryRule(Base):
@@ -372,3 +384,32 @@ class Attachment(Base):
     size: Mapped[int] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
+
+
+class Reconciliation(Base):
+    """A bank statement whose closing balance matched the account."""
+
+    __tablename__ = "reconciliations"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    account_id: Mapped[int] = mapped_column(
+        ForeignKey("accounts.id", ondelete="CASCADE"), index=True)
+    statement_date: Mapped[date] = mapped_column(Date)
+    statement_balance: Mapped[Decimal] = mapped_column(Money)
+    transactions: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+
+
+class DebtTerms(Base):
+    """Interest rate and minimum payment of a loan or credit-card account."""
+
+    __tablename__ = "debt_terms"
+    __table_args__ = (
+        CheckConstraint("apr >= 0", name="ck_debt_apr"),
+        CheckConstraint("min_payment >= 0", name="ck_debt_min"),
+    )
+    account_id: Mapped[int] = mapped_column(
+        ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    #: Annual interest rate in percent, e.g. 4.5.
+    apr: Mapped[Decimal] = mapped_column(ExactDecimal(4), default=0)
+    min_payment: Mapped[Decimal] = mapped_column(Money, default=0)

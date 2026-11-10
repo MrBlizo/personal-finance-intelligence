@@ -18,7 +18,7 @@ from . import legacy
 from .db import SessionLocal, init_engine, sqlite_url
 from .migrations import run_migrations
 from .routers import analytics, automation, core, extras, investments
-from .routers import planning, system
+from .routers import planning, system, tools
 from .routers import reports
 from .routers import transactions
 from .security import TokenMiddleware
@@ -175,7 +175,7 @@ def create_app() -> FastAPI:
     async def _fx_missing(_: Request, exc: FxRateMissing):
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
-    for module in (system, core, transactions, extras, planning,
+    for module in (system, core, transactions, extras, tools, planning,
                    investments, analytics, automation, reports):
         app.include_router(module.router)
     if settings.frontend_dist.is_dir():
