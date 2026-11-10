@@ -281,6 +281,47 @@ namespace winrt::PFI::implementation
         }
     }
 
+    void MainWindow::PickFolder(std::wstring const& start)
+    {
+        // The page cannot see folder paths, so the shell shows the Windows
+        // folder dialog and sends the chosen path back ("" if cancelled).
+        std::wstring chosen;
+        try
+        {
+            auto dlg = winrt::create_instance<IFileOpenDialog>(CLSID_FileOpenDialog);
+            DWORD opts{};
+            dlg->GetOptions(&opts);
+            dlg->SetOptions(opts | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_PATHMUSTEXIST);
+            if (!start.empty())
+            {
+                winrt::com_ptr<IShellItem> item;
+                if (SUCCEEDED(SHCreateItemFromParsingName(start.c_str(), nullptr, IID_PPV_ARGS(item.put()))))
+                    dlg->SetFolder(item.get());
+            }
+            if (SUCCEEDED(dlg->Show(WindowHandle())))
+            {
+                winrt::com_ptr<IShellItem> result;
+                PWSTR path = nullptr;
+                if (SUCCEEDED(dlg->GetResult(result.put())) &&
+                    SUCCEEDED(result->GetDisplayName(SIGDN_FILESYSPATH, &path)))
+                {
+                    chosen = path;
+                    CoTaskMemFree(path);
+                }
+            }
+        }
+        catch (...)
+        {
+            ShellLog(L"folder dialog failed");
+        }
+        auto core = Web().CoreWebView2();
+        if (!core) return;
+        JsonObject msg;
+        msg.SetNamedValue(L"type", JsonValue::CreateStringValue(L"folderPicked"));
+        msg.SetNamedValue(L"path", JsonValue::CreateStringValue(chosen));
+        core.PostWebMessageAsJson(msg.Stringify());
+    }
+
     void MainWindow::OnWebMessage(CoreWebView2 const&, CoreWebView2WebMessageReceivedEventArgs const& args)
     {
         try
@@ -316,6 +357,10 @@ namespace winrt::PFI::implementation
             else if (type == L"openDownload" || type == L"showDownload")
             {
                 OpenLastDownload(type == L"showDownload");
+            }
+            else if (type == L"pickFolder")
+            {
+                PickFolder(std::wstring(obj.GetNamedString(L"start", L"")));
             }
         }
         catch (...)

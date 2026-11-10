@@ -4,15 +4,17 @@ import {
   Badge, Button, Checkbox, Input, Select, Tooltip,
 } from "@fluentui/react-components";
 import {
-  Add20Regular, ArrowDownload20Regular, ArrowSwap20Regular, Delete20Regular,
-  Edit20Regular, Search20Regular, Sparkle20Regular,
+  Add20Regular, ArrowDownload20Regular, ArrowSwap20Regular, Attach16Regular,
+  Delete20Regular, Edit20Regular, MoreHorizontal20Regular, Search20Regular,
+  Sparkle20Regular,
 } from "@fluentui/react-icons";
+import { TxnDetails } from "@/components/TxnDetails";
 import { accountOptions, catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, Modal, PageHead, Spinner, Values, clean,
   useLoad,
 } from "@/components/ui";
-import { Suggestion, Txn, del, downloadUrl, get, patch, post } from "@/lib/api";
+import { Suggestion, TagInfo, Txn, del, downloadUrl, get, patch, post } from "@/lib/api";
 import { date, money, pct, signClass, today } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 
@@ -75,15 +77,15 @@ export default function Transactions() {
   const refs = useRefs();
   const [f, setF] = useState<Record<string, string>>({
     q: "", account_id: "", category_id: "", kind: "", start: "", end: "",
-    uncategorized: "",
+    uncategorized: "", tag: "",
   });
   const [offset, setOffset] = useState(0);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const acc = q.get("account");
-    if (acc || q.get("uncategorized")) {
+    if (acc || q.get("uncategorized") || q.get("tag")) {
       setF((old) => ({ ...old, account_id: acc ?? "",
-        uncategorized: q.get("uncategorized") ? "true" : "" }));
+        uncategorized: q.get("uncategorized") ? "true" : "", tag: q.get("tag") ?? "" }));
     }
   }, []);
   const list = useLoad(() => get<{ total: number; items: Txn[] }>(
@@ -92,6 +94,8 @@ export default function Transactions() {
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [modal, setModal] = useState<null | "add" | "transfer" | "suggest" | Txn>(null);
   const [confirm, setConfirm] = useState<Txn | null>(null);
+  const [details, setDetails] = useState<Txn | null>(null);
+  const tagList = useLoad(() => get<TagInfo[]>("/api/tags"), [details]);
   const [bulkCat, setBulkCat] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -145,6 +149,11 @@ export default function Transactions() {
           onChange={(_, d) => setFilter("start", d.value)} />
         <Input type="date" value={f.end} aria-label={t("To")}
           onChange={(_, d) => setFilter("end", d.value)} />
+        {!!tagList.data?.length && (
+          <Select value={f.tag} onChange={(_, d) => setFilter("tag", d.value)}>
+            <option value="">{t("All tags")}</option>
+            {tagList.data.map((g) => <option key={g.id} value={g.name}>{g.name} ({g.count})</option>)}
+          </Select>)}
         <Checkbox label={t("Uncategorised only")} checked={f.uncategorized === "true"}
           onChange={(_, d) => setFilter("uncategorized", d.checked ? "true" : "")} />
       </div>
@@ -184,10 +193,17 @@ export default function Transactions() {
                     const s = new Set(sel); if (d.checked) s.add(x.id); else s.delete(x.id); setSel(s);
                   }} /></td>
                   <td>{date(x.txn_date)}</td>
-                  <td><span className="cell-main">{x.description || "—"}</span>
-                    {x.merchant && <span className="cell-sub">{x.merchant}</span>}</td>
+                  <td><span className="cell-main">{x.description || "—"}
+                    {x.attachments > 0 && <Tooltip content={t("{n} receipts", { n: x.attachments })} relationship="label">
+                      <Attach16Regular style={{ marginInlineStart: 4, verticalAlign: "middle" }} /></Tooltip>}</span>
+                    {x.merchant && <span className="cell-sub">{x.merchant}</span>}
+                    {x.tags.length > 0 && <span>{x.tags.map((g) => <span key={g} className="tag-chip">{g}</span>)}</span>}</td>
                   <td>{x.kind === "transfer"
                     ? <Badge appearance="tint" color="informative">{t("Transfer")}</Badge>
+                    : x.splits.length ? <span title={x.splits.map((p) =>
+                        `${catLabel(p.category_name, t) || t("Uncategorised")}: ${money(p.amount, x.currency)}`).join("\n")}>
+                        <Badge appearance="tint" color="brand">{t("Split")}</Badge>
+                        <span className="cell-sub">{x.splits.map((p) => catLabel(p.category_name, t) || t("Uncategorised")).join(", ")}</span></span>
                     : x.category_name ? catLabel(x.category_name, t)
                     : <Badge appearance="tint" color="warning">{t("Uncategorised")}</Badge>}</td>
                   <td>{x.account_name}</td>
@@ -198,6 +214,9 @@ export default function Transactions() {
                       <Tooltip content={t("Edit")} relationship="label">
                         <Button appearance="subtle" size="small" icon={<Edit20Regular />}
                           onClick={() => setModal(x)} /></Tooltip>
+                      <Tooltip content={t("Tags, split and receipts")} relationship="label">
+                        <Button appearance="subtle" size="small" icon={<MoreHorizontal20Regular />}
+                          onClick={() => setDetails(x)} /></Tooltip>
                       <Tooltip content={t("Delete")} relationship="label">
                         <Button appearance="subtle" size="small" icon={<Delete20Regular />}
                           onClick={() => setConfirm(x)} /></Tooltip></>}
@@ -215,6 +234,8 @@ export default function Transactions() {
             onClick={() => setOffset(offset + PAGE)}>{t("Next")}</Button>
         </div>)}
 
+      {details && <TxnDetails txn={details} onClose={() => setDetails(null)} onChanged={reload} />}
+
       {modal === "suggest" && (
         <SuggestionsDialog onClose={() => setModal(null)} onDone={(n) => {
           setMsg(t("{n} transactions categorised from suggestions.", { n })); reload();
@@ -223,6 +244,7 @@ export default function Transactions() {
       {(modal === "add" || (modal && typeof modal === "object")) && (() => {
         const x = typeof modal === "object" ? modal : null;
         const isTransfer = x?.kind === "transfer";
+        const isSplit = !!x?.splits.length;
         const typeOf = (y: Txn) => y.kind === "income" ? "income"
           : y.amount > 0 ? "refund" : "expense";
         const catKind = (type: unknown) => (type === "income" ? "income" : "expense");
@@ -243,16 +265,16 @@ export default function Transactions() {
             fields={(v) => [
               { name: "account_id", label: t("Account"), type: "select", required: true,
                 options: accountOptions(accounts), hidden: !!x },
-              { name: "type", label: t("Type"), type: "select", required: true, hidden: isTransfer,
+              { name: "type", label: t("Type"), type: "select", required: true, hidden: isTransfer || isSplit,
                 options: [{ value: "expense", label: t("Expense (money out)") },
                   { value: "income", label: t("Income (money in)") },
                   { value: "refund", label: t("Refund (money back on an expense)") }] },
               { name: "txn_date", label: t("Date"), type: "date", required: true },
               { name: "amount", label: t("Amount"), type: "number", step: "0.01",
-                required: true, hidden: isTransfer, placeholder: "910.00",
+                required: true, hidden: isTransfer || isSplit, placeholder: "910.00",
                 help: t("Always positive; the type decides the direction.") },
               { name: "category_id", label: t("Category"), type: "select",
-                options: categoryOptions(cats, catKind(v.type), t), hidden: isTransfer },
+                options: categoryOptions(cats, catKind(v.type), t), hidden: isTransfer || isSplit },
               { name: "description", label: t("Description"), full: true },
               { name: "merchant", label: t("Payee / merchant") },
               { name: "notes", label: t("Notes"), type: "textarea", full: true },
@@ -266,7 +288,7 @@ export default function Transactions() {
               if (x) {
                 const p: Values = { txn_date: body.txn_date, description: body.description ?? "",
                   merchant: body.merchant, notes: body.notes };
-                if (!isTransfer) {
+                if (!isTransfer && !isSplit) {
                   p.amount = signed;
                   p.kind = kind;
                   if (body.category_id) p.category_id = body.category_id; else p.clear_category = true;

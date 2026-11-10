@@ -29,14 +29,15 @@ with others, no violence, no purchases, no location, no chat. Expected rating:
 3+ / Everyone.
 
 **Restricted capability justification (runFullTrust):** "Personal Finance
-Intelligence is a desktop (WinUI 3) app. It runs a private local PostgreSQL
-database and a local analysis service on 127.0.0.1, both started and stopped
-by the app, to store and analyse the user's finances on their own PC. These
-components need the full-trust desktop model."
+Intelligence is a desktop (WinUI 3) app. It runs a local analysis service on
+127.0.0.1, started and stopped by the app, that stores the user's finances in
+a local SQLite database on their own PC (and, once, moves data from the
+previous PostgreSQL-based version). These components need the full-trust
+desktop model."
 
 **Notes for certification:** "No account needed. Open the app, Home ›
 'Load demo data' fills it with synthetic data to test every screen
-(removable in Settings). First start takes up to a minute while the private
+(removable in Settings). First start takes a few seconds while the private
 database is created."
 
 ## 3. Store listing: English

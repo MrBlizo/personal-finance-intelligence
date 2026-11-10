@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Badge, Button, Input, Link as FLink, Select, Switch, Tooltip,
 } from "@fluentui/react-components";
@@ -9,19 +9,20 @@ import {
   Edit20Regular, LockClosed20Regular,
 } from "@fluentui/react-icons";
 import { usePrefs } from "@/components/AppFrame";
+import { BackupPanel } from "@/components/BackupPanel";
 import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, PageHead, SettingRow, Spinner, useLoad,
 } from "@/components/ui";
 import {
-  Backup, Category, FxRate, LearnStatus, Rule, Settings, api, del, downloadUrl,
+  Category, FxRate, LearnStatus, Rule, Settings, del, downloadUrl,
   get, post, put,
 } from "@/lib/api";
 import { CURRENCIES, date, num, pct, today } from "@/lib/format";
 import { LANGS, Lang, translate, useT } from "@/lib/i18n";
 import { inShell, notifyLockSettings, queryHello, requestLock } from "@/lib/shell";
 
-type Info = { version: string; data_dir: string; database: string };
+type Info = { version: string; data_dir: string; database: string; database_file?: string; empty?: boolean };
 
 type KeyField = "stooq_api_key" | "twelvedata_api_key" | "alphavantage_api_key";
 type KeyProvider = { id: KeyField; name: string; url: string; help: string };
@@ -75,7 +76,6 @@ export default function SettingsPage() {
   const info = useLoad(() => get<Info>("/api/info"));
   const learn = useLoad(() => get<LearnStatus>("/api/learn/status"));
   const presets = useLoad(() => get<{ id: number; name: string }[]>("/api/import/presets"));
-  const backups = useLoad(() => get<{ folder: string; available: boolean; backups: Backup[] }>("/api/backups"));
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ kind: "success" | "error" | "warning"; text: string } | null>(null);
   const [rateModal, setRateModal] = useState(false);
@@ -84,7 +84,6 @@ export default function SettingsPage() {
   const [ruleModal, setRuleModal] = useState<Rule | "new" | null>(null);
   const [confirm, setConfirm] = useState<{ text: string; run: () => Promise<void>; danger?: boolean } | null>(null);
   const [hello, setHello] = useState<boolean | null>(null);
-  const restoreInput = useRef<HTMLInputElement>(null);
   useEffect(() => { queryHello().then(setHello); }, []);
   const s = refs.data?.settings;
   const cats = refs.data?.categories ?? [];
@@ -310,52 +309,9 @@ export default function SettingsPage() {
 
           <div className="group-title">{t("Backup & data")}</div>
           <div className="settings-group">
-            <SettingRow icon={""} title={t("Backups")}
-              description={t("A weekly automatic backup is made when the app starts (the newest 8 are kept). A safety backup is always made before a restore.")}>
-              <input ref={restoreInput} type="file" accept=".dump" hidden onChange={async (e) => {
-                const f = e.target.files?.[0]; e.target.value = "";
-                if (!f) return;
-                const d = new FormData(); d.append("file", f);
-                try {
-                  const up = await api<Backup>("/api/backups/upload", { method: "POST", body: d });
-                  backups.reload();
-                  setConfirm({ danger: true, text: t("Restore “{f}”? Your current data is backed up first, then replaced.", { f: f.name }),
-                    run: async () => {
-                      const r = await post<{ safety_backup: string }>(`/api/backups/${up.name}/restore`);
-                      refs.reload(); backups.reload();
-                      setMsg({ kind: "success", text: t("Restored. Previous data saved as {n}.", { n: r.safety_backup }) });
-                    } });
-                } catch (err) { setMsg({ kind: "error", text: (err as Error).message }); }
-              }} />
-              <Button onClick={() => restoreInput.current?.click()}>{t("Restore from file…")}</Button>
-              <Button appearance="primary" disabled={busy === "bk" || !backups.data?.available} onClick={() => run(async () => {
-                setBusy("bk");
-                try { const b = await post<Backup>("/api/backups"); backups.reload(); return t("Backup {n} created.", { n: b.name }); }
-                finally { setBusy(null); }
-              })}>{busy === "bk" ? t("Backing up…") : t("Back up now")}</Button>
-            </SettingRow>
-            <div className="setting-body table-wrap" style={{ maxHeight: 280 }}>
-              <div className="caption" style={{ marginBottom: 8 }}>{t("Folder:")} <code>{backups.data?.folder}</code></div>
-              {backups.data?.backups.length === 0 && <Empty>{t("No backups yet.")}</Empty>}
-              {!!backups.data?.backups.length && (
-                <table><thead><tr><th>{t("Created")}</th><th>{t("Kind")}</th><th className="num">{t("Size")}</th><th /></tr></thead>
-                  <tbody>{backups.data.backups.map((b) => (
-                    <tr key={b.name}><td>{new Date(b.created).toLocaleString("de-CH")}</td>
-                      <td><Badge appearance="tint">{t(b.kind)}</Badge></td>
-                      <td className="num">{b.size < 1048576 ? `${num(b.size / 1024, 0)} KB` : `${num(b.size / 1048576, 1)} MB`}</td>
-                      <td className="actions">
-                        <Tooltip content={t("Download")} relationship="label">
-                          <Button appearance="subtle" size="small" icon={<ArrowDownload20Regular />} as="a"
-                            href={downloadUrl(`/api/backups/${b.name}/download`)} /></Tooltip>
-                        <Button appearance="subtle" size="small" onClick={() => setConfirm({ danger: true,
-                          text: t("Restore the backup from {d}? Your current data is backed up first, then replaced.",
-                            { d: new Date(b.created).toLocaleString("de-CH") }),
-                          run: async () => {
-                            const r = await post<{ safety_backup: string }>(`/api/backups/${b.name}/restore`);
-                            refs.reload(); backups.reload(); rates.reload(); rules.reload(); presets.reload();
-                            setMsg({ kind: "success", text: t("Restored. Previous data saved as {n}.", { n: r.safety_backup }) });
-                          } })}>{t("Restore")}</Button></td></tr>))}</tbody></table>)}
-            </div>
+            <BackupPanel onMessage={setMsg} onRestored={() => {
+              refs.reload(); rates.reload(); rules.reload(); presets.reload();
+            }} />
             <SettingRow icon={""} title={t("Import presets")}
               description={t("Saved column settings per bank file format, applied automatically to files with the same columns.")}>
               {presets.data?.length === 0 && <span className="caption">{t("None yet")}</span>}

@@ -18,11 +18,11 @@ import os
 import shutil
 import subprocess
 import tempfile
-from datetime import timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
-from sqlalchemy import Engine, MetaData, func, select, text
+from sqlalchemy import Engine, MetaData, Numeric, func, select, text
 
 from .db import Base, make_engine, sqlite_url
 from .migrations import run_migrations
@@ -155,15 +155,19 @@ def _verify(sconn, dconn, source: MetaData, counts: dict[str, int]) -> None:
             "changed; report this with the log file.")
 
 
-def _usable_bin(pg_bin: Path, data_dir: Path) -> Path:
+def _usable_bin(pg_bin: Path, data_dir: Path,
+                relocate: bool | None = None) -> Path:
     """Return a bin folder PostgreSQL can run from (Store-folder safe)."""
-    if in_store_package(Path(pg_bin)):
+    if relocate is None:
+        relocate = in_store_package(Path(pg_bin))
+    if relocate:
         return relocate_binaries(Path(pg_bin), Path(data_dir))
     return Path(pg_bin)
 
 
 def migrate_cluster(pg_bin: Path, data_dir: Path, dest_path: Path,
-                    port: int) -> dict[str, int]:
+                    port: int, relocate: bool | None = None
+                    ) -> dict[str, int]:
     """Move the 0.3.x cluster in ``data_dir`` into ``dest_path``.
 
     Parameters
@@ -176,6 +180,9 @@ def migrate_cluster(pg_bin: Path, data_dir: Path, dest_path: Path,
         The SQLite database file to create.
     port : int
         The preferred TCP port for the temporary server.
+    relocate : bool or None
+        The flag to run PostgreSQL from a copy in ``data_dir``; ``None``
+        does so only inside the Store install folder.
 
     Returns
     -------
@@ -194,8 +201,8 @@ def migrate_cluster(pg_bin: Path, data_dir: Path, dest_path: Path,
             "PostgreSQL needed to move it is missing. Reinstall PFI 0.4 "
             "(it includes PostgreSQL once for this step) and start it again.")
     log.info("Moving the 0.3 PostgreSQL database into SQLite")
-    pg = EmbeddedPostgres(_usable_bin(pg_bin, data_dir), data_dir, port,
-                          relocate=False)
+    pg = EmbeddedPostgres(_usable_bin(pg_bin, data_dir, relocate), data_dir,
+                          port, relocate=False)
     try:
         src = make_engine(pg.start())
     except Exception as exc:
@@ -216,7 +223,13 @@ def migrate_cluster(pg_bin: Path, data_dir: Path, dest_path: Path,
         n += 1
     (data_dir / "pgdata").rename(target)
     log.info("Old database kept (unused) in %s", target)
+    _drop_runtime(data_dir)
     return counts
+
+
+def _drop_runtime(data_dir: Path) -> None:
+    """Remove PostgreSQL copies made for the Store; they are not needed now."""
+    shutil.rmtree(Path(data_dir) / "runtime", ignore_errors=True)
 
 
 def dump_to_sqlite(pg_bin: Path, data_dir: Path, dump: Path,
@@ -274,3 +287,120 @@ def dump_to_sqlite(pg_bin: Path, data_dir: Path, dump: Path,
     finally:
         pg.stop()
         shutil.rmtree(tmp, ignore_errors=True)
+        _drop_runtime(data_dir)
+
+
+# --- self-test (build smoke test and tests) ---------------------------------
+NEW_TABLES = {"transaction_splits", "tags", "transaction_tags", "attachments"}
+
+
+def v03_metadata() -> MetaData:
+    """Return the schema as PFI 0.3 created it (NUMERIC money, no 0.4)."""
+    from .models import ExactDecimal
+    md = MetaData()
+    for t in Base.metadata.sorted_tables:
+        if t.name in NEW_TABLES:
+            continue
+        copy = t.to_metadata(md)
+        for col in copy.columns:
+            if isinstance(col.type, ExactDecimal):
+                col.type = Numeric(20, col.type.scale)
+    return md
+
+
+def make_v03_cluster(pg_bin: Path, data_dir: Path, rows: int = 300,
+                     relocate: bool | None = None) -> Decimal:
+    """Create a PFI 0.3-style cluster with sample data in ``data_dir``.
+
+    Parameters
+    ----------
+    pg_bin : Path
+        The PostgreSQL ``bin`` folder.
+    data_dir : Path
+        The folder that receives ``pgdata``.
+    rows : int
+        The number of sample transactions.
+    relocate : bool or None
+        The flag to run PostgreSQL from a copy (as in the Store).
+
+    Returns
+    -------
+    Decimal
+        The sum of the sample transaction amounts.
+    """
+    pg = EmbeddedPostgres(_usable_bin(pg_bin, data_dir, relocate), data_dir,
+                          _free_port(), relocate=False)
+    eng = make_engine(pg.start())
+    md = v03_metadata()
+    md.create_all(eng)
+    t = md.tables
+    created = datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc)
+    amounts = [Decimal("-12.35") if i % 3 else Decimal("4500.10")
+               for i in range(1, rows + 1)]
+    with eng.begin() as c:
+        c.execute(t["schema_version"].insert(), [
+            {"version": v, "name": n} for v, n in
+            ((1, "initial schema"), (2, "import presets"),
+             (3, "automation and investment pricing"))])
+        c.execute(t["categories"].insert(), [
+            {"id": 1, "name": "Food", "kind": "expense", "parent_id": None},
+            {"id": 2, "name": "Groceries", "kind": "expense",
+             "parent_id": 1}])
+        c.execute(t["accounts"].insert(), [{
+            "id": 1, "name": "Checking", "type": "checking",
+            "currency": "CHF", "opening_balance": Decimal("1000.05"),
+            "opening_date": date(2025, 1, 1), "created_at": created}])
+        c.execute(t["transactions"].insert(), [{
+            "id": i, "account_id": 1, "txn_date": date(2025, 2, 1 + i % 27),
+            "amount": amounts[i - 1],
+            "kind": "expense" if i % 3 else "income",
+            "description": f"row {i}", "category_id": 2 if i % 3 else None,
+            "created_at": created, "updated_at": created}
+            for i in range(1, rows + 1)])
+        c.execute(t["exchange_rates"].insert(), [{
+            "from_currency": "EUR", "to_currency": "CHF",
+            "rate_date": date(2025, 2, 1), "rate": Decimal("0.93456789"),
+            "source": "manual"}])
+    eng.dispose()
+    pg.stop()
+    return sum(amounts, Decimal(0))
+
+
+def selftest(pg_bin: Path, workdir: Path, relocate: bool | None = None
+             ) -> dict:
+    """Build a 0.3 cluster in ``workdir``, move it to SQLite and check it.
+
+    Used by the build's smoke test to run the real move with the packaged
+    PostgreSQL. Raises ``LegacyError`` when anything does not match.
+
+    Parameters
+    ----------
+    pg_bin : Path
+        The PostgreSQL ``bin`` folder.
+    workdir : Path
+        An empty folder for the test data.
+    relocate : bool or None
+        The flag to run PostgreSQL from a copy (as in the Store).
+
+    Returns
+    -------
+    dict
+        The rows copied, the checked total and whether a copy was used.
+    """
+    from .models import Transaction
+    workdir = Path(workdir)
+    workdir.mkdir(parents=True, exist_ok=True)
+    total = make_v03_cluster(pg_bin, workdir, relocate=relocate)
+    copies = sorted(p.name for p in (workdir / "runtime").glob("pgsql-*"))
+    dest = workdir / "pfi.sqlite"
+    counts = migrate_cluster(pg_bin, workdir, dest, _free_port(), relocate)
+    eng = make_engine(sqlite_url(dest))
+    with eng.connect() as c:
+        got = c.scalar(select(func.sum(Transaction.amount)))
+    eng.dispose()
+    if got != total or has_cluster(workdir):
+        raise LegacyError(f"Self-test mismatch: total {got} vs {total}.")
+    if (workdir / "runtime").exists():
+        raise LegacyError("The PostgreSQL copy was not removed after moving.")
+    return {"transactions": counts["transactions"], "total": str(total),
+            "runtime_copy": copies[0] if copies else None}

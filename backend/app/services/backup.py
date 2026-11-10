@@ -516,18 +516,34 @@ def install_database(new_db: Path, new_files: Path | None, db_path: Path,
     """
     if engine is not None:
         engine.dispose()
-    for extra in (Path(f"{db_path}-wal"), Path(f"{db_path}-shm")):
-        extra.unlink(missing_ok=True)
     staged = db_path.with_name(db_path.name + ".restore")
-    shutil.copyfile(new_db, staged)
-    os.replace(staged, db_path)
+    try:
+        shutil.copyfile(new_db, staged)
+        for extra in (Path(f"{db_path}-wal"), Path(f"{db_path}-shm")):
+            extra.unlink(missing_ok=True)
+        os.replace(staged, db_path)
+    except OSError as exc:
+        staged.unlink(missing_ok=True)
+        raise BackupError(
+            f"The database file could not be replaced ({exc}). Your data "
+            "was not changed. Close other programs that may use the PFI "
+            "folder (e.g. a virus scan), restart PFI and try again.") from exc
     live = Path(data_dir) / "attachments"
     old = Path(data_dir) / "attachments.old"
     shutil.rmtree(old, ignore_errors=True)
-    if live.exists():
-        live.rename(old)
-    if new_files is not None and new_files.is_dir():
-        shutil.copytree(new_files, live)
+    try:
+        if live.exists():
+            live.rename(old)
+        if new_files is not None and new_files.is_dir():
+            shutil.copytree(new_files, live)
+    except OSError as exc:
+        shutil.rmtree(live, ignore_errors=True)
+        if old.exists():
+            old.rename(live)
+        raise BackupError(
+            f"The data was restored, but the receipts could not be copied "
+            f"({exc}). The previous receipts were kept. Restore again after "
+            "restarting PFI.") from exc
     shutil.rmtree(old, ignore_errors=True)
 
 

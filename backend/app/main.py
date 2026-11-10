@@ -91,7 +91,8 @@ async def lifespan(app: FastAPI):
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if not db_path.exists() and legacy.has_cluster(settings.data_dir):
         counts = legacy.migrate_cluster(settings.pg_bin, settings.data_dir,
-                                        db_path, settings.pg_port)
+                                        db_path, settings.pg_port,
+                                        settings.pg_relocate)
         log.info("Moved the 0.3 database to SQLite: %d transactions",
                  counts.get("transactions", 0))
     engine = init_engine(sqlite_url(db_path))

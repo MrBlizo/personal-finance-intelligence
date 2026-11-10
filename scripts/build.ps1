@@ -22,7 +22,7 @@ param(
     [switch]$SkipInstaller,
     [switch]$SkipMsix,
     [switch]$DebugBuild,
-    [string]$Version = "0.3.2"
+    [string]$Version = "0.4.0"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -218,6 +218,18 @@ $env:PFI_FRONTEND_DIST = Join-Path $Stage "web"; $env:PFI_API_TOKEN = $token; $e
 # Run PostgreSQL from a copy in the data folder, as the Store package does
 # (Windows blocks it inside the protected WindowsApps install folder).
 $env:PFI_PG_RELOCATE = "1"
+# The move of a 0.3 PostgreSQL database into SQLite, with the packaged
+# PostgreSQL and the packaged backend, on throw-away data.
+# Native stderr lines must not stop the script (ErrorActionPreference=Stop).
+$prevEap = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+$selftest = & (Join-Path $Stage "backend\pfi-api.exe") --selftest-legacy (Join-Path $smoke "legacy") 2>&1 | Out-String
+$selftestExit = $LASTEXITCODE; $ErrorActionPreference = $prevEap
+Add-Content $Log -Encoding UTF8 -Value $selftest
+$legacyLine = ($selftest -split "`r?`n" | Where-Object { $_ -like "legacy self-test*" } | Select-Object -Last 1)
+if ($selftestExit -ne 0 -or $legacyLine -notlike "legacy self-test ok*") {
+    Stop-SmokeDb
+    Fail "Moving a 0.3 database to SQLite failed in the packaged app: $legacyLine (details in dist\build.log)."
+}
 $proc = Start-Process -FilePath (Join-Path $Stage "backend\pfi-api.exe") -ArgumentList "--port $port --log-file `"$smoke\logs\api.log`"" `
     -WindowStyle Hidden -PassThru
 $h = @{ "X-PFI-Token" = $token }; $base = "http://127.0.0.1:$port"; $ok = $false
@@ -255,10 +267,15 @@ try {
     if ($ctype -notmatch "javascript") { throw "UI scripts are served as '$ctype' instead of JavaScript; the app window would stay blank." }
     try { Invoke-RestMethod "$base/api/settings" | Out-Null; throw "API answered without the token" } catch { if ($_.Exception.Message -like "*without the token*") { throw } }
     $results += "token check: ok"
-    $copied = Get-ChildItem (Join-Path $smoke "runtime") -Filter "pgsql-*" -Directory -ErrorAction SilentlyContinue |
-        Where-Object { Test-Path (Join-Path $_.FullName "bin\postgres.exe") }
-    if (-not $copied) { throw "PostgreSQL did not run from its copy in smoke-data\runtime (Store mode)." }
-    $results += "store mode: PostgreSQL ran from runtime\$($copied[0].Name)"
+    $info = Invoke-RestMethod "$base/api/info" -Headers $h
+    if ($info.database -ne "SQLite") { throw "The backend uses '$($info.database)' instead of SQLite." }
+    $results += "database: SQLite ($($info.database_file))"
+    $bk = Invoke-RestMethod "$base/api/backups" -Method Post -Headers $h -ContentType "application/json" -Body '{"kind":"manual"}'
+    $bkFile = Join-Path $bk.folder $bk.name
+    $head = [System.IO.File]::ReadAllBytes($bkFile)[0..1]
+    if ($bk.name -notlike "*.pfibak" -or [System.Text.Encoding]::ASCII.GetString($head) -ne "PK") { throw "The backup $($bk.name) is not a .pfibak archive." }
+    $results += "backup: $($bk.name) ($($bk.size) bytes)"
+    $results += $legacyLine.Trim()
 } catch {
     $err = $_.Exception.Message
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { Button, Input, Tab, TabList } from "@fluentui/react-components";
 import {
@@ -24,6 +25,9 @@ export default function Reports() {
   const rep = useLoad(() => get<MonthlyReport>("/api/reports/monthly", { month }), [month]);
   const nw = useLoad(() => get<{ currency: string; points: NetWorthPoint[] }>(
     "/api/reports/net-worth", { months }), [months]);
+  const tagRep = useLoad(() => tab === "tags"
+    ? get<{ base_currency: string; items: { tag: string; spent: number; received: number; transactions: number }[] }>("/api/analytics/tags")
+    : Promise.resolve(null), [tab]);
   const r = rep.data;
   const cur = r?.currency ?? "CHF";
 
@@ -54,6 +58,7 @@ export default function Reports() {
       <TabList selectedValue={tab} onTabSelect={(_, d) => setTab(String(d.value))} style={{ marginBottom: 12 }}>
         <Tab value="monthly">{t("Monthly report")}</Tab>
         <Tab value="networth">{t("Net worth over time")}</Tab>
+        <Tab value="tags">{t("By tag")}</Tab>
       </TabList>
 
       {tab === "monthly" && (
@@ -160,6 +165,23 @@ export default function Reports() {
               </Section>
             </>)}
         </>)}
+
+      {tab === "tags" && (
+        <Section title={t("Spending by tag")} sub={t("All time, in {c}. Add tags to transactions under Tags, split and receipts.", { c: tagRep.data?.base_currency ?? cur })}>
+          {tagRep.loading && !tagRep.data && <Spinner />}
+          {tagRep.error && <Banner kind="error">{tagRep.error}</Banner>}
+          {tagRep.data?.items.length === 0 && <Empty>{t("No tagged transactions yet.")}</Empty>}
+          {!!tagRep.data?.items.length && (
+            <div className="table-wrap"><table>
+              <thead><tr><th>{t("Tag")}</th><th className="num">{t("Transactions")}</th>
+                <th className="num">{t("Spent")}</th><th className="num">{t("Received")}</th></tr></thead>
+              <tbody>{tagRep.data.items.map((i) => (
+                <tr key={i.tag}><td><Link href={`/transactions/?tag=${encodeURIComponent(i.tag)}`}>{i.tag}</Link></td>
+                  <td className="num">{i.transactions}</td>
+                  <td className="num">{money(i.spent, tagRep.data!.base_currency)}</td>
+                  <td className="num">{i.received ? money(i.received, tagRep.data!.base_currency) : "—"}</td></tr>))}</tbody>
+            </table></div>)}
+        </Section>)}
     </>
   );
 }

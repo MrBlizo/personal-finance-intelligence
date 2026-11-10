@@ -25,7 +25,24 @@ export interface Settings {
   alphavantage_api_key_set: boolean;
   alphavantage_api_key_hint: string | null;
 }
-export interface Backup { name: string; kind: string; size: number; created: string }
+export interface Backup {
+  name: string; kind: string; size: number; created: string;
+  folder: string; encrypted: boolean; legacy: boolean; warning: string | null;
+}
+export interface BackupList {
+  folder: string; default_folder: string; chosen_folder: string | null;
+  folder_warning: string | null; encrypt: boolean; has_password: boolean;
+  available: boolean; backups: Backup[];
+}
+export interface SplitPart {
+  category_id: Id | null; amount: number; note: string | null;
+  category_name?: string | null;
+}
+export interface Attachment {
+  id: Id; filename: string; size: number; content_type: string;
+  created_at: string | null;
+}
+export interface TagInfo { id: Id; name: string; count: number }
 export interface Account {
   id: Id; name: string; type: string; currency: string;
   institution: string | null; opening_balance: number; opening_date: string;
@@ -43,6 +60,7 @@ export interface Txn {
   merchant: string | null; category_id: Id | null;
   category_name: string | null; transfer_group: string | null;
   import_batch_id: Id | null; trade_id: Id | null; notes: string | null;
+  splits: SplitPart[]; tags: string[]; attachments: number;
 }
 export interface FxRate {
   id: Id; rate_date: string; from_currency: string; to_currency: string;
@@ -177,11 +195,22 @@ export interface ImportPreview {
   rows: Record<string, string | null>[];
   guess: Record<string, string | boolean | null>;
   preset: { id: Id; name: string; mapping: Record<string, unknown> } | null;
+  format: "csv" | "ofx" | "qif" | "camt";
 }
 export interface ImportResult {
   batch_id: Id; rows_total: number; rows_imported: number;
   rows_duplicate: number; rows_failed: number; errors: string[];
   categorized: number; learned?: number; preset?: string | null;
+  rows_skipped?: number;
+}
+export interface PossibleDuplicate {
+  line: number; txn_date: string; amount: number; description: string;
+  merchant: string | null;
+  existing: { id: Id; txn_date: string; description: string; merchant: string | null };
+}
+export interface ImportCheck {
+  rows_total: number; rows_new: number; rows_duplicate: number;
+  rows_failed: number; errors: string[]; possible: PossibleDuplicate[];
 }
 export interface ImportBatch {
   id: Id; account_id: Id; filename: string; rows_total: number;
