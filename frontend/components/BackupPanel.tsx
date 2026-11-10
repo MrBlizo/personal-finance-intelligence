@@ -192,7 +192,7 @@ export function BackupPanel({ onMessage, onRestored }: {
                     href={downloadUrl(`/api/backups/${b.name}/download`)} /></Tooltip>
                 {!b.legacy && <Button appearance="subtle" size="small" onClick={() => setConfirm(b)}>{t("Restore")}</Button>}
                 {b.legacy && <Tooltip content={t("Backups from PFI 0.3 can only be restored with PFI 0.4.0.")} relationship="label">
-                  <Button appearance="subtle" size="small" disabled>{t("Restore")}</Button></Tooltip>}</td></tr>))}
+                  <Button appearance="subtle" size="small" disabledFocusable>{t("Restore")}</Button></Tooltip>}</td></tr>))}
           </tbody></table>)}
     </div>
     {confirm && <Confirm danger text={t("Restore the backup from {d}? Your current data is backed up first, then replaced.",

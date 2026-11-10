@@ -93,10 +93,43 @@ namespace winrt::PFI::implementation
             m_lockEnabled = obj.GetNamedString(L"app_lock", L"off") == L"hello";
             m_lockMinutes = static_cast<int>(obj.GetNamedNumber(L"lock_after_minutes", 5));
             ApplyLanguage(std::wstring(obj.GetNamedString(L"language", L"en")), nullptr);
+            ApplyTheme(std::wstring(obj.GetNamedString(L"theme", L"system")));
         }
         catch (...)
         {
             // Keep the defaults: no lock, English shell texts.
+        }
+    }
+
+    void MainWindow::ApplyTheme(std::wstring const& theme)
+    {
+        m_theme = (theme == L"light" || theme == L"dark") ? theme : L"system";
+        auto element = m_theme == L"light" ? ElementTheme::Light
+                     : m_theme == L"dark" ? ElementTheme::Dark : ElementTheme::Default;
+        if (auto root = Content().try_as<FrameworkElement>()) root.RequestedTheme(element);
+        try
+        {
+            using winrt::Microsoft::UI::Windowing::TitleBarTheme;
+            AppWindow().TitleBar().PreferredTheme(
+                m_theme == L"light" ? TitleBarTheme::Light
+                : m_theme == L"dark" ? TitleBarTheme::Dark : TitleBarTheme::UseDefaultAppMode);
+        }
+        catch (...)
+        {
+            // Older Windows App SDK runtime: the caption buttons keep the system colours.
+        }
+        if (auto core = Web().CoreWebView2())
+        {
+            try
+            {
+                core.Profile().PreferredColorScheme(
+                    m_theme == L"light" ? CoreWebView2PreferredColorScheme::Light
+                    : m_theme == L"dark" ? CoreWebView2PreferredColorScheme::Dark
+                    : CoreWebView2PreferredColorScheme::Auto);
+            }
+            catch (...)
+            {
+            }
         }
     }
 
@@ -149,6 +182,7 @@ namespace winrt::PFI::implementation
 #ifdef NDEBUG
         settings.AreDevToolsEnabled(false);
 #endif
+        ApplyTheme(m_theme);   // the page colours, now that the WebView exists
         core.WebMessageReceived({ this, &MainWindow::OnWebMessage });
         core.NavigationStarting([this](CoreWebView2 const&, CoreWebView2NavigationStartingEventArgs const& a)
         {
@@ -336,6 +370,10 @@ namespace winrt::PFI::implementation
             {
                 auto labels = obj.GetNamedObject(L"labels", JsonObject());
                 ApplyLanguage(std::wstring(obj.GetNamedString(L"lang", L"en")), &labels);
+            }
+            else if (type == L"theme")
+            {
+                ApplyTheme(std::wstring(obj.GetNamedString(L"theme", L"system")));
             }
             else if (type == L"lockSettings")
             {

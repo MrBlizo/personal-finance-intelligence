@@ -10,6 +10,7 @@ import {
 import { Dismiss20Regular } from "@fluentui/react-icons";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n";
+import { ThemeMenu } from "./Theme";
 
 export function useLoad<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
@@ -93,7 +94,7 @@ export function PageHead({ title, sub, children }: {
         <h1>{title}</h1>
         {sub && <div className="subtitle">{sub}</div>}
       </div>
-      {children && <div className="commands">{children}</div>}
+      <div className="commands">{children}<ThemeMenu /></div>
     </header>
   );
 }

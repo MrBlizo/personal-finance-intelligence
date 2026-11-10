@@ -13,6 +13,7 @@ export interface Settings {
   price_auto_update: boolean;
   price_last_update: string | null;
   language: "en" | "fr" | "ar";
+  theme: "system" | "light" | "dark";
   app_lock: "off" | "hello";
   lock_after_minutes: number;
   auto_categorize: boolean;

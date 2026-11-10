@@ -43,6 +43,7 @@ class SettingsOut(BaseModel):
     price_auto_update: bool = True
     price_last_update: str | None = None
     language: str = "en"
+    theme: str = "system"
     app_lock: str = "off"
     lock_after_minutes: int = 5
     auto_categorize: bool = True
@@ -63,6 +64,7 @@ class SettingsIn(_UpperCurrency):
     fx_auto_update: bool | None = None
     price_auto_update: bool | None = None
     language: Literal["en", "fr", "ar"] | None = None
+    theme: Literal["system", "light", "dark"] | None = None
     app_lock: Literal["off", "hello"] | None = None
     lock_after_minutes: Annotated[int | None, Field(ge=0, le=240)] = None
     auto_categorize: bool | None = None

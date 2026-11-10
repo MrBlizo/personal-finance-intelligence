@@ -6,13 +6,13 @@ import {
   Link as FLink, Spinner, Toast, ToastBody, ToastFooter, ToastTitle, Toaster,
   useId, useToastController,
 } from "@fluentui/react-components";
-import { get, Settings } from "@/lib/api";
+import { get, put, Settings } from "@/lib/api";
 import { I18nProvider, Lang, translate, useT } from "@/lib/i18n";
 import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
-import { ThemeRoot } from "./Theme";
+import { ThemePref, ThemeRoot } from "./Theme";
 
 export const NAV = [
   { href: "/", label: "Home", glyph: "" },
@@ -75,10 +75,15 @@ export default function AppFrame({ children }: { children: ReactNode }) {
   const path = usePathname() || "/";
   const router = useRouter();
   const [lang, setLang] = useState<Lang | null>(null);
+  const [theme, setTheme] = useState<ThemePref>("system");
+  const changeTheme = (p: ThemePref) => {
+    setTheme(p);
+    put("/api/settings", { theme: p }).catch(() => {});
+  };
   useEffect(() => {
     if (inShell()) document.documentElement.dataset.shell = "1";
     get<Settings>("/api/settings")
-      .then((s) => setLang((s.language as Lang) || "en"))
+      .then((s) => { setTheme(s.theme || "system"); setLang((s.language as Lang) || "en"); })
       .catch(() => setLang("en"));
     return onShellNavigate((p) => router.push(p));
   }, [router]);
@@ -96,7 +101,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
   return (
     <PrefsCtx.Provider value={{ lang, setLang }}>
       <I18nProvider lang={lang}>
-        <ThemeRoot dir={lang === "ar" ? "rtl" : "ltr"}>
+        <ThemeRoot dir={lang === "ar" ? "rtl" : "ltr"} pref={theme} onChange={changeTheme}>
           <div className="frame">
             <Sidebar path={path} />
             <main className="main">{children}</main>

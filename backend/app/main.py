@@ -2,6 +2,7 @@
 import html
 import logging
 import mimetypes
+import re
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -39,6 +40,27 @@ for _ext, _type in ((".js", "text/javascript"), (".mjs", "text/javascript"),
                     (".svg", "image/svg+xml"), (".txt", "text/plain"),
                     (".woff2", "font/woff2"), (".html", "text/html")):
     mimetypes.add_type(_type, _ext)
+
+
+# Next.js names the page data of client-side navigation
+# "<route>/__next.<route>.__PAGE__.txt", but its build on Windows writes
+# "<route>/__next.<route>/__PAGE__.txt" instead. Both spellings are served.
+_SEGMENT = re.compile(r"^(.*__next\.[^/\\]+)\.(__PAGE__\.txt)$")
+
+
+class UiFiles(StaticFiles):
+    """The static Next.js export, tolerant of the Windows segment layout."""
+
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 404:
+            match = _SEGMENT.match(path)
+            if match:
+                alt = await super().get_response(
+                    f"{match[1]}/{match[2]}", scope)
+                if alt.status_code == 200:
+                    return alt
+        return response
 
 
 def background_tasks(data_dir: Path, db_path: Path) -> None:
@@ -157,8 +179,8 @@ def create_app() -> FastAPI:
                    investments, analytics, automation, reports):
         app.include_router(module.router)
     if settings.frontend_dist.is_dir():
-        app.mount("/", StaticFiles(directory=settings.frontend_dist,
-                                   html=True), name="ui")
+        app.mount("/", UiFiles(directory=settings.frontend_dist,
+                               html=True), name="ui")
     else:
         log.warning("Frontend build not found at %s; serving API only.",
                     settings.frontend_dist)

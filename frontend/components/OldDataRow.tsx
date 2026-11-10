@@ -21,7 +21,7 @@ export function OldDataRow({ onMessage }: {
   const total = d.size + (dumps ? d.dump_size : 0);
   return (
     <>
-      <SettingRow icon={""} title={t("Old data from PFI 0.3")}
+      <SettingRow icon={"\uE74D"} title={t("Old data from PFI 0.3")}
         description={<>
           {t("Your data was moved to the new format in 0.4. The old copy is no longer used and takes {size}.",
             { size: bytes(d.size) })}

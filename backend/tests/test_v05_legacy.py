@@ -83,3 +83,22 @@ def test_unmoved_cluster_blocks_start(tmp_path, monkeypatch):
         assert page.status_code == 503 and "PFI 0.4.0" in page.text
     assert not (tmp_path / "pfi.sqlite").exists()
     assert (tmp_path / "pgdata" / "PG_VERSION").exists()
+
+
+def test_page_segments_in_both_layouts(tmp_path, monkeypatch):
+    web = tmp_path / "web"
+    (web / "transactions" / "__next.transactions").mkdir(parents=True)
+    (web / "transactions" / "__next.transactions" / "__PAGE__.txt"
+     ).write_text("windows")
+    (web / "insights").mkdir()
+    (web / "insights" / "__next.insights.__PAGE__.txt").write_text("linux")
+    (web / "404.html").write_text("missing")
+    settings = get_settings()
+    monkeypatch.setattr(settings, "frontend_dist", web)
+    with TestClient(create_app()) as c:
+        r = c.get("/transactions/__next.transactions.__PAGE__.txt"
+                  "?uncategorized=1")
+        assert r.status_code == 200 and r.text == "windows"
+        r = c.get("/insights/__next.insights.__PAGE__.txt")
+        assert r.status_code == 200 and r.text == "linux"
+        assert c.get("/goals/__next.goals.__PAGE__.txt").status_code == 404

@@ -54,6 +54,8 @@ namespace winrt::PFI::implementation
         void LoadShellSettings();
         void ApplyLanguage(std::wstring const& lang,
                            winrt::Windows::Data::Json::JsonObject const* labels);
+        // "system", "light" or "dark": window, title bar and page colours.
+        void ApplyTheme(std::wstring const& theme);
 
         // Windows Hello app lock.
         void Lock();
@@ -74,6 +76,7 @@ namespace winrt::PFI::implementation
         std::wstring m_initialPath;
         bool m_notificationsEnabled{ false };
         std::wstring m_lang{ L"en" };
+        std::wstring m_theme{ L"system" };
         bool m_lockEnabled{ false };
         int m_lockMinutes{ 5 };
         bool m_locked{ false };

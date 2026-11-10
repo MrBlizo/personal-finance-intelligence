@@ -11,6 +11,7 @@ import {
 import { usePrefs } from "@/components/AppFrame";
 import { BackupPanel } from "@/components/BackupPanel";
 import { OldDataRow } from "@/components/OldDataRow";
+import { ThemePref, useTheme } from "@/components/Theme";
 import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, PageHead, SettingRow, Spinner, useLoad,
@@ -70,6 +71,7 @@ function ApiKeyRow({ provider, settings, run, save }: {
 export default function SettingsPage() {
   const t = useT();
   const { setLang } = usePrefs();
+  const theme = useTheme();
   const refs = useRefs();
   const rates = useLoad(() => get<FxRate[]>("/api/fx-rates"));
   const missing = useLoad(() => get<{ missing: string[] }>("/api/fx-rates/missing"));
@@ -117,6 +119,14 @@ export default function SettingsPage() {
                 return translate(d.value as Lang, "Language changed.");
               })}>
                 {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+              </Select>
+            </SettingRow>
+            <SettingRow icon={"\uE793"} title={t("Theme")}
+              description={t("Light, dark, or the same as Windows. Also in the top right corner of every page.")}>
+              <Select value={theme.pref} onChange={(_, d) => theme.setPref(d.value as ThemePref)}>
+                <option value="system">{t("Same as Windows")}</option>
+                <option value="light">{t("Light")}</option>
+                <option value="dark">{t("Dark")}</option>
               </Select>
             </SettingRow>
             <SettingRow icon={""} title={t("Reporting currency")}
