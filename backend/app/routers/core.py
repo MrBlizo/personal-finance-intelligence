@@ -17,7 +17,7 @@ from ..services.fx import FxConverter
 from ..services.fx_fetch import FxFetchError, update_rates
 from ..services.importer import Categorizer
 from ..services.ledger import base_currency, net_worth
-from .common import category_names, commit_or_409, get_or_404
+from .common import category_names, commit_or_409, get_or_404, not_split
 
 router = APIRouter(prefix="/api")
 
@@ -278,7 +278,8 @@ def apply_rules(only_uncategorized: bool = True,
     """Re-run the rules over existing (non-transfer) transactions."""
     cz = Categorizer(db)
     stmt = select(Transaction).where(Transaction.kind != "transfer",
-                                     Transaction.trade_id.is_(None))
+                                     Transaction.trade_id.is_(None),
+                                     not_split())
     if only_uncategorized:
         stmt = stmt.where(Transaction.category_id.is_(None))
     changed = 0
