@@ -1,0 +1,12 @@
+name = "pfi-usage"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pfi-usage"
+# Paste the database_id printed by `npx wrangler d1 create pfi-usage`.
+database_id = "REPLACE_WITH_YOUR_DATABASE_ID"
+
+[triggers]
+crons = ["0 3 * * 1"]

@@ -11,6 +11,7 @@ import {
 import { usePrefs } from "@/components/AppFrame";
 import { BackupPanel } from "@/components/BackupPanel";
 import { OldDataRow } from "@/components/OldDataRow";
+import { UsageExplainer } from "@/components/UsagePrompt";
 import { ThemePref, useTheme } from "@/components/Theme";
 import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
@@ -142,6 +143,20 @@ export default function SettingsPage() {
 
           <div className="group-title">{t("Privacy & security")}</div>
           <div className="settings-group">
+            {s.usage_available && (
+              <SettingRow icon={"\uE9D9"} title={t("Count me as a user (anonymous)")}
+                description={<>
+                  {t("Once a week PFI sends three values so the developer knows how many people use it:")}
+                  <UsageExplainer />
+                  {s.usage_sent && <span>{t("Sent: {v}", { v: `id ${s.usage_sent.id.slice(0, 8)}…, ${s.usage_sent.version}, ${s.usage_sent.lang}` })}
+                    {s.usage_last_ping && ` · ${t("last on {d}", { d: date(s.usage_last_ping.slice(0, 10)) })}`}</span>}
+                </>}>
+                <Switch checked={s.usage_ping === "on"} onChange={(_, d) => run(async () => {
+                  await save({ usage_ping: d.checked ? "on" : "off" });
+                  return d.checked ? t("Thank you! This install is now counted anonymously.")
+                    : t("Counting is off and the random number was deleted.");
+                })} />
+              </SettingRow>)}
             <SettingRow icon={""} title={t("App lock with Windows Hello")}
               description={!shell ? t("Only available in the desktop app.")
                 : hello === false ? t("Windows Hello is not set up on this PC. Set up a PIN, fingerprint or face in Windows Settings › Accounts › Sign-in options.")

@@ -1,6 +1,7 @@
 """Settings, exchange rates, accounts, categories and rules."""
 import json
 import re
+import threading
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import func, select, update
@@ -12,7 +13,7 @@ from ..migrations import MIGRATIONS
 from ..models import (
     Account, Category, CategoryRule, ExchangeRate, Holding, SavingsGoal,
     Setting, Transaction)
-from ..services import prefs
+from ..services import prefs, usage
 from ..services.fx import FxConverter
 from ..services.fx_fetch import FxFetchError, update_rates
 from ..services.importer import Categorizer
@@ -35,7 +36,12 @@ def get_settings_(db: Session = Depends(get_db)):
     return {"base_currency": base_currency(db),
             "currencies_in_use": _currencies(db),
             "schema_version": max(v for v, _, _ in MIGRATIONS),
-            **prefs.snapshot(db)}
+            **prefs.snapshot(db),
+            "usage_ping": usage.state(db),
+            "usage_available": bool(usage.USAGE_URL),
+            "usage_sent": usage.payload(db) if usage.state(db) == "on"
+            else None,
+            "usage_last_ping": prefs.get(db, "usage_last_ping") or None}
 
 
 def _put(db: Session, key: str, value: str) -> None:
@@ -48,14 +54,26 @@ def _put(db: Session, key: str, value: str) -> None:
 
 @router.put("/settings", response_model=s.SettingsOut)
 def put_settings(body: s.SettingsIn, db: Session = Depends(get_db)):
-    for key, value in body.model_dump(exclude_none=True).items():
+    data = body.model_dump(exclude_none=True)
+    ping = data.pop("usage_ping", None)
+    if ping is not None:
+        usage.set_state(db, ping == "on")
+    for key, value in data.items():
         if isinstance(value, bool):
             value = "1" if value else "0"
         elif isinstance(value, dict):
             value = json.dumps(value)
         _put(db, key, str(value))
     db.commit()
+    if ping == "on":
+        threading.Thread(target=_ping_now, daemon=True).start()
     return get_settings_(db)
+
+
+def _ping_now() -> None:
+    from ..db import SessionLocal
+    with SessionLocal() as db:
+        usage.send(db)
 
 
 @router.post("/fx-rates/fetch")
