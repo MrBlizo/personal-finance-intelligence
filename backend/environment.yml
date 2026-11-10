@@ -19,6 +19,8 @@ dependencies:
   # reports: PDF (reportlab) and Excel export (openpyxl)
   - reportlab>=4.2
   - openpyxl>=3.1
+  # encrypted backups (AES-GCM, scrypt)
+  - cryptography>=42
   # build & test
   - pyinstaller>=6.6
   - pytest>=8
@@ -28,5 +30,6 @@ dependencies:
   - pip:
       # psycopg from pip: the "binary" wheel bundles libpq, which PyInstaller
       # packages reliably into pfi-api.exe (conda's libpq is located at
-      # runtime and is easily missed by PyInstaller).
+      # runtime and is easily missed by PyInstaller). Since 0.4 it is only
+      # used once, to move a 0.3 PostgreSQL database into SQLite.
       - psycopg[binary]>=3.2

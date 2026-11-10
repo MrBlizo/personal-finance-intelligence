@@ -1,7 +1,8 @@
-"""Test fixtures: a throw-away embedded PostgreSQL cluster per test run.
+"""Test fixtures: a throw-away SQLite database per test run.
 
-Set ``PFI_TEST_PG_BIN`` to the PostgreSQL ``bin`` folder (e.g.
-``C:\\Program Files\\PostgreSQL\\18\\bin``) before running ``pytest``.
+The tests that move PostgreSQL data (``test_legacy.py``) also need
+``PFI_TEST_PG_BIN``, the PostgreSQL ``bin`` folder (e.g.
+``C:\\Program Files\\PostgreSQL\\18\\bin``); they are skipped without it.
 """
 import os
 import shutil
@@ -11,11 +12,9 @@ from pathlib import Path
 import pytest
 
 PG_BIN = os.environ.get("PFI_TEST_PG_BIN")
-if not PG_BIN:
-    pytest.exit("Set PFI_TEST_PG_BIN to your PostgreSQL bin folder, e.g. "
-                r"C:\Program Files\PostgreSQL\18\bin", returncode=2)
 DATA = Path(tempfile.mkdtemp(prefix="pfi-test-"))
-os.environ.update(PFI_PG_BIN=PG_BIN, PFI_DATA_DIR=str(DATA),
+os.environ.pop("PFI_DATABASE_URL", None)
+os.environ.update(PFI_PG_BIN=PG_BIN or "", PFI_DATA_DIR=str(DATA),
                   PFI_PG_PORT="54399", PFI_API_TOKEN="",
                   PFI_FRONTEND_DIST=str(DATA / "no-ui"),
                   PFI_BACKGROUND_TASKS="0")
@@ -38,10 +37,13 @@ def client():
 @pytest.fixture()
 def api(client):
     """Client on an empty database with default categories."""
-    tables = ", ".join(t.name for t in Base.metadata.sorted_tables
-                       if t.name != "schema_version")
     with get_engine().begin() as conn:
-        conn.execute(text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE"))
+        for table in reversed(Base.metadata.sorted_tables):
+            if table.name != "schema_version":
+                conn.execute(table.delete())
+        conn.execute(text("DELETE FROM sqlite_sequence")) \
+            if conn.execute(text("SELECT 1 FROM sqlite_master WHERE "
+                                 "name='sqlite_sequence'")).first() else None
     with SessionLocal() as db:
         seed_defaults(db, "CHF")
     return client

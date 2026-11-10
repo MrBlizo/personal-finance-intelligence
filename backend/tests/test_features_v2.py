@@ -107,10 +107,11 @@ def test_backup_and_restore(api):
     listing = api.get("/api/backups").json()
     assert listing["available"] and len(listing["backups"]) >= 2
     dl = api.get(f"/api/backups/{b['name']}/download")
-    assert dl.status_code == 200 and dl.content.startswith(b"PGDMP")
+    assert dl.status_code == 200 and dl.content.startswith(b"PK")
     up = api.post("/api/backups/upload", files={
-        "file": ("x.dump", dl.content, "application/octet-stream")}).json()
+        "file": ("x.pfibak", dl.content, "application/octet-stream")}).json()
     assert up["name"].startswith("pfi-uploaded-")
+    assert up["name"].endswith(".pfibak")
     bad = api.post("/api/backups/upload", files={
         "file": ("x.dump", b"hello", "application/octet-stream")})
     assert bad.status_code == 422

@@ -251,7 +251,8 @@ async def import_preview(file: UploadFile = File(...), skip_rows: int = 0,
     rows = df.head(20).to_dict(orient="records")
     preset = db.scalar(select(ImportPreset).where(
         ImportPreset.header_signature == header_signature(list(df.columns)))
-        .order_by(ImportPreset.created_at.desc()).limit(1))
+        .order_by(ImportPreset.created_at.desc(), ImportPreset.id.desc())
+        .limit(1))
     return {"filename": file.filename or "upload.csv", "sha256": sha,
             "already_imported": bool(seen), "delimiter": delimiter,
             "encoding": encoding, "columns": list(df.columns),
@@ -300,7 +301,7 @@ async def import_commit(file: UploadFile = File(...),
 @router.get("/import/batches", response_model=list[s.ImportBatchOut])
 def list_batches(db: Session = Depends(get_db)):
     return db.scalars(select(ImportBatch).order_by(
-        ImportBatch.imported_at.desc())).all()
+        ImportBatch.imported_at.desc(), ImportBatch.id.desc())).all()
 
 
 @router.delete("/import/batches/{batch_id}")
