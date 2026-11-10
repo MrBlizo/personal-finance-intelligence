@@ -214,7 +214,7 @@ def test_demo_dashboard_charts_insights(api):
     assert fc["lookback_days_used"] >= 28
     goals = api.get("/api/goals").json()
     assert {g["currency"] for g in goals} == {"CHF", "MAD"}
-    assert api.delete("/api/demo").json()["removed_accounts"] == 5
+    assert api.delete("/api/demo").json()["removed_accounts"] == 6
     assert api.get("/api/accounts").json() == []
 
 

@@ -36,7 +36,7 @@ function Heatmap({ data, lang }: { data: CalendarData; lang: string }) {
   const fmtDay = (i: number) => new Date(2024, 0, 1 + i).toLocaleDateString(lang, { weekday: "short" });
   return (
     <div className="heat-wrap">
-      <div className="heat" style={{ gridTemplateColumns: `auto repeat(${weeks.length}, 1fr)` }}>
+      <div className="heat" style={{ gridTemplateColumns: `auto repeat(${weeks.length}, minmax(0, 1fr))` }}>
         <span />
         {weeks.map((w, i) => {
           const m = w.find((d) => d.getDate() === 1 && d.getFullYear() === data.year);

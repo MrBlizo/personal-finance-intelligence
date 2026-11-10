@@ -2,8 +2,8 @@
 1 ICON "Assets\\pfi.ico"
 
 1 VERSIONINFO
- FILEVERSION 0,4,0,0
- PRODUCTVERSION 0,4,0,0
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
  FILEFLAGSMASK 0x3fL
  FILEOS 0x40004L
  FILETYPE 0x1L
@@ -14,11 +14,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Ibrahim"
             VALUE "FileDescription", "Personal Finance Intelligence"
-            VALUE "FileVersion", "0.4.0"
+            VALUE "FileVersion", "0.5.0"
             VALUE "InternalName", "PFI"
             VALUE "OriginalFilename", "PFI.exe"
             VALUE "ProductName", "Personal Finance Intelligence"
-            VALUE "ProductVersion", "0.4.0"
+            VALUE "ProductVersion", "0.5.0"
         END
     END
     BLOCK "VarFileInfo"

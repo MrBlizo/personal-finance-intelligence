@@ -31,8 +31,13 @@ Shown with the built-in demo data (Settings → Load demo data).
 ## Features
 
 - **Accounts & transactions:** checking, savings, cash, cards, investments,
-  loans; transfers between accounts (also across currencies); CSV import
-  from any bank with column presets, duplicate detection and undo.
+  loans; transfers between accounts (also across currencies); import of
+  CSV, Excel, OFX/QFX, QIF and CAMT.053 statements with column presets,
+  side-by-side review of possible duplicates and undo; bulk edit (category,
+  account, tags, delete) of many transactions at once.
+- **Reconcile:** tick the transactions on your bank statement until the
+  difference is zero; reconciled transactions are locked (and can be
+  unlocked by undoing the latest reconciliation).
 - **Smart categories:** your own rules first, then suggestions learned from
   the transactions you categorised yourself (naive Bayes, validated
   chronologically on your newest transactions against a "most common
@@ -41,6 +46,9 @@ Shown with the built-in demo data (Settings → Load demo data).
   the due date, and Windows notifications remind you before they are due.
 - **Budgets & goals:** monthly limits per category with projection; savings
   goals linked to accounts.
+- **Debt payoff:** interest rate and minimum payment per loan or card;
+  avalanche, snowball and minimum-only plans with payoff dates and total
+  interest for any extra monthly amount.
 - **Investments:** average-cost positions, end-of-day prices from Twelve Data
   (US listings) or Alpha Vantage (worldwide) with your free key, stooq,
   CoinGecko (crypto), or entered manually; money-weighted (XIRR) and
@@ -54,11 +62,16 @@ Shown with the built-in demo data (Settings → Load demo data).
   and reports count each part); free tags such as "Holiday 2026" with a
   spending-by-tag report; photos or PDFs of receipts attached to
   transactions.
+- **Spending calendar:** a heatmap of every day's spending and a year in
+  review (savings rate, no-spend days, biggest expense, top categories,
+  change against the year before).
 - **Reports:** monthly PDF report, Excel workbook, CSV export, net-worth
   history.
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
   a password (AES-256); one-click "Move to another PC".
+- **Look:** light, dark or the same as Windows, switchable in every page
+  header.
 
 ## Architecture
 
@@ -75,25 +88,26 @@ free localhost port with a per-launch token, then shows the screens in
 WebView2. The data folder is `%LOCALAPPDATA%\PersonalFinanceIntelligence`
 (or the app's private storage when installed from the Store).
 
-Up to 0.3 the app ran a private PostgreSQL server. Version 0.4 still bundles
-PostgreSQL once: on the first start it copies a 0.3 database into SQLite,
-checks row counts and totals, and keeps the old folder as `pgdata-0.3`. Old
-`.dump` backups can be restored the same way.
+Up to 0.3 the app ran a private PostgreSQL server. Version 0.4 moved that
+data into SQLite on its first start (and kept the old folder as
+`pgdata-0.3`); since 0.5 PostgreSQL is no longer part of the app.
+Settings › Old data from PFI 0.3 deletes what 0.4 left behind. Data from
+0.3 that was never opened with 0.4 can still be moved with the
+[0.4.0 installer](https://github.com/MrBlizo/personal-finance-intelligence/releases/tag/v0.4.0);
+0.5 explains this instead of starting with an empty database.
 
 ## Build
 
 Requirements: Windows 11, Visual Studio 2022/2026 with *Desktop development
 with C++* and *WinUI application development* (includes a Windows SDK),
-Miniconda, Node.js LTS, PostgreSQL 18 (EDB installer, bundled for moving 0.3
-data) and Inno Setup.
+Miniconda, Node.js LTS and Inno Setup.
 
-Double-click **`build.bat`**. It runs the backend tests (SQLite, plus the
-PostgreSQL move tests), builds the screens, packages the backend, builds
-`PFI.exe`, smoke-tests the packaged app (including moving a 0.3 database
-with the bundled PostgreSQL) and creates:
+Double-click **`build.bat`**. It runs the backend tests, builds the screens,
+packages the backend, builds `PFI.exe`, smoke-tests the packaged app and
+creates:
 
-- `dist\PFI-Setup-0.4.0.exe`: installer for direct download;
-- `dist\PFI-0.4.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.5.0.exe`: installer for direct download;
+- `dist\PFI-0.5.0.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:
@@ -106,8 +120,6 @@ Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:
 cd backend
 conda env create -f environment.yml
 conda activate pfi
-:: optional, for the tests that move 0.3 PostgreSQL data:
-set PFI_TEST_PG_BIN=C:\Program Files\PostgreSQL\18\bin
 pytest -q
 python run.py --port 8765          :: API docs at http://127.0.0.1:8765/docs
 
@@ -124,9 +136,11 @@ build runs the backend from source (`pfi.dev.ini`).
 ## Data and privacy
 
 Your financial data never leaves your PC. The only network requests are
-optional: daily exchange rates (only currency codes are sent) and market
-prices for holdings you link to an online source (only the symbol is sent).
-See [PRIVACY.md](PRIVACY.md).
+optional: daily exchange rates (only currency codes are sent), market
+prices for holdings you link to an online source (only the symbol is sent)
+and, only if you say yes, a weekly anonymous count (a random number, the
+app version and the language; see `usage-worker/`). See
+[PRIVACY.md](PRIVACY.md).
 
 ## Contributing
 

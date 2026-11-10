@@ -282,6 +282,7 @@ mark.diff { background: var(--caution-bg); color: inherit; border-radius: 2px;
 .heat-wrap { overflow-x: auto; padding-bottom: 4px; }
 .heat { display: grid; gap: 3px; align-items: center; min-width: 720px; }
 .heat-month, .heat-day { font-size: 11px; line-height: 14px; color: var(--text-2); white-space: nowrap; }
+.heat-month { overflow: visible; width: 0; }
 .heat-day { padding-inline-end: 6px; }
 .heat-cell { display: block; aspect-ratio: 1; min-width: 10px; border-radius: 3px; }
 a.heat-cell:hover { outline: 2px solid var(--text-2); outline-offset: 1px; }

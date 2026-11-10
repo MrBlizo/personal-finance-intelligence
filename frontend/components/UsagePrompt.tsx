@@ -36,9 +36,11 @@ export function UsagePrompt() {
     <Modal title={t("Help count PFI users?")} onClose={() => setOpen(false)} actions={<>
       <Button appearance="primary" onClick={() => choose(true)}>{t("Yes, count me")}</Button>
       <Button onClick={() => choose(false)}>{t("No thanks")}</Button></>}>
-      <p style={{ marginTop: 0 }}>{t("PFI is free and has no accounts, so I have no idea how many people use it. If you agree, the app sends three values once a week:")}</p>
-      <UsageExplainer />
-      <p className="caption">{t("Never amounts, accounts, transactions or file names. You can change your mind any time in Settings › Privacy & security.")}</p>
+      <div>
+        {t("PFI is free and has no accounts, so I have no idea how many people use it. If you agree, the app sends three values once a week:")}
+        <UsageExplainer />
+        <div className="caption">{t("Never amounts, accounts, transactions or file names. You can change your mind any time in Settings › Privacy & security.")}</div>
+      </div>
     </Modal>
   );
 }

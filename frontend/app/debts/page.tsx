@@ -26,9 +26,12 @@ function monthLabel(iso: string | null, lang: string) {
 
 function duration(months: number | null, t: ReturnType<typeof useT>) {
   if (months === null) return t("never");
+  if (months === 1) return t("1 month");
+  // Under two years in months ("23 months") reads better than "1 year 11 months".
+  if (months < 24) return t("{m} months", { m: months });
   const y = Math.floor(months / 12), m = months % 12;
-  if (!y) return t("{m} months", { m });
-  return m ? t("{y} years {m} months", { y, m }) : t("{y} years", { y });
+  return m === 0 ? t("{y} years", { y }) : m === 1 ? t("{y} years 1 month", { y })
+    : t("{y} years {m} months", { y, m });
 }
 
 export default function Debts() {

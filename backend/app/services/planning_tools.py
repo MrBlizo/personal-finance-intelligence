@@ -211,6 +211,9 @@ def calendar(exp: pd.DataFrame, inc: pd.DataFrame, year: int,
                        "income": round(float(im["amount_base"].sum()), 2)
                        if not im.empty else 0.0})
     active = [m for m in months if m["spend"] or m["income"]]
+    # A month still running is not compared with finished ones.
+    finished = [m for m in active if year < today.year
+                or m["month"] < today.month] or active
     top, biggest, weekday = [], None, None
     if not e.empty:
         by_cat = e.groupby(e["top_category"].fillna("Uncategorized"))[
@@ -252,10 +255,10 @@ def calendar(exp: pd.DataFrame, inc: pd.DataFrame, year: int,
             "top_categories": top, "biggest": biggest,
             "busiest_weekday": weekday,
             "months": months,
-            "highest_month": max(active, key=lambda m: m["spend"])["month"]
-            if active else None,
-            "lowest_month": min(active, key=lambda m: m["spend"])["month"]
-            if active else None,
+            "highest_month": max(finished, key=lambda m: m["spend"])["month"]
+            if finished else None,
+            "lowest_month": min(finished, key=lambda m: m["spend"])["month"]
+            if finished else None,
             "previous": {"spend": round(spend_prev, 2),
                          "income": round(income_prev, 2),
                          "spend_change": change(spend, spend_prev),
