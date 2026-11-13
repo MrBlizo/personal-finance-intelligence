@@ -15,11 +15,9 @@ written to its `backups` subfolder, or to a folder you choose (for example
 in OneDrive); if you set a backup password they are encrypted (AES-256) and
 the password is kept on this PC, protected by Windows for your user
 account. When you choose a OneDrive folder, OneDrive (not PFI) uploads those
-backup files under Microsoft's terms. Your financial data is never sent to
-the developer or to any server operated by the developer. There is no
-account and no advertising. The only thing that can reach the developer is
-the optional, anonymous user count described below, and only if you agree
-to it.
+backup files under Microsoft's terms. Nothing is sent to the developer or to any server operated by the
+developer. There is no account, no analytics, no advertising and no
+telemetry.
 
 ## Network requests
 
@@ -33,21 +31,9 @@ PFI makes only these requests, and only for the purposes described:
 | Market prices | stooq.com | the symbol you entered (e.g. `vt.us`), a date range and your personal stooq API key (if you entered one) | once a day for holdings with stooq as price source, or on request |
 | Crypto prices | api.coingecko.com | the coin id (e.g. `bitcoin`) and a currency code | once a day for holdings with CoinGecko as price source, or on request |
 
-| Anonymous user count (only if you said yes) | a counter run by the developer on Cloudflare Workers | a random number made on your PC when you agreed (not derived from you, the computer or your data), the app version and the app language | at most once a week |
-
 These services receive your IP address as part of any internet request;
 their own privacy policies apply. You can switch both automatic updates off
 in Settings and enter rates and prices manually.
-
-**Anonymous user count.** On the first start PFI asks whether it may count
-your install. If you say no, nothing is sent. If you say yes, the counter
-stores only the random number, the version and the language, one row per
-week, and deletes rows after one year; it does not store IP addresses or
-any other request data (Cloudflare processes the request under its own
-terms). You can switch it off any time in Settings › Privacy & security;
-the random number is then deleted from your PC, so a later "yes" starts
-with a new one. The counter's source code is in the `usage-worker` folder
-of the repository.
 
 Your price-provider API keys (Twelve Data, Alpha Vantage, stooq) are stored
 in your local database and each is only sent to its own provider; they are

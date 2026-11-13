@@ -55,10 +55,6 @@ class SettingsOut(BaseModel):
     twelvedata_api_key_hint: str | None = None
     alphavantage_api_key_set: bool = False
     alphavantage_api_key_hint: str | None = None
-    usage_ping: str = "ask"
-    usage_available: bool = False
-    usage_sent: dict | None = None
-    usage_last_ping: str | None = None
 
 
 class SettingsIn(_UpperCurrency):
@@ -82,7 +78,6 @@ class SettingsIn(_UpperCurrency):
         max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
     alphavantage_api_key: Annotated[str | None, Field(
         max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
-    usage_ping: Literal["on", "off"] | None = None
 
     @field_validator("base_currency", mode="before")
     @classmethod

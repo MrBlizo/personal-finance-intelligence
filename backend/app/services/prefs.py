@@ -23,9 +23,6 @@ DEFAULTS: dict[str, str] = {
     "stooq_api_key": "",
     "twelvedata_api_key": "",
     "alphavantage_api_key": "",
-    "usage_ping": "",
-    "usage_id": "",
-    "usage_last_ping": "",
 }
 #: Personal API keys of price providers; never returned to the UI.
 API_KEYS = ("stooq_api_key", "twelvedata_api_key", "alphavantage_api_key")

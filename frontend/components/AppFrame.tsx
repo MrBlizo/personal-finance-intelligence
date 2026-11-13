@@ -13,7 +13,6 @@ import {
   openLastDownload,
 } from "@/lib/shell";
 import { ThemePref, ThemeRoot } from "./Theme";
-import { UsagePrompt } from "./UsagePrompt";
 
 export const NAV = [
   { href: "/", label: "Home", glyph: "" },
@@ -110,7 +109,6 @@ export default function AppFrame({ children }: { children: ReactNode }) {
             <main className="main">{children}</main>
           </div>
           <DownloadToasts />
-          <UsagePrompt />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>

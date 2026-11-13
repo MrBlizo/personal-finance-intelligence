@@ -14,10 +14,6 @@ export interface Settings {
   price_last_update: string | null;
   language: "en" | "fr" | "ar";
   theme: "system" | "light" | "dark";
-  usage_ping: "ask" | "on" | "off";
-  usage_available: boolean;
-  usage_sent: { id: string; version: string; lang: string } | null;
-  usage_last_ping: string | null;
   app_lock: "off" | "hello";
   lock_after_minutes: number;
   auto_categorize: boolean;

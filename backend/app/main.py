@@ -24,7 +24,6 @@ from .routers import transactions
 from .security import TokenMiddleware
 from .seed import seed_defaults
 from .services.automation import post_due
-from .services import usage
 from .services.backup import auto_backup_if_due
 from .services.prices import prices_due, update_prices
 from .services.fx import FxRateMissing
@@ -100,11 +99,6 @@ def background_tasks(data_dir: Path, db_path: Path) -> None:
                 log.info("Exchange rates updated: %s", result)
     except Exception as exc:
         log.warning("Automatic exchange-rate update skipped: %s", exc)
-    try:
-        with SessionLocal() as db:
-            usage.send(db)
-    except Exception:
-        log.exception("Usage count failed")
     try:
         with SessionLocal() as db:
             if prices_due(db):

@@ -136,11 +136,9 @@ build runs the backend from source (`pfi.dev.ini`).
 ## Data and privacy
 
 Your financial data never leaves your PC. The only network requests are
-optional: daily exchange rates (only currency codes are sent), market
-prices for holdings you link to an online source (only the symbol is sent)
-and, only if you say yes, a weekly anonymous count (a random number, the
-app version and the language; see `usage-worker/`). See
-[PRIVACY.md](PRIVACY.md).
+optional: daily exchange rates (only currency codes are sent) and market
+prices for holdings you link to an online source (only the symbol is sent).
+See [PRIVACY.md](PRIVACY.md).
 
 ## Contributing
 
