@@ -836,5 +836,7 @@
  "not in the backup": "absent de la sauvegarde",
  "{b} ({n} transactions)": "{b} ({n} transactions)",
  "{s} transactions picked at random were compared field by field: {m} differ.": "{s} transactions choisies au hasard ont été comparées champ par champ : {m} diffèrent.",
- "“No thanks” and “Rate PFI” are final. With “Not now”, PFI asks once more in a month.": "« Non merci » et « Noter PFI » sont définitifs. Avec « Pas maintenant », PFI redemande une seule fois dans un mois."
+ "“No thanks” and “Rate PFI” are final. With “Not now”, PFI asks once more in a month.": "« Non merci » et « Noter PFI » sont définitifs. Avec « Pas maintenant », PFI redemande une seule fois dans un mois.",
+ "Support PFI": "Soutenir PFI",
+ "PFI is free and stays free. If it helps you, you can support its development. A donation unlocks nothing; every feature is for everyone.": "PFI est gratuit et le restera. S'il vous est utile, vous pouvez soutenir son développement. Un don ne débloque rien : toutes les fonctions sont pour tout le monde."
 }

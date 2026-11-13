@@ -836,5 +836,7 @@
  "not in the backup": "غير موجود في النسخة الاحتياطية",
  "{b} ({n} transactions)": "{b} ({n} معاملة)",
  "{s} transactions picked at random were compared field by field: {m} differ.": "قورنت {s} معاملة مختارة عشوائياً حقلاً بحقل: {m} منها مختلفة.",
- "“No thanks” and “Rate PFI” are final. With “Not now”, PFI asks once more in a month.": "«لا، شكراً» و«قيّم PFI» خياران نهائيان. مع «ليس الآن» يسألك PFI مرة واحدة أخرى بعد شهر."
+ "“No thanks” and “Rate PFI” are final. With “Not now”, PFI asks once more in a month.": "«لا، شكراً» و«قيّم PFI» خياران نهائيان. مع «ليس الآن» يسألك PFI مرة واحدة أخرى بعد شهر.",
+ "Support PFI": "ادعم PFI",
+ "PFI is free and stays free. If it helps you, you can support its development. A donation unlocks nothing; every feature is for everyone.": "PFI مجاني وسيبقى مجانياً. إن كان مفيداً لك، يمكنك دعم تطويره. التبرع لا يفتح أي ميزة إضافية؛ كل الميزات متاحة للجميع."
 }
