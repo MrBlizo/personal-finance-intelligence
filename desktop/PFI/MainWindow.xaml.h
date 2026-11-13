@@ -62,6 +62,7 @@ namespace winrt::PFI::implementation
         winrt::fire_and_forget Unlock();
         winrt::Windows::Foundation::IAsyncOperation<bool> HelloAvailable();
         winrt::fire_and_forget ReplyHelloStatus();
+        winrt::fire_and_forget RequestRating();
         void CheckIdle();
         HWND WindowHandle();
 

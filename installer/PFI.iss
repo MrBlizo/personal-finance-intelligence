@@ -2,7 +2,7 @@
 ; Built by scripts\build.ps1:  ISCC /DAppVersion=x /DSourceDir=dist\PFI /DOutputDir=dist PFI.iss
 
 #ifndef AppVersion
-  #define AppVersion "0.5.0"
+  #define AppVersion "0.5.1"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\dist\PFI"
