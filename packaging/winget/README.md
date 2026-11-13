@@ -2,7 +2,7 @@
 
 Manifests for the Inno Setup installer from the GitHub release, in the
 folder layout of [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs).
-They were checked against the official 1.6.0 schemas.
+They were checked against the official 1.28.0 schemas.
 
 The Microsoft Store version can usually be installed by its Store ID
 already, without these manifests:
