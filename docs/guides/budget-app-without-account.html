@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Budget App Without an Account: Offline Budgeting on Windows | PFI</title>
+<meta name="description" content="Most budget apps want an account, a subscription and your bank login. Here is what an offline budget app does differently, what you give up, and how to keep your data safe on your own PC.">
+<link rel="canonical" href="https://mrblizo.github.io/personal-finance-intelligence/guides/budget-app-without-account.html">
+<link rel="icon" href="../img/icon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:title" content="A budget app without an account">
+<meta property="og:description" content="What offline budgeting on Windows gives you, what it costs you, and how to keep the data safe.">
+<meta property="og:image" content="https://mrblizo.github.io/personal-finance-intelligence/img/social.png">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"A budget app without an account",
+ "author":{"@type":"Person","name":"Ibrahim (MrBlizo)"},"datePublished":"2026-11-13",
+ "mainEntityOfPage":"https://mrblizo.github.io/personal-finance-intelligence/guides/budget-app-without-account.html"}
+</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="../"><img src="../img/icon.svg" alt="" width="32" height="32">Personal Finance Intelligence</a>
+    <nav class="links"><a href="./">Guides</a><a href="../#features">Features</a>
+      <a href="https://apps.microsoft.com/detail/9MZKW4H9F0J5">Get the app</a></nav>
+  </header>
+  <article>
+    <p class="crumbs"><a href="../">Home</a> › <a href="./">Guides</a></p>
+    <h1>A budget app without an account</h1>
+    <p class="lead">Your transactions say where you live, shop, travel and get paid. An offline budget app keeps that
+      record on your own PC instead of a company's server.</p>
+
+    <h2>How it works</h2>
+    <p>Instead of connecting to your bank, you download a statement from your e-banking (CSV, OFX/QFX, QIF or
+      <a href="import-camt053.html">CAMT.053</a>) and import it. The app reads the file locally, sorts the transactions
+      into categories and updates your budgets. There is no sign-up, so there is no password to leak and no account to
+      close if you stop using it.</p>
+
+    <h2>What you gain and what you give up</h2>
+    <table>
+      <tr><th></th><th>Offline app</th><th>Cloud app with bank sync</th></tr>
+      <tr><td>Account and sign-up</td><td>None</td><td>Required</td></tr>
+      <tr><td>Bank login shared</td><td>No</td><td>Usually, through an aggregator</td></tr>
+      <tr><td>New transactions</td><td>You import a statement</td><td>Arrive automatically</td></tr>
+      <tr><td>Phone app</td><td>No (Windows only, in PFI's case)</td><td>Usually yes</td></tr>
+      <tr><td>Works without internet</td><td>Yes</td><td>No</td></tr>
+      <tr><td>If the company shuts down</td><td>Your file stays on your PC</td><td>Depends on their export</td></tr>
+    </table>
+    <p>The honest trade-off is convenience: importing a statement once a week or once a month takes a minute or two.
+      Many people find that this regular check is also when they actually look at their spending.</p>
+
+    <h2>Keeping offline data safe</h2>
+    <p>With no server, backups are your job. In PFI:</p>
+    <ul>
+      <li>A backup is made automatically every week when the app starts, and before every restore.</li>
+      <li>Point the backup folder at OneDrive or a USB drive so a copy lives off the PC.</li>
+      <li>Set a backup password: the copies in OneDrive or on the drive cannot be read without it.
+        Keep that password somewhere safe, because encrypted backups cannot be restored without it.</li>
+      <li>Turn on the Windows Hello lock if other people use your PC.</li>
+      <li>Moving to a new PC: <strong>Settings › Move to another PC</strong> creates one file you open on the new PC.</li>
+    </ul>
+
+    <div class="note">PFI is open source under the MIT license, so anyone can check what it does. It has no ads, no tracking
+      and no analytics. The only internet requests are for exchange rates and investment prices, and both can be switched off (see the <a href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/PRIVACY.md">privacy policy</a>).</div>
+
+    <p><a class="btn primary" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">Get PFI free from the Microsoft Store</a></p>
+  </article>
+</div>
+<footer><div class="wrap cols"><div>Personal Finance Intelligence · MIT license</div>
+  <div><a href="./">More guides</a> · <a href="https://github.com/MrBlizo/personal-finance-intelligence">GitHub</a></div></div></footer>
+</body>
+</html>

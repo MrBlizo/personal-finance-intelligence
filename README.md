@@ -1,6 +1,10 @@
 # Personal Finance Intelligence
 
-A Windows 11 desktop app to track income, expenses, investments and savings
+**The offline budget app for Windows:** budgets, bank statement import, debt
+payoff plans and investments in one native app, with no account and no cloud.
+[Website and guides](https://mrblizo.github.io/personal-finance-intelligence/)
+
+A Windows desktop app to track income, expenses, investments and savings
 goals, forecast cash flow and analyse spending. Everything runs and stays on
 your PC: the data lives in one local SQLite file, there is no account and no
 cloud.
@@ -27,12 +31,16 @@ Shown with the built-in demo data (Settings → Load demo data).
 | **Investments:** money- (XIRR) and time-weighted returns | **Bills & recurring:** due dates and reminders |
 | ![Cash-flow forecast with 50 % and 90 % ranges](packaging/store-screenshots/5-forecast.png) | ![Reports and exports](packaging/store-screenshots/6-reports.png) |
 | **Forecast:** Monte Carlo with 50 % and 90 % ranges | **Reports:** PDF, Excel and CSV |
+| ![Debt payoff planner comparing strategies](packaging/store-screenshots/7-debt-payoff.png) | ![Spending calendar heatmap and year in review](packaging/store-screenshots/8-calendar.png) |
+| **Debt payoff:** highest interest first, smallest balance first, minimums only | **Spending calendar:** daily heatmap and year in review |
+| ![Editing many transactions at once](packaging/store-screenshots/9-bulk-edit.png) | ![PFI in dark mode](packaging/store-screenshots/10-dark-mode.png) |
+| **Bulk edit:** category, account, tags or delete for many rows | **Dark mode:** light, dark or follow Windows |
 
 ## Features
 
 - **Accounts & transactions:** checking, savings, cash, cards, investments,
   loans; transfers between accounts (also across currencies); import of
-  CSV, Excel, OFX/QFX, QIF and CAMT.053 statements with column presets,
+  CSV, OFX/QFX, QIF and CAMT.053 statements with column presets,
   side-by-side review of possible duplicates and undo; bulk edit (category,
   account, tags, delete) of many transactions at once.
 - **Reconcile:** tick the transactions on your bank statement until the

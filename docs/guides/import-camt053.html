@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to Import a CAMT.053 Bank Statement into a Budget App | PFI</title>
+<meta name="description" content="What a CAMT.053 (ISO 20022) bank statement is, how to download one from your e-banking, and how to import it into PFI, a free offline budget app for Windows, without giving anyone your bank login.">
+<link rel="canonical" href="https://mrblizo.github.io/personal-finance-intelligence/guides/import-camt053.html">
+<link rel="icon" href="../img/icon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to import a CAMT.053 bank statement">
+<meta property="og:description" content="Download the XML statement from your bank and import it into an offline budget app.">
+<meta property="og:image" content="https://mrblizo.github.io/personal-finance-intelligence/img/social.png">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"HowTo","name":"Import a CAMT.053 bank statement into PFI",
+ "step":[
+  {"@type":"HowToStep","text":"In your e-banking, export the account statement as camt.053 (ISO 20022 XML) for the period you want."},
+  {"@type":"HowToStep","text":"In PFI, open Import, choose the account and select the .xml file."},
+  {"@type":"HowToStep","text":"Check the preview and any possible duplicates, then import."}
+ ]}
+</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="../"><img src="../img/icon.svg" alt="" width="32" height="32">Personal Finance Intelligence</a>
+    <nav class="links"><a href="./">Guides</a><a href="../#features">Features</a>
+      <a href="https://apps.microsoft.com/detail/9MZKW4H9F0J5">Get the app</a></nav>
+  </header>
+  <article>
+    <p class="crumbs"><a href="../">Home</a> › <a href="./">Guides</a></p>
+    <h1>How to import a CAMT.053 bank statement</h1>
+    <p class="lead">CAMT.053 is the XML account statement of the ISO 20022 standard. Many European banks offer it
+      in their e-banking next to PDF and CSV. Because it is a standard, a budget app can read it without guessing
+      columns, date formats or decimal separators.</p>
+
+    <h2>CAMT.053, CAMT.054 and CAMT.052</h2>
+    <table>
+      <tr><th>File</th><th>What it contains</th><th>Use it for a budget?</th></tr>
+      <tr><td><code>camt.053</code></td><td>The account statement: booked entries of a day or period</td><td>Yes</td></tr>
+      <tr><td><code>camt.054</code></td><td>Notifications about single credits or debits</td><td>No</td></tr>
+      <tr><td><code>camt.052</code></td><td>Intraday account report, may include entries not yet booked</td><td>No</td></tr>
+    </table>
+    <p>Your bank may call the export "ISO 20022", "XML statement" or "camt.053". The file usually ends in
+      <code>.xml</code>; some banks put several statements in a <code>.zip</code>, which you need to unpack first.</p>
+
+    <h2>Step 1: download the statement</h2>
+    <p>Log in to your e-banking in the browser, open the account, and look for an export or download of the
+      statement. Choose camt.053 and the period you want (a month is a good start). The menu name differs between
+      banks; if you cannot find it, the bank's help pages usually list the formats they offer.</p>
+
+    <h2>Step 2: import it into PFI</h2>
+    <ol>
+      <li>Open <strong>Import</strong> in <a href="../">PFI</a> and pick the account the statement belongs to.</li>
+      <li>Select the <code>.xml</code> file. PFI shows "Detected: CAMT.053 statement" and a preview of the rows.</li>
+      <li>Rows that may already be in PFI are shown next to the existing transaction. Nothing is skipped unless you choose Skip.</li>
+      <li>Import. New transactions are categorised by your rules and by what PFI has learned from your earlier choices.</li>
+    </ol>
+    <p>If something went wrong, the import history lets you undo a whole import in one step.</p>
+
+    <h2>What PFI reads from the file</h2>
+    <ul>
+      <li>Only <strong>booked</strong> entries; pending ones are left out, so they do not appear twice later.</li>
+      <li>The amount, negative for debits (<code>DBIT</code>) and positive for credits.</li>
+      <li>The booking date, or the value date if the booking date is missing.</li>
+      <li>The description from the remittance information and additional entry text, and the name of the
+        other party as payee.</li>
+    </ul>
+
+    <div class="note">Your bank login never goes into PFI. You download the file yourself, and it is read on your
+      PC. Nothing is uploaded.</div>
+
+    <h2>Common problems</h2>
+    <details><summary>"No booked entries were found"</summary>
+      <p>The file is probably a camt.054 notification or a camt.052 intraday report. Export the account statement (camt.053) instead.</p></details>
+    <details><summary>"The file is not valid XML"</summary>
+      <p>The download may be incomplete or zipped. Unpack the .zip, or download the statement again.</p></details>
+    <details><summary>My bank only offers CSV or OFX</summary>
+      <p>PFI also imports CSV, OFX/QFX and QIF. For CSV it detects the delimiter and encoding, and you can save
+        the column settings so the next file from the same bank imports in one click.</p></details>
+
+    <p><a class="btn primary" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">Get PFI free from the Microsoft Store</a></p>
+  </article>
+</div>
+<footer><div class="wrap cols"><div>Personal Finance Intelligence · MIT license</div>
+  <div><a href="./">More guides</a> · <a href="https://github.com/MrBlizo/personal-finance-intelligence">GitHub</a></div></div></footer>
+</body>
+</html>
