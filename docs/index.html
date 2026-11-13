@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFI – Offline Budget Planner and Expense Tracker for Windows</title>
+<meta name="description" content="Personal Finance Intelligence is a free, open-source budget planner and expense tracker for Windows 10 and 11. Import bank statements, plan budgets, pay off debt and track investments. Works offline, no account: your data stays on your PC.">
+<link rel="canonical" href="https://mrblizo.github.io/personal-finance-intelligence/">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PFI – the offline budget app for Windows">
+<meta property="og:description" content="Budgets, bank statement import, debt payoff plans and investments in one native Windows app. No account, no cloud. Free and open source.">
+<meta property="og:url" content="https://mrblizo.github.io/personal-finance-intelligence/">
+<meta property="og:image" content="https://mrblizo.github.io/personal-finance-intelligence/img/social.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Personal Finance Intelligence",
+  "alternateName": "PFI",
+  "operatingSystem": "Windows 10, Windows 11",
+  "applicationCategory": "FinanceApplication",
+  "description": "Offline budget planner and expense tracker for Windows: bank statement import, budgets, debt payoff planner, investments and cash-flow forecast. No account, data stays on your PC.",
+  "url": "https://mrblizo.github.io/personal-finance-intelligence/",
+  "downloadUrl": "https://apps.microsoft.com/detail/9MZKW4H9F0J5",
+  "softwareVersion": "0.5.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Ibrahim (MrBlizo)", "url": "https://github.com/MrBlizo" },
+  "screenshot": "https://mrblizo.github.io/personal-finance-intelligence/img/1-home.webp",
+  "inLanguage": ["en", "fr", "ar"]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Is PFI free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PFI is free on the Microsoft Store and open source under the MIT license. There are no ads, no subscription and no in-app purchases." } },
+    { "@type": "Question", "name": "Does PFI connect to my bank?", "acceptedAnswer": { "@type": "Answer", "text": "No. You download your statement from your bank's website and import the file (CSV, OFX/QFX, QIF or CAMT.053). PFI never asks for your bank login." } },
+    { "@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": { "@type": "Answer", "text": "In a single SQLite file in your Windows user folder. Nothing is sent to a server; backups go to a folder you choose and can be protected with a password." } },
+    { "@type": "Question", "name": "Which Windows versions are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs." } }
+  ]
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><img src="img/icon.svg" alt="" width="32" height="32">Personal Finance Intelligence</a>
+    <nav class="links">
+      <a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a><a href="guides/">Guides</a>
+      <a href="https://github.com/MrBlizo/personal-finance-intelligence">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>The offline budget app for Windows</h1>
+    <p class="lead">Budgets, bank statement import, debt payoff plans and investments in one native Windows app.
+      No account, no cloud: your money data stays in one file on your PC.</p>
+    <div class="cta">
+      <a class="badge" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">
+        <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" width="182" height="52"></a>
+      <a class="btn" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest">Download the installer</a>
+    </div>
+    <p class="facts">Free · open source (MIT) · Windows 10 and 11 · English, Français, العربية</p>
+    <div class="shot"><img src="img/1-home.webp" width="1512" height="800"
+      alt="PFI dashboard with net worth, income versus expenses and where the money goes"></div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Everything you need to run your money</h2>
+    <p class="sub">PFI replaces the spreadsheet: import what your bank gives you, and the app sorts, plans and forecasts.</p>
+    <div class="grid">
+      <div class="card"><h3>Import any bank statement</h3><p>CSV, OFX/QFX, QIF and CAMT.053. PFI remembers each bank's format and shows possible duplicates side by side before anything is saved.</p></div>
+      <div class="card"><h3>Categories that learn</h3><p>PFI learns from the transactions you categorise yourself, and your own rules always come first.</p></div>
+      <div class="card"><h3>Budgets and goals</h3><p>Monthly limits per category with a month-end projection, and savings goals linked to real accounts.</p></div>
+      <div class="card"><span class="new">New in 0.5</span><h3>Debt payoff planner</h3><p>Compare highest interest first, smallest balance first and minimum payments only, with payoff dates and total interest.</p></div>
+      <div class="card"><span class="new">New in 0.5</span><h3>Spending calendar</h3><p>Every day of the year as a heatmap, plus your year in review: savings rate, no-spend days, biggest expense.</p></div>
+      <div class="card"><span class="new">New in 0.5</span><h3>Bulk edit and reconcile</h3><p>Change many transactions at once and tick off your bank statement until the difference is zero.</p></div>
+      <div class="card"><h3>Investments</h3><p>Holdings with prices from online sources, money-weighted and time-weighted returns, dividends and target allocation.</p></div>
+      <div class="card"><h3>Forecast and insights</h3><p>Cash-flow forecast with probability ranges from your own history; unusual expenses and subscriptions flagged.</p></div>
+      <div class="card"><h3>Any currency</h3><p>Accounts in any currency, converted to the one you report in (CHF, EUR, MAD, USD…) with daily exchange rates.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap split">
+    <div>
+      <h2>Pay off debt faster</h2>
+      <p class="sub">Enter the interest rate and minimum payment of each loan or card, choose how much extra you can pay, and see the month you become debt-free.</p>
+      <p><a href="guides/snowball-vs-avalanche.html">Snowball or avalanche: which is cheaper? →</a></p>
+    </div>
+    <img src="img/7-debt-payoff.webp" width="1512" height="800" loading="lazy" alt="Debt payoff planner comparing payoff strategies">
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap split">
+    <img src="img/2-transactions.webp" width="1512" height="800" loading="lazy" alt="Transactions list in PFI">
+    <div>
+      <h2>Private by design</h2>
+      <ul class="ticks">
+        <li>No account and no sign-up: open the app and start.</li>
+        <li>Your data is one SQLite file on your PC, never on a server.</li>
+        <li>No ads, no tracking, no analytics.</li>
+        <li>Backups to a folder you choose (OneDrive, USB drive), optionally encrypted with a password.</li>
+        <li>Optional Windows Hello lock.</li>
+        <li>Open source: anyone can check what the app does.</li>
+      </ul>
+      <p><a href="guides/budget-app-without-account.html">Why a budget app without an account? →</a></p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Screenshots</h2>
+    <p class="sub">Shown with the built-in demo data, which you can load and remove in Settings.</p>
+    <div class="gallery">
+      <figure><img src="img/8-calendar.webp" width="1512" height="800" loading="lazy" alt="Spending calendar heatmap and year in review"><figcaption>Spending calendar and year in review</figcaption></figure>
+      <figure><img src="img/9-bulk-edit.webp" width="1512" height="800" loading="lazy" alt="Editing several transactions at once"><figcaption>Bulk edit of transactions</figcaption></figure>
+      <figure><img src="img/3-investments.webp" width="1512" height="800" loading="lazy" alt="Investments with returns"><figcaption>Investments with money- and time-weighted returns</figcaption></figure>
+      <figure><img src="img/5-forecast.webp" width="1512" height="800" loading="lazy" alt="Cash-flow forecast with probability ranges"><figcaption>Cash-flow forecast</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>Questions</h2>
+    <details><summary>Is PFI free?</summary><p>Yes. PFI is free on the Microsoft Store and open source under the MIT license. There are no ads, no subscription and no in-app purchases.</p></details>
+    <details><summary>Does PFI connect to my bank?</summary><p>No. You download your statement from your bank's website and import the file (CSV, OFX/QFX, QIF or CAMT.053). PFI never asks for your bank login. <a href="guides/import-camt053.html">How to import a CAMT.053 file</a>.</p></details>
+    <details><summary>Where is my data stored?</summary><p>In a single SQLite file in your Windows user folder. Nothing is sent to a server; backups go to a folder you choose and can be protected with a password.</p></details>
+    <details><summary>Can I move to a new PC?</summary><p>Yes. Settings › Move to another PC creates one file with everything; open it on the new PC with "Restore from a backup".</p></details>
+    <details><summary>Which Windows versions are supported?</summary><p>Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs.</p></details>
+    <details><summary>Which languages?</summary><p>English, French and Arabic (right-to-left layout included).</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap cols">
+    <div>Personal Finance Intelligence · made by <a href="https://github.com/MrBlizo">Ibrahim</a> · MIT license</div>
+    <div><a href="guides/">Guides</a> · <a href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/PRIVACY.md">Privacy</a> ·
+      <a href="https://github.com/MrBlizo/personal-finance-intelligence/releases">Releases</a> ·
+      <a href="https://apps.microsoft.com/detail/9MZKW4H9F0J5">Microsoft Store</a></div>
+  </div>
+</footer>
+</body>
+</html>
