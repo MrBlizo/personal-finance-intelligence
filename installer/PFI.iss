@@ -2,7 +2,7 @@
 ; Built by scripts\build.ps1:  ISCC /DAppVersion=x /DSourceDir=dist\PFI /DOutputDir=dist PFI.iss
 
 #ifndef AppVersion
-  #define AppVersion "0.4.0"
+  #define AppVersion "0.5.0"
 #endif
 #ifndef SourceDir
   #define SourceDir "..\dist\PFI"
@@ -40,6 +40,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+
+[InstallDelete]
+; Program files of the previous version (never the data in %LOCALAPPDATA%):
+; PostgreSQL is no longer part of the app since 0.5, and the backend and
+; screens are replaced as a whole so no stale files remain.
+Type: filesandordirs; Name: "{app}\pgsql"
+Type: filesandordirs; Name: "{app}\backend"
+Type: filesandordirs; Name: "{app}\web"
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

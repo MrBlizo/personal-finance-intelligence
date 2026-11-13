@@ -52,6 +52,9 @@
                 <NavigationViewItem Content="Goals" Tag="/goals/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE7C1;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="Debt payoff" Tag="/debts/">
+                    <NavigationViewItem.Icon><FontIcon Glyph="&#xE8C7;" /></NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Bills &amp; recurring" Tag="/recurring/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE8EE;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
@@ -64,6 +67,9 @@
                 </NavigationViewItem>
                 <NavigationViewItem Content="Insights" Tag="/insights/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xEA80;" /></NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Calendar" Tag="/calendar/">
+                    <NavigationViewItem.Icon><FontIcon Glyph="&#xE787;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="Reports" Tag="/reports/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE9F9;" /></NavigationViewItem.Icon>

@@ -2,13 +2,9 @@
 
 Examples
 --------
-Development against your own PostgreSQL (settings from ``.env``)::
+Development (data in ``%LOCALAPPDATA%\\PersonalFinanceIntelligence`` or
+``PFI_DATA_DIR``)::
 
-    python run.py --port 8765
-
-Embedded PostgreSQL, as launched by PFI.exe::
-
-    set PFI_PG_BIN=C:\\path\\to\\pgsql\\bin
     python run.py --port 8765
 """
 import argparse
@@ -31,12 +27,6 @@ def main() -> None:
                         help="TCP port of the API (default: 8765).")
     parser.add_argument("--log-file", type=Path, default=None,
                         help="Write logs to this file (rotated at 5 MB).")
-    parser.add_argument("--selftest-legacy", type=Path, default=None,
-                        metavar="DIR",
-                        help="Create a PFI 0.3 PostgreSQL database in the "
-                             "empty folder DIR, move it to SQLite with the "
-                             "bundled PostgreSQL (PFI_PG_BIN) and check the "
-                             "result, then exit. Used by the build.")
     args = parser.parse_args()
     handlers: list[logging.Handler] = [logging.StreamHandler(sys.stdout)]
     if args.log_file:
@@ -47,19 +37,6 @@ def main() -> None:
     logging.basicConfig(
         level=os.environ.get("PFI_LOG_LEVEL", "INFO"), handlers=handlers,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    if args.selftest_legacy:
-        import json
-        from app import legacy
-        from app.config import get_settings
-        settings = get_settings()
-        try:
-            result = legacy.selftest(settings.pg_bin, args.selftest_legacy,
-                                     settings.pg_relocate)
-        except Exception as exc:  # report every failure to the build
-            print(f"legacy self-test FAILED: {exc}")
-            sys.exit(1)
-        print("legacy self-test ok: " + json.dumps(result))
-        return
     from app.main import app
     server = uvicorn.Server(uvicorn.Config(
         app, host=args.host, port=args.port, log_config=None))

@@ -1,9 +1,4 @@
-"""Test fixtures: a throw-away SQLite database per test run.
-
-The tests that move PostgreSQL data (``test_legacy.py``) also need
-``PFI_TEST_PG_BIN``, the PostgreSQL ``bin`` folder (e.g.
-``C:\\Program Files\\PostgreSQL\\18\\bin``); they are skipped without it.
-"""
+"""Test fixtures: a throw-away SQLite database per test run."""
 import os
 import shutil
 import tempfile
@@ -11,11 +6,9 @@ from pathlib import Path
 
 import pytest
 
-PG_BIN = os.environ.get("PFI_TEST_PG_BIN")
 DATA = Path(tempfile.mkdtemp(prefix="pfi-test-"))
 os.environ.pop("PFI_DATABASE_URL", None)
-os.environ.update(PFI_PG_BIN=PG_BIN or "", PFI_DATA_DIR=str(DATA),
-                  PFI_PG_PORT="54399", PFI_API_TOKEN="",
+os.environ.update(PFI_DATA_DIR=str(DATA), PFI_API_TOKEN="",
                   PFI_FRONTEND_DIST=str(DATA / "no-ui"),
                   PFI_BACKGROUND_TASKS="0")
 

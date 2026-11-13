@@ -4,7 +4,7 @@ Each migration is applied once, in order, inside a transaction. Append new
 migrations to ``MIGRATIONS``; never edit one that has shipped. A brand-new
 database is created from the current models in one step and every
 migration is recorded as applied. Migrations 1-3 come from the PostgreSQL
-era (0.1-0.3); they still run when a 0.3.x database is moved to SQLite.
+era (0.1-0.3) and only ran when 0.4 moved a 0.3 database to SQLite.
 """
 import logging
 from collections.abc import Callable
@@ -52,11 +52,28 @@ def _v04_splits_tags_attachments(conn: Connection) -> None:
         model.__table__.create(conn, checkfirst=True)
 
 
+def _v05_reconcile_debts(conn: Connection) -> None:
+    for model in (models.Reconciliation, models.DebtTerms):
+        model.__table__.create(conn, checkfirst=True)
+    columns = {c["name"] for c in inspect(conn).get_columns("transactions")}
+    if "cleared" not in columns:
+        conn.execute(text("ALTER TABLE transactions ADD COLUMN cleared "
+                          "BOOLEAN NOT NULL DEFAULT 0"))
+    if "reconciliation_id" not in columns:
+        conn.execute(text(
+            "ALTER TABLE transactions ADD COLUMN reconciliation_id INTEGER "
+            "REFERENCES reconciliations(id) ON DELETE SET NULL"))
+        conn.execute(text(
+            "CREATE INDEX IF NOT EXISTS ix_transactions_reconciliation_id "
+            "ON transactions (reconciliation_id)"))
+
+
 MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (1, "initial schema", _initial_schema),
     (2, "import presets", _import_presets),
     (3, "automation and investment pricing", _v03_automation_investments),
     (4, "splits, tags and attachments", _v04_splits_tags_attachments),
+    (5, "reconciliation and debt terms", _v05_reconcile_debts),
 ]
 
 

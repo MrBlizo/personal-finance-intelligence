@@ -31,9 +31,8 @@ with others, no violence, no purchases, no location, no chat. Expected rating:
 **Restricted capability justification (runFullTrust):** "Personal Finance
 Intelligence is a desktop (WinUI 3) app. It runs a local analysis service on
 127.0.0.1, started and stopped by the app, that stores the user's finances in
-a local SQLite database on their own PC (and, once, moves data from the
-previous PostgreSQL-based version). These components need the full-trust
-desktop model."
+a local SQLite database on their own PC. This component needs the
+full-trust desktop model."
 
 **Notes for certification:** "No account needed. Open the app, Home ›
 'Load demo data' fills it with synthetic data to test every screen

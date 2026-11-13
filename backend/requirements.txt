@@ -1,10 +1,9 @@
 # pip fallback; prefer `conda env create -f environment.yml` (conda-forge).
-# Versions verified in testing: fastapi 0.162, SQLAlchemy 2.1, psycopg 3.3,
+# Versions verified in testing: fastapi 0.162, SQLAlchemy 2.1,
 # pandas 3.0, numpy 2.5, plotly 7.1.
 fastapi>=0.115
 uvicorn>=0.30
 sqlalchemy>=2.0.30
-psycopg[binary]>=3.2
 cryptography>=42
 pydantic>=2.7
 pydantic-settings>=2.3

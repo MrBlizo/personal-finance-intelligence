@@ -13,7 +13,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from ..models import (
-    Account, AssetPrice, Budget, Category, ExchangeRate, Holding,
+    Account, AssetPrice, Budget, Category, DebtTerms, ExchangeRate, Holding,
     InvestmentTrade, RecurringItem, SavingsGoal, Transaction)
 from .planning import add_months
 
@@ -79,9 +79,16 @@ def seed_demo(db: Session, months: int = 14, seed: int = 7,
         "inv": Account(name="Demo Broker", type="investment",
                        currency="CHF", opening_balance=Decimal("5000"),
                        opening_date=start, is_demo=True),
+        "loan": Account(name="Demo Car Loan", type="loan",
+                        currency="CHF", opening_balance=Decimal("-14500"),
+                        opening_date=start, is_demo=True),
     }
     db.add_all(acc.values())
     db.flush()
+    db.add_all([DebtTerms(account_id=acc["card"].id, apr=Decimal("19.9"),
+                          min_payment=Decimal("50")),
+                DebtTerms(account_id=acc["loan"].id, apr=Decimal("4.9"),
+                          min_payment=Decimal("320"))])
     txns: list[Transaction] = []
 
     def add(a: str, day: date, amount: float, cat: str | None,
@@ -129,6 +136,7 @@ def seed_demo(db: Session, months: int = 14, seed: int = 7,
         add("card", on(3), -15.9, "Subscriptions", "Streaming",
             merchant="StreamFlix")
         xfer("pay", "save", on(26), 800, "Monthly saving")
+        xfer("pay", "loan", on(28), 320, "Car loan instalment")
         day = first
         while day <= last_day:
             for cat, (prob, lo, hi, a) in {

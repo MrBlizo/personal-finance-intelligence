@@ -1,8 +1,7 @@
 """Database engine, session factory and declarative base.
 
 The application database is a single SQLite file (``<data_dir>/pfi.sqlite``
-by default). The engine is created at startup (``init_engine``), after a
-0.3.x PostgreSQL database, if present, has been moved into it.
+by default). The engine is created at startup (``init_engine``).
 """
 from collections.abc import Iterator
 from pathlib import Path

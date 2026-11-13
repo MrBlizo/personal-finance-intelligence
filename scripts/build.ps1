@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Builds Personal Finance Intelligence: PFI.exe (WinUI 3) + backend +
-    screens + bundled PostgreSQL, tests it, and creates PFI-Setup.exe.
+    screens, tests it, and creates PFI-Setup.exe.
 
 .DESCRIPTION
     Steps: preflight -> Python env -> backend tests -> Next.js build ->
@@ -22,7 +22,7 @@ param(
     [switch]$SkipInstaller,
     [switch]$SkipMsix,
     [switch]$DebugBuild,
-    [string]$Version = "0.4.0"
+    [string]$Version = "0.5.0"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -68,19 +68,13 @@ function Run([string]$CommandLine, [string]$WorkDir = $Root, [string]$What = "",
     }
 }
 
-# Stops a smoke-test PostgreSQL left over from an earlier failed build (it
+# Stops a smoke-test backend left over from an earlier failed build (it
 # locks files in dist\PFI). Never touches a PFI that the user is running.
-function Stop-SmokeDb {
-    $pgCtl = Join-Path $Stage "pgsql\bin\pg_ctl.exe"
-    $pgData = Join-Path $Dist "smoke-data\pgdata"
-    if ((Test-Path $pgCtl) -and (Test-Path (Join-Path $pgData "postmaster.pid"))) {
-        & $pgCtl stop -D $pgData -m fast -w -t 30 2>&1 | Out-Null
-    }
-    Start-Sleep -Milliseconds 500
-    Get-Process -Name postgres, pfi-api -ErrorAction SilentlyContinue |
-        Where-Object { $_.Path -and ($_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) -or
-            $_.Path.StartsWith((Join-Path $Dist "smoke-data"), [StringComparison]::OrdinalIgnoreCase)) } |
+function Stop-Smoke {
+    Get-Process -Name pfi-api -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) } |
         Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Milliseconds 300
 }
 
 try {
@@ -98,17 +92,13 @@ if (-not (Test-Path $vswhere)) { Fail "Visual Studio was not found (vswhere.exe 
 $vsPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
 $msbuild = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
 if (-not $msbuild) { Fail "MSBuild was not found. In Visual Studio Installer add 'Desktop development with C++'." }
-$pgRoot = Get-ChildItem "$env:ProgramFiles\PostgreSQL" -Directory -ErrorAction SilentlyContinue |
-    Where-Object { Test-Path (Join-Path $_.FullName "bin\pg_ctl.exe") } |
-    Sort-Object { [int]($_.Name -replace '\D', '') } | Select-Object -Last 1
-if (-not $pgRoot) { Fail "PostgreSQL was not found in $env:ProgramFiles\PostgreSQL. Install PostgreSQL (EDB installer) and run build.bat again." }
 $iscc = @("$env:ProgramFiles\Inno Setup 7\ISCC.exe", "${env:ProgramFiles(x86)}\Inno Setup 7\ISCC.exe",
           "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc -and -not $SkipInstaller -and -not $DebugBuild) { Fail "Inno Setup was not found. Install it from https://jrsoftware.org/isinfo.php or run build.bat -SkipInstaller." }
 $crt = Get-ChildItem (Join-Path $vsPath "VC\Redist\MSVC") -Directory -ErrorAction SilentlyContinue |
     Sort-Object Name | ForEach-Object { Get-ChildItem (Join-Path $_.FullName "x64") -Directory -Filter "Microsoft.VC*.CRT" -ErrorAction SilentlyContinue } |
     Select-Object -Last 1
-Add-Content $Log -Encoding UTF8 -Value "conda=$conda`r`nnpm=$npm`r`nmsbuild=$msbuild`r`npostgres=$($pgRoot.FullName)`r`niscc=$iscc`r`ncrt=$($crt.FullName)"
+Add-Content $Log -Encoding UTF8 -Value "conda=$conda`r`nnpm=$npm`r`nmsbuild=$msbuild`r`niscc=$iscc`r`ncrt=$($crt.FullName)"
 
 # ---------------------------------------------------------- python env
 Say "2/10 Python environment (conda env 'pfi')"
@@ -128,10 +118,10 @@ foreach ($line in (Get-Content $yml)) {
 $specs = ($specs + '"pip"') -join " "
 if (-not (Test-Path $py)) {
     Run "`"$conda`" create -y -n pfi --override-channels -c conda-forge $specs" $Root "Creating the conda environment"
-    Run "`"$py`" -m pip install $($pipSpecs -join ' ')" $Root "Installing pip packages"
+    if ($pipSpecs) { Run "`"$py`" -m pip install $($pipSpecs -join ' ')" $Root "Installing pip packages" }
 } elseif (-not (Test-Path $hashFile) -or (Get-Content $hashFile) -ne $hash) {
     Run "`"$conda`" install -y -n pfi --override-channels -c conda-forge $specs" $Root "Updating the conda environment"
-    Run "`"$py`" -m pip install $($pipSpecs -join ' ')" $Root "Installing pip packages"
+    if ($pipSpecs) { Run "`"$py`" -m pip install $($pipSpecs -join ' ')" $Root "Installing pip packages" }
 }
 Set-Content $hashFile $hash
 # Same PATH as "conda activate pfi": native libraries of conda-forge packages
@@ -143,8 +133,7 @@ $env:PATH = (@($envDir, "$envDir\Library\mingw-w64\bin", "$envDir\Library\usr\bi
 
 # ------------------------------------------------------------ backend tests
 if (-not $SkipTests) {
-    Say "3/10 Backend tests (real PostgreSQL $($pgRoot.Name))"
-    $env:PFI_TEST_PG_BIN = Join-Path $pgRoot.FullName "bin"
+    Say "3/10 Backend tests"
     Run "`"$py`" -m pytest -q -p no:cacheprovider tests" (Join-Path $Root "backend") "Backend tests"
 } else { Say "3/10 Backend tests skipped" }
 
@@ -177,7 +166,7 @@ Say "7/10 Assembling dist\PFI"
 $running = Get-Process -Name PFI -ErrorAction SilentlyContinue |
     Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) }
 if ($running) { Fail "Personal Finance Intelligence is running from dist\PFI. Close it and run build.bat again." }
-Stop-SmokeDb
+Stop-Smoke
 if (Test-Path $Stage) {
     try { Remove-Item $Stage -Recurse -Force -ErrorAction Stop }
     catch {
@@ -192,15 +181,9 @@ New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Run "robocopy `"$($exe.DirectoryName)`" `"$Stage`" /E /XF *.pdb *.lib *.exp *.ilk pfi.ini onnxruntime.dll DirectML.dll /XD AppX /NFL /NDL /NJH /NJS" $Root "Copying PFI.exe" -Robocopy
 Run "robocopy `"$be\dist\pfi-api`" `"$Stage\backend`" /E /NFL /NDL /NJH /NJS" $Root "Copying backend" -Robocopy
 Run "robocopy `"$fe\out`" `"$Stage\web`" /E /NFL /NDL /NJH /NJS" $Root "Copying screens" -Robocopy
-# The PostgreSQL installer leaves its uninstaller (whose signature block is
-# malformed: the Store fails to sign the MSIX with 0x800700C1) and two
-# files with this machine's paths; PFI needs none of them.
-Run "robocopy `"$($pgRoot.FullName)`" `"$Stage\pgsql`" /E /XD doc include symbols `"pgAdmin 4`" StackBuilder installer scripts data /XF *.pdb uninstall-postgresql.exe uninstall-postgresql.dat installation_summary.log pg_env.bat /NFL /NDL /NJH /NJS" $Root "Copying PostgreSQL" -Robocopy
 if ($crt) {
-    foreach ($dest in @($Stage, (Join-Path $Stage "pgsql\bin"))) {
-        Get-ChildItem $crt.FullName -Filter *.dll | ForEach-Object {
-            if (-not (Test-Path (Join-Path $dest $_.Name))) { Copy-Item $_.FullName $dest }
-        }
+    Get-ChildItem $crt.FullName -Filter *.dll | ForEach-Object {
+        if (-not (Test-Path (Join-Path $Stage $_.Name))) { Copy-Item $_.FullName $Stage }
     }
 }
 Copy-Item (Join-Path $Root "desktop\PFI\Assets\pfi.ico") $Stage -Force
@@ -213,23 +196,8 @@ $smoke = Join-Path $Dist "smoke-data"
 if (Test-Path $smoke) { Remove-Item $smoke -Recurse -Force }
 $token = [guid]::NewGuid().ToString("N")
 $port = 8799
-$env:PFI_PG_BIN = Join-Path $Stage "pgsql\bin"; $env:PFI_DATA_DIR = $smoke
-$env:PFI_FRONTEND_DIST = Join-Path $Stage "web"; $env:PFI_API_TOKEN = $token; $env:PFI_PG_PORT = "54398"
-# Run PostgreSQL from a copy in the data folder, as the Store package does
-# (Windows blocks it inside the protected WindowsApps install folder).
-$env:PFI_PG_RELOCATE = "1"
-# The move of a 0.3 PostgreSQL database into SQLite, with the packaged
-# PostgreSQL and the packaged backend, on throw-away data.
-# Native stderr lines must not stop the script (ErrorActionPreference=Stop).
-$prevEap = $ErrorActionPreference; $ErrorActionPreference = "Continue"
-$selftest = & (Join-Path $Stage "backend\pfi-api.exe") --selftest-legacy (Join-Path $smoke "legacy") 2>&1 | Out-String
-$selftestExit = $LASTEXITCODE; $ErrorActionPreference = $prevEap
-Add-Content $Log -Encoding UTF8 -Value $selftest
-$legacyLine = ($selftest -split "`r?`n" | Where-Object { $_ -like "legacy self-test*" } | Select-Object -Last 1)
-if ($selftestExit -ne 0 -or $legacyLine -notlike "legacy self-test ok*") {
-    Stop-SmokeDb
-    Fail "Moving a 0.3 database to SQLite failed in the packaged app: $legacyLine (details in dist\build.log)."
-}
+$env:PFI_DATA_DIR = $smoke
+$env:PFI_FRONTEND_DIST = Join-Path $Stage "web"; $env:PFI_API_TOKEN = $token
 $proc = Start-Process -FilePath (Join-Path $Stage "backend\pfi-api.exe") -ArgumentList "--port $port --log-file `"$smoke\logs\api.log`"" `
     -WindowStyle Hidden -PassThru
 $h = @{ "X-PFI-Token" = $token }; $base = "http://127.0.0.1:$port"; $ok = $false
@@ -238,7 +206,7 @@ for ($i = 0; $i -lt 180 -and -not $proc.HasExited; $i++) {
 }
 if (-not $ok) {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force }
-    Stop-SmokeDb
+    Stop-Smoke
     if (Test-Path "$smoke\logs\api.log") { Get-Content "$smoke\logs\api.log" -Tail 40 | Add-Content $Log }
     Fail "The packaged backend did not start (see the api.log lines above in dist\build.log)."
 }
@@ -275,17 +243,20 @@ try {
     $head = [System.IO.File]::ReadAllBytes($bkFile)[0..1]
     if ($bk.name -notlike "*.pfibak" -or [System.Text.Encoding]::ASCII.GetString($head) -ne "PK") { throw "The backup $($bk.name) is not a .pfibak archive." }
     $results += "backup: $($bk.name) ($($bk.size) bytes)"
-    $results += $legacyLine.Trim()
+    $old = Invoke-RestMethod "$base/api/legacy-data" -Headers $h
+    $results += "old 0.3 data check: $($old.size) bytes to clean"
+    $seg = Invoke-WebRequest "$base/transactions/__next.transactions.__PAGE__.txt?uncategorized=1" -UseBasicParsing
+    $results += "page segments: HTTP $($seg.StatusCode)"
 } catch {
     $err = $_.Exception.Message
     Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-    Stop-SmokeDb
+    Stop-Smoke
     if (Test-Path "$smoke\logs\api.log") { Get-Content "$smoke\logs\api.log" -Tail 40 | Add-Content $Log }
     Fail "Smoke test request failed: $err (see the api.log lines above in dist\build.log)."
 }
 Invoke-RestMethod "$base/api/system/shutdown" -Method Post -Headers $h | Out-Null
 if (-not $proc.WaitForExit(30000)) { Stop-Process -Id $proc.Id -Force; Fail "Backend did not stop within 30 s after shutdown." }
-Remove-Item Env:PFI_PG_BIN, Env:PFI_DATA_DIR, Env:PFI_FRONTEND_DIST, Env:PFI_API_TOKEN, Env:PFI_PG_PORT, Env:PFI_PG_RELOCATE
+Remove-Item Env:PFI_DATA_DIR, Env:PFI_FRONTEND_DIST, Env:PFI_API_TOKEN
 $results | ForEach-Object { Write-Host "  $_"; Add-Content $Log -Encoding UTF8 -Value "  $_" }
 
 # ---------------------------------------------------------------- installer

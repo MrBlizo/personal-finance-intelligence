@@ -5,9 +5,11 @@ import {
 } from "@fluentui/react-components";
 import {
   Add20Regular, ArrowDownload20Regular, ArrowSwap20Regular, Attach16Regular,
-  Delete20Regular, Edit20Regular, MoreHorizontal20Regular, Search20Regular,
+  CheckmarkCircle16Regular, Delete20Regular, Edit20Regular, LockClosed16Regular,
+  MoreHorizontal20Regular, Search20Regular,
   Sparkle20Regular,
 } from "@fluentui/react-icons";
+import { BulkBar } from "@/components/BulkBar";
 import { TxnDetails } from "@/components/TxnDetails";
 import { accountOptions, catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
@@ -83,9 +85,10 @@ export default function Transactions() {
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const acc = q.get("account");
-    if (acc || q.get("uncategorized") || q.get("tag")) {
+    if (acc || q.get("uncategorized") || q.get("tag") || q.get("start") || q.get("end")) {
       setF((old) => ({ ...old, account_id: acc ?? "",
-        uncategorized: q.get("uncategorized") ? "true" : "", tag: q.get("tag") ?? "" }));
+        uncategorized: q.get("uncategorized") ? "true" : "", tag: q.get("tag") ?? "",
+        start: q.get("start") ?? "", end: q.get("end") ?? "" }));
     }
   }, []);
   const list = useLoad(() => get<{ total: number; items: Txn[] }>(
@@ -96,7 +99,6 @@ export default function Transactions() {
   const [confirm, setConfirm] = useState<Txn | null>(null);
   const [details, setDetails] = useState<Txn | null>(null);
   const tagList = useLoad(() => get<TagInfo[]>("/api/tags"), [details]);
-  const [bulkCat, setBulkCat] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
 
   const accounts = refs.data?.accounts ?? [];
@@ -158,21 +160,8 @@ export default function Transactions() {
           onChange={(_, d) => setFilter("uncategorized", d.checked ? "true" : "")} />
       </div>
       {sel.size > 0 && (
-        <div className="filters card" style={{ padding: "8px 12px" }}>
-          <b>{t("{n} selected", { n: sel.size })}</b>
-          <Select value={bulkCat} onChange={(_, d) => setBulkCat(d.value)}>
-            <option value="">{t("Choose category…")}</option>
-            {categoryOptions(cats, undefined, t).map((o) =>
-              <option key={o.value} value={o.value}>{o.label}</option>)}
-          </Select>
-          <Button appearance="primary" disabled={!bulkCat} onClick={async () => {
-            const r = await post<{ updated: number }>("/api/transactions/bulk-categorize",
-              { ids: [...sel], category_id: Number(bulkCat) });
-            setMsg(t("{n} transactions categorised (transfers are skipped).", { n: r.updated }));
-            reload();
-          }}>{t("Apply category")}</Button>
-          <Button appearance="subtle" onClick={() => setSel(new Set())}>{t("Clear selection")}</Button>
-        </div>)}
+        <BulkBar ids={[...sel]} onClear={() => setSel(new Set())}
+          onDone={(m) => { setMsg(m); reload(); }} />)}
       <div className="card table-wrap" style={{ padding: "4px 8px" }}>
         {list.loading && !list.data && <div style={{ padding: 16 }}><Spinner label={t("Loading…")} /></div>}
         {list.data && items.length === 0 && <Empty>{t("No transactions match these filters.")}</Empty>}
@@ -207,7 +196,12 @@ export default function Transactions() {
                     : x.category_name ? catLabel(x.category_name, t)
                     : <Badge appearance="tint" color="warning">{t("Uncategorised")}</Badge>}</td>
                   <td>{x.account_name}</td>
-                  <td className={`num ${signClass(x.amount)}`}>{money(x.amount, x.currency)}</td>
+                  <td className={`num ${signClass(x.amount)}`}>
+                    {x.reconciled ? <Tooltip content={t("Reconciled with a bank statement")} relationship="label">
+                      <LockClosed16Regular className="txn-flag" /></Tooltip>
+                      : x.cleared && <Tooltip content={t("Seen on the bank statement")} relationship="label">
+                        <CheckmarkCircle16Regular className="txn-flag" /></Tooltip>}
+                    {money(x.amount, x.currency)}</td>
                   <td className="num muted">{x.currency === base ? "" : money(x.amount_base)}</td>
                   <td className="actions">
                     {x.trade_id ? <span className="caption">{t("trade")}</span> : <>
@@ -245,6 +239,7 @@ export default function Transactions() {
         const x = typeof modal === "object" ? modal : null;
         const isTransfer = x?.kind === "transfer";
         const isSplit = !!x?.splits.length;
+        const locked = !!x?.reconciled;
         const typeOf = (y: Txn) => y.kind === "income" ? "income"
           : y.amount > 0 ? "refund" : "expense";
         const catKind = (type: unknown) => (type === "income" ? "income" : "expense");
@@ -265,13 +260,13 @@ export default function Transactions() {
             fields={(v) => [
               { name: "account_id", label: t("Account"), type: "select", required: true,
                 options: accountOptions(accounts), hidden: !!x },
-              { name: "type", label: t("Type"), type: "select", required: true, hidden: isTransfer || isSplit,
+              { name: "type", label: t("Type"), type: "select", required: true, hidden: isTransfer || isSplit || locked,
                 options: [{ value: "expense", label: t("Expense (money out)") },
                   { value: "income", label: t("Income (money in)") },
                   { value: "refund", label: t("Refund (money back on an expense)") }] },
-              { name: "txn_date", label: t("Date"), type: "date", required: true },
+              { name: "txn_date", label: t("Date"), type: "date", required: true, hidden: locked },
               { name: "amount", label: t("Amount"), type: "number", step: "0.01",
-                required: true, hidden: isTransfer || isSplit, placeholder: "910.00",
+                required: true, hidden: isTransfer || isSplit || locked, placeholder: "910.00",
                 help: t("Always positive; the type decides the direction.") },
               { name: "category_id", label: t("Category"), type: "select",
                 options: categoryOptions(cats, catKind(v.type), t), hidden: isTransfer || isSplit },
@@ -288,9 +283,9 @@ export default function Transactions() {
               if (x) {
                 const p: Values = { txn_date: body.txn_date, description: body.description ?? "",
                   merchant: body.merchant, notes: body.notes };
+                if (locked) delete p.txn_date;
                 if (!isTransfer && !isSplit) {
-                  p.amount = signed;
-                  p.kind = kind;
+                  if (!locked) { p.amount = signed; p.kind = kind; }
                   if (body.category_id) p.category_id = body.category_id; else p.clear_category = true;
                 }
                 await patch(`/api/transactions/${x.id}`, p);

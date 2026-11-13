@@ -2,9 +2,8 @@
 // Launches and supervises the Python backend (pfi-api.exe).
 //
 // The backend runs inside a Win32 job object with KILL_ON_JOB_CLOSE, so it
-// (and the PostgreSQL server it starts) can never outlive PFI.exe. On a
-// normal close we first ask it to shut down gracefully so PostgreSQL stops
-// cleanly.
+// can never outlive PFI.exe. On a normal close we first ask it to shut down
+// gracefully so the database file is closed cleanly.
 
 #include <filesystem>
 #include <string>
@@ -16,7 +15,6 @@ namespace pfi
         std::filesystem::path exe;      // pfi-api.exe, or python.exe in dev
         std::wstring args;              // extra arguments, e.g. "run.py"
         std::filesystem::path workDir;  // working directory of the backend
-        std::filesystem::path pgBin;    // bundled PostgreSQL bin folder
         std::filesystem::path webDir;   // static Next.js export
         std::filesystem::path dataDir;  // %LOCALAPPDATA%\PersonalFinanceIntelligence
     };

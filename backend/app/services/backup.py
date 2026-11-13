@@ -11,8 +11,8 @@ Kinds: ``manual``, ``auto`` (weekly, the newest ``KEEP_AUTO`` are kept),
 another PC) and ``uploaded``. Only automatic backups are ever deleted by
 the app. Backups go to the folder chosen in Settings, or to
 ``<data_dir>/backups`` when none is chosen or it is unavailable.
-``.dump`` files from PFI 0.3 are listed and restored through
-``app.legacy``.
+``.dump`` files from PFI 0.3 are still listed, but since 0.5 they can only
+be restored with PFI 0.4.0.
 """
 import json
 import logging
@@ -548,8 +548,7 @@ def install_database(new_db: Path, new_files: Path | None, db_path: Path,
 
 
 def restore_backup(data_dir: Path, db_path: Path, path: Path, engine,
-                   password: str | None = None,
-                   pg_bin: Path | None = None) -> BackupInfo:
+                   password: str | None = None) -> BackupInfo:
     """Replace the data with backup ``path``; a safety backup comes first.
 
     Parameters
@@ -559,13 +558,11 @@ def restore_backup(data_dir: Path, db_path: Path, path: Path, engine,
     db_path : Path
         The live SQLite database.
     path : Path
-        The ``.pfibak`` (or 0.3 ``.dump``) file to restore.
+        The ``.pfibak`` file to restore.
     engine : Engine
         The application engine; its pooled connections are closed.
     password : str, optional
         The password of an encrypted backup.
-    pg_bin : Path, optional
-        The bundled PostgreSQL ``bin`` folder, needed for ``.dump`` files.
 
     Returns
     -------
@@ -575,23 +572,17 @@ def restore_backup(data_dir: Path, db_path: Path, path: Path, engine,
     Raises
     ------
     BackupError
-        If the backup is unreadable, damaged or needs a password; nothing
-        is changed in that case.
+        If the backup is unreadable, damaged, needs a password or is a 0.3
+        ``.dump`` file; nothing is changed in that case.
     """
-    from .. import legacy
+    from ..legacy import DUMP_MESSAGE
+    if path.suffix == ".dump":
+        raise BackupError(DUMP_MESSAGE)
     data_dir = Path(data_dir)
     with tempfile.TemporaryDirectory(prefix="pfi-restore-",
                                      dir=data_dir) as tmp:
         work = Path(tmp)
-        files = None
-        if path.suffix == ".dump":
-            new_db = work / DB_ENTRY
-            try:
-                legacy.dump_to_sqlite(pg_bin, data_dir, path, new_db)
-            except legacy.LegacyError as exc:
-                raise BackupError(str(exc)) from exc
-        else:
-            new_db, files = _extract(path, work, password, data_dir)
+        new_db, files = _extract(path, work, password, data_dir)
         safety = create_backup(data_dir, db_path, "pre-restore",
                                default_dir(data_dir))
         install_database(new_db, files, db_path, data_dir, engine)

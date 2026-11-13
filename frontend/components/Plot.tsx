@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useTheme } from "./Theme";
 import type { PlotFigure } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 
@@ -103,13 +104,7 @@ export default function Plot({ figure, height = 320 }: {
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { t, lang } = useI18n();
-  const [scheme, setScheme] = useState(0);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const h = () => setScheme((s) => s + 1);
-    mq.addEventListener("change", h);
-    return () => mq.removeEventListener("change", h);
-  }, []);
+  const { dark: scheme } = useTheme();
   useEffect(() => {
     const el = ref.current;
     if (!el || !figure) return;

@@ -28,6 +28,9 @@ from .common import (
     not_split)
 
 router = APIRouter(prefix="/api")
+_LOCKED = ("This transaction is part of a reconciled bank statement, so its "
+           "amount and date are locked. To change it, undo the latest "
+           "reconciliation of the account first (Accounts > Reconcile).")
 MAX_UPLOAD = 20 * 1024 * 1024
 
 
@@ -154,6 +157,11 @@ def update_transaction(txn_id: int, body: s.TransactionPatch,
             "leg by leg. Delete the transfer and create it again.")
     if "amount" in patch and patch["amount"] == 0:
         raise HTTPException(422, "Amount must not be zero.")
+    if txn.reconciled and (
+            ("amount" in patch and patch["amount"] != txn.amount)
+            or ("txn_date" in patch and patch["txn_date"] != txn.txn_date)
+            or patch.get("cleared") is False):
+        raise HTTPException(409, _LOCKED)
     is_split = db.scalar(select(func.count()).where(
         TransactionSplit.transaction_id == txn.id))
     if is_split and (("amount" in patch and patch["amount"] != txn.amount)
@@ -182,6 +190,8 @@ def update_transaction(txn_id: int, body: s.TransactionPatch,
 @router.delete("/transactions/{txn_id}", status_code=204)
 def delete_transaction(txn_id: int, db: Session = Depends(get_db)):
     txn = get_or_404(db, Transaction, txn_id)
+    if txn.reconciled:
+        raise HTTPException(409, _LOCKED)
     if txn.trade_id is not None:
         raise HTTPException(
             409, "This transaction belongs to an investment trade; delete "

@@ -62,7 +62,7 @@
   <Capabilities>
     <!-- Exchange rates and market prices (only codes and symbols are sent). -->
     <Capability Name="internetClient" />
-    <!-- Desktop app (WinUI 3 shell + local PostgreSQL and Python backend). -->
+    <!-- Desktop app (WinUI 3 shell + local Python backend). -->
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

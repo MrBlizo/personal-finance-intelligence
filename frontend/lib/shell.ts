@@ -37,6 +37,11 @@ export function notifyLanguage(lang: string, labels: Record<string, string>) {
 }
 
 /** Ask the shell to lock the app now (Windows Hello). */
+/** Tells the window (title bar, menus) which theme the page uses. */
+export function notifyTheme(theme: string) {
+  webview()?.postMessage({ type: "theme", theme });
+}
+
 export function requestLock() {
   webview()?.postMessage({ type: "lock" });
 }

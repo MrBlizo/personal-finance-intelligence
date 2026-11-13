@@ -8,11 +8,13 @@ from ..seed import get_setting
 
 LANGUAGES = ("en", "fr", "ar")
 LOCK_MODES = ("off", "hello")
+THEMES = ("system", "light", "dark")
 
 DEFAULTS: dict[str, str] = {
     "fx_auto_update": "1",
     "price_auto_update": "1",
     "language": "en",
+    "theme": "system",
     "app_lock": "off",
     "lock_after_minutes": "5",
     "auto_categorize": "1",
@@ -71,6 +73,7 @@ def snapshot(db: Session) -> dict:
         "price_auto_update": get_bool(db, "price_auto_update"),
         "price_last_update": get(db, "price_last_update") or None,
         "language": get(db, "language"),
+        "theme": get(db, "theme"),
         "app_lock": get(db, "app_lock"),
         "lock_after_minutes": int(get_float(db, "lock_after_minutes")),
         "auto_categorize": get_bool(db, "auto_categorize"),

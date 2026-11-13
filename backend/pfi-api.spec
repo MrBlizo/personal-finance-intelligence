@@ -6,8 +6,6 @@ hidden = (
     collect_submodules("uvicorn")
     + collect_submodules("app")
     + [
-        "sqlalchemy.dialects.postgresql.psycopg",
-        "psycopg_binary",
         "multipart",
         "python_multipart",
     ]
@@ -23,7 +21,9 @@ a = Analysis(
     hiddenimports=hidden,
     datas=datas,
     excludes=["tkinter", "matplotlib", "IPython", "pytest", "notebook",
-              "PyQt5", "PySide6", "scipy"],
+              "PyQt5", "PySide6", "scipy",
+              # PostgreSQL drivers: no longer used since 0.5
+              "psycopg", "psycopg_binary", "psycopg2"],
     noarchive=False,
 )
 pyz = PYZ(a.pure)

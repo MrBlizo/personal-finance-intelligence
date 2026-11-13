@@ -13,6 +13,7 @@ export interface Settings {
   price_auto_update: boolean;
   price_last_update: string | null;
   language: "en" | "fr" | "ar";
+  theme: "system" | "light" | "dark";
   app_lock: "off" | "hello";
   lock_after_minutes: number;
   auto_categorize: boolean;
@@ -33,6 +34,49 @@ export interface BackupList {
   folder: string; default_folder: string; chosen_folder: string | null;
   folder_warning: string | null; encrypt: boolean; has_password: boolean;
   available: boolean; backups: Backup[];
+}
+export interface DebtInfo {
+  currency: string; warnings: string[];
+  debts: {
+    account_id: Id; name: string; type: string; currency: string; owed: number;
+    owed_base: number | null; apr: number; min_payment: number;
+    min_payment_base: number | null; has_terms: boolean;
+  }[];
+}
+export interface PayoffPlan {
+  strategy: string; months: number | null; payoff_date: string | null;
+  interest: number; paid: number; schedule: number[];
+  debts: { account_id: Id; name: string; payoff_month: number | null;
+    payoff_date: string | null; interest: number }[];
+}
+export interface DebtPlan {
+  currency: string; extra: number; start: string; warnings: string[];
+  plans: Record<"avalanche" | "snowball" | "minimum", PayoffPlan>;
+}
+export interface CalendarData {
+  year: number; currency: string; first_year: number; missing_fx: string[];
+  max_spend: number; days: { date: string; spend: number; income: number }[];
+  review: {
+    spend: number; income: number; net: number; savings_rate: number | null;
+    days: number; spend_days: number; no_spend_days: number; daily_average: number;
+    top_categories: { category: string; spend: number; share: number }[];
+    biggest: { date: string; description: string; spend: number } | null;
+    busiest_weekday: number | null; highest_month: number | null; lowest_month: number | null;
+    months: { month: number; name: string; spend: number; income: number }[];
+    previous: { spend: number; income: number; spend_change: number | null; income_change: number | null };
+  };
+}
+export interface ReconcileData {
+  account_id: Id; account_name: string; currency: string; statement_date: string;
+  cleared_balance: number; balance: number;
+  last: { statement_date: string; statement_balance: number } | null;
+  transactions: Txn[];
+}
+export interface BulkResult {
+  updated: number; deleted: number; skipped: number; reasons: Record<string, number>;
+}
+export interface LegacyData {
+  size: number; items: string[]; dumps: number; dump_size: number;
 }
 export interface SplitPart {
   category_id: Id | null; amount: number; note: string | null;
@@ -61,6 +105,7 @@ export interface Txn {
   category_name: string | null; transfer_group: string | null;
   import_batch_id: Id | null; trade_id: Id | null; notes: string | null;
   splits: SplitPart[]; tags: string[]; attachments: number;
+  cleared: boolean; reconciled: boolean;
 }
 export interface FxRate {
   id: Id; rate_date: string; from_currency: string; to_currency: string;

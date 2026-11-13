@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
-from .. import __version__
+from .. import __version__, legacy
 from ..config import get_settings
 from ..db import get_db, get_engine
 from ..migrations import run_migrations
@@ -139,7 +139,7 @@ def _restore(path, password: str | None) -> dict:
     s = get_settings()
     try:
         safety = bk.restore_backup(s.data_dir, s.sqlite_path, path,
-                                   get_engine(), password, s.pg_bin)
+                                   get_engine(), password)
     except bk.BackupError as exc:
         raise _fail(exc) from exc
     run_migrations(get_engine())
@@ -159,19 +159,53 @@ def restore_backup(name: str, body: RestoreIn | None = None):
 async def upload_backup(file: UploadFile = File(...)):
     """Store an uploaded backup in the default backup folder (not restored).
 
-    Accepts ``.pfibak`` files (plain or encrypted) and ``.dump`` files from
-    PFI 0.3.
+    Accepts ``.pfibak`` files (plain or encrypted). A ``.dump`` file from
+    PFI 0.3 is refused with a pointer to PFI 0.4.0, which can still read it.
     """
     raw = await file.read()
     if raw.startswith(b"PGDMP"):
-        ext = "dump"
-    elif raw.startswith(b"PK") or raw.startswith(bk.MAGIC):
-        ext = "pfibak"
-    else:
+        raise HTTPException(422, legacy.DUMP_MESSAGE)
+    if not (raw.startswith(b"PK") or raw.startswith(bk.MAGIC)):
         raise HTTPException(
             422, "This file is not a PFI backup. Choose a .pfibak file made "
-            "with 'Back up now' (or a .dump file from PFI 0.3).")
+            "with 'Back up now'.")
     path = bk.new_path(bk.default_dir(get_settings().data_dir), "uploaded",
-                       ext)
+                       "pfibak")
     path.write_bytes(raw)
     return _info(bk._info(path))
+
+
+# --- old 0.3 data ------------------------------------------------------------
+class CleanupIn(BaseModel):
+    dumps: bool = False
+
+
+def _backup_dirs(data_dir) -> list:
+    target, _ = bk.target_dir(data_dir)
+    return [bk.default_dir(data_dir), target]
+
+
+def _leftovers_out(data_dir) -> dict:
+    found = legacy.leftovers(data_dir, _backup_dirs(data_dir))
+    return {"size": found.size, "items": [p.name for p in found.paths],
+            "dumps": len(found.dumps), "dump_size": found.dump_size}
+
+
+@router.get("/legacy-data")
+def legacy_data():
+    """Report the unused files left from PFI 0.3."""
+    return _leftovers_out(get_settings().data_dir)
+
+
+@router.post("/legacy-data/delete")
+def delete_legacy_data(body: CleanupIn | None = None):
+    """Delete the unused PFI 0.3 files (and old .dump backups on request)."""
+    data_dir = get_settings().data_dir
+    try:
+        freed = legacy.remove_leftovers(data_dir, _backup_dirs(data_dir),
+                                        bool(body and body.dumps))
+    except OSError as exc:
+        raise HTTPException(
+            409, f"Some old files could not be deleted ({exc}). Close any "
+            "window that shows the PFI data folder and try again.") from exc
+    return {"freed": freed, **_leftovers_out(data_dir)}
