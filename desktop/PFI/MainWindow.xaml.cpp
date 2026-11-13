@@ -400,6 +400,10 @@ namespace winrt::PFI::implementation
             {
                 PickFolder(std::wstring(obj.GetNamedString(L"start", L"")));
             }
+            else if (type == L"rate")
+            {
+                RequestRating();
+            }
         }
         catch (...)
         {
@@ -501,6 +505,61 @@ namespace winrt::PFI::implementation
             JsonObject msg;
             msg.SetNamedValue(L"type", JsonValue::CreateStringValue(L"helloStatus"));
             msg.SetNamedValue(L"available", JsonValue::CreateBooleanValue(available));
+            core.PostWebMessageAsJson(msg.Stringify());
+        }
+    }
+
+    // ---------------------------------------------------------------- rating
+    // Opens the Microsoft Store's own "rate and review" dialog. Installed
+    // from the Store (packaged), StoreContext shows it over this window;
+    // installed with PFI-Setup.exe (unpackaged), the Store app opens on the
+    // review page instead. The page is told what happened.
+    winrt::fire_and_forget MainWindow::RequestRating()
+    {
+        namespace Store = winrt::Windows::Services::Store;
+        auto strong = get_strong();
+        std::wstring status = L"error";
+        try
+        {
+            if (pfi::IsPackaged())
+            {
+                auto store = Store::StoreContext::GetDefault();
+                if (auto init = store.try_as<::IInitializeWithWindow>())
+                    init->Initialize(WindowHandle());
+                auto result = co_await store.RequestRateAndReviewAppAsync();
+                switch (result.Status())
+                {
+                case Store::StoreRateAndReviewStatus::Succeeded:
+                    status = result.WasUpdated() ? L"updated" : L"rated";
+                    break;
+                case Store::StoreRateAndReviewStatus::CanceledByUser:
+                    status = L"canceled";
+                    break;
+                case Store::StoreRateAndReviewStatus::NetworkError:
+                    status = L"network";
+                    break;
+                default:
+                    status = L"error";
+                    break;
+                }
+            }
+            else
+            {
+                bool opened = co_await winrt::Windows::System::Launcher::LaunchUriAsync(
+                    winrt::Windows::Foundation::Uri(L"ms-windows-store://review/?ProductId=9MZKW4H9F0J5"));
+                status = opened ? L"opened" : L"error";
+            }
+        }
+        catch (...)
+        {
+            status = L"error";
+        }
+        ShellLog(L"rating request: " + status);
+        if (auto core = Web().CoreWebView2())
+        {
+            JsonObject msg;
+            msg.SetNamedValue(L"type", JsonValue::CreateStringValue(L"rateResult"));
+            msg.SetNamedValue(L"status", JsonValue::CreateStringValue(status));
             core.PostWebMessageAsJson(msg.Stringify());
         }
     }

@@ -618,3 +618,151 @@ def auto_backup_if_due(data_dir: Path, db_path: Path,
     for old in autos[KEEP_AUTO:]:
         (Path(old.folder) / old.name).unlink(missing_ok=True)
     return made
+
+
+# --- testing a backup --------------------------------------------------------
+#: Transactions compared field by field when a backup is tested.
+SAMPLE_SIZE = 25
+_SAMPLE_FIELDS = ("account_id", "txn_date", "amount", "description",
+                  "category_id")
+
+
+@dataclass
+class AccountCheck:
+    """One account as found in the backup and in the live data."""
+
+    name: str
+    backup_count: int | None
+    live_count: int | None
+    backup_balance: str | None
+    live_balance: str | None
+
+    @property
+    def same(self) -> bool:
+        return (self.backup_count == self.live_count
+                and self.backup_balance == self.live_balance)
+
+
+@dataclass
+class BackupCheck:
+    """The result of opening a backup and comparing it with the live data."""
+
+    name: str
+    created: datetime
+    accounts: list[AccountCheck]
+    transactions_backup: int
+    transactions_live: int
+    sampled: int
+    sample_mismatches: int
+    receipts_backup: int
+    receipts_live: int
+
+    @property
+    def matches(self) -> bool:
+        return (all(a.same for a in self.accounts)
+                and self.transactions_backup == self.transactions_live
+                and self.sample_mismatches == 0
+                and self.receipts_backup == self.receipts_live)
+
+
+def _cents(value: int | None) -> str:
+    cents = int(value or 0)
+    sign = "-" if cents < 0 else ""
+    return f"{sign}{abs(cents) // 100}.{abs(cents) % 100:02d}"
+
+
+def _summarise(db: Path) -> tuple[
+        dict[int, tuple[str, int, str]], int, sqlite3.Connection]:
+    """Return per-account (name, count, balance), the total count and an
+    open read-only connection to ``db``."""
+    con = sqlite3.connect(f"file:{db.as_posix()}?mode=ro", uri=True)
+    rows = con.execute(
+        "SELECT a.id, a.name, a.opening_balance, COUNT(t.id), "
+        "COALESCE(SUM(t.amount), 0) FROM accounts a "
+        "LEFT JOIN transactions t ON t.account_id = a.id "
+        "GROUP BY a.id, a.name, a.opening_balance").fetchall()
+    accounts = {r[0]: (r[1], int(r[3]), _cents(int(r[2] or 0) + int(r[4])))
+                for r in rows}
+    total = con.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
+    return accounts, int(total), con
+
+
+def _count_files(folder: Path) -> int:
+    if not folder.is_dir():
+        return 0
+    return sum(1 for p in folder.rglob("*") if p.is_file())
+
+
+def check_backup(data_dir: Path, db_path: Path, path: Path,
+                 password: str | None = None) -> BackupCheck:
+    """Open a backup in a temporary folder and compare it with the live data.
+
+    Nothing is restored and the live data is only read. The backup is
+    unpacked (and decrypted) exactly as a restore would, its database must
+    pass SQLite's integrity check, and then every account's transaction
+    count and balance, the total number of transactions, the receipts and
+    up to ``SAMPLE_SIZE`` transactions picked at random are compared.
+
+    Parameters
+    ----------
+    data_dir : Path
+        The application data directory.
+    db_path : Path
+        The live SQLite database.
+    path : Path
+        The ``.pfibak`` file to test.
+    password : str, optional
+        The password of an encrypted backup.
+
+    Returns
+    -------
+    BackupCheck
+        What was compared; ``matches`` is True when nothing differs.
+
+    Raises
+    ------
+    BackupError
+        If the backup cannot be opened, needs a password, is damaged or is
+        a 0.3 ``.dump`` file.
+    """
+    from ..legacy import DUMP_MESSAGE
+    if path.suffix == ".dump":
+        raise BackupError(DUMP_MESSAGE)
+    data_dir = Path(data_dir)
+    info = _info(path)
+    with tempfile.TemporaryDirectory(prefix="pfi-test-",
+                                     dir=data_dir) as tmp:
+        backup_db, files = _extract(path, Path(tmp), password, data_dir)
+        backup, backup_total, bcon = _summarise(backup_db)
+        live, live_total, lcon = _summarise(Path(db_path))
+        try:
+            cols = ", ".join(("id",) + _SAMPLE_FIELDS)
+            sample = bcon.execute(
+                f"SELECT {cols} FROM transactions ORDER BY RANDOM() LIMIT ?",
+                (SAMPLE_SIZE,)).fetchall()
+            mismatches = 0
+            for row in sample:
+                other = lcon.execute(
+                    f"SELECT {cols} FROM transactions WHERE id = ?",
+                    (row[0],)).fetchone()
+                if other is None or tuple(other) != tuple(row):
+                    mismatches += 1
+        finally:
+            bcon.close()
+            lcon.close()
+        receipts_backup = _count_files(files)
+    accounts = []
+    for acc_id in sorted(set(backup) | set(live)):
+        b, lv = backup.get(acc_id), live.get(acc_id)
+        accounts.append(AccountCheck(
+            name=(b or lv)[0],
+            backup_count=b[1] if b else None,
+            live_count=lv[1] if lv else None,
+            backup_balance=b[2] if b else None,
+            live_balance=lv[2] if lv else None))
+    return BackupCheck(
+        name=path.name, created=info.created, accounts=accounts,
+        transactions_backup=backup_total, transactions_live=live_total,
+        sampled=len(sample), sample_mismatches=mismatches,
+        receipts_backup=receipts_backup,
+        receipts_live=_count_files(data_dir / "attachments"))

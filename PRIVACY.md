@@ -43,6 +43,11 @@ never shown again in the app (only their last four characters).
 
 - **Windows Hello** (optional app lock): verification is done by Windows; PFI
   only receives "verified" or "not verified".
+- **Store rating** (asked once, after 14 days of use and 20 transactions):
+  "Rate PFI" opens the Microsoft Store's own rating window, run by Windows
+  under Microsoft's terms. PFI sends nothing itself and only learns whether
+  the window was closed or a rating was submitted; your answer is stored on
+  this PC.
 - **Notifications** (bill reminders): shown locally by Windows.
 
 ## Your control

@@ -107,3 +107,26 @@ export function pickFolder(start = ""): Promise<string | null> {
     wv.postMessage({ type: "pickFolder", start });
   });
 }
+
+export type RateResult = "rated" | "updated" | "canceled" | "network" | "error" | "opened";
+
+/** Open the Microsoft Store rating dialog (in the shell) or the Store
+ *  review page (in a plain browser); resolves with what happened. */
+export function requestRating(): Promise<RateResult> {
+  const wv = webview();
+  if (!wv) {
+    window.open("ms-windows-store://review/?ProductId=9MZKW4H9F0J5", "_self");
+    return Promise.resolve("opened");
+  }
+  return new Promise((resolve) => {
+    const handler = (e: { data: unknown }) => {
+      const d = e.data as { type?: string; status?: RateResult };
+      if (d?.type === "rateResult") {
+        wv.removeEventListener("message", handler);
+        resolve(d.status ?? "error");
+      }
+    };
+    wv.addEventListener("message", handler);
+    wv.postMessage({ type: "rate" });
+  });
+}

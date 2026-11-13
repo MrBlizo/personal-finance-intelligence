@@ -34,6 +34,7 @@
 #include <winrt/Microsoft.Windows.AppNotifications.h>
 #include <winrt/Microsoft.Windows.AppNotifications.Builder.h>
 #include <winrt/Windows.Security.Credentials.UI.h>
+#include <winrt/Windows.Services.Store.h>
 
 #include <atomic>
 #include <chrono>

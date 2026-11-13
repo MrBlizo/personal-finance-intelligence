@@ -1,4 +1,4 @@
-"""Health check and demo-data management."""
+"""Health check, demo data, backups and the rating prompt."""
 from fastapi import (
     APIRouter, Depends, File, HTTPException, Request, UploadFile)
 from fastapi.responses import FileResponse
@@ -12,6 +12,7 @@ from ..db import get_db, get_engine
 from ..migrations import run_migrations
 from ..models import Account
 from ..services import backup as bk
+from ..services import rating
 from ..services.demo import remove_demo, seed_demo
 
 router = APIRouter(prefix="/api")
@@ -155,6 +156,38 @@ def restore_backup(name: str, body: RestoreIn | None = None):
     return _restore(path, body.password if body else None)
 
 
+@router.post("/backups/{name}/test")
+def verify_backup(name: str, body: RestoreIn | None = None):
+    """Open a backup in a temporary folder and compare it with the live
+    data; nothing is restored."""
+    s = get_settings()
+    try:
+        path = bk.resolve(s.data_dir, name)
+    except bk.BackupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    try:
+        check = bk.check_backup(s.data_dir, s.sqlite_path, path,
+                                body.password if body else None)
+    except bk.BackupError as exc:
+        raise _fail(exc) from exc
+    return {
+        "name": check.name,
+        "created": check.created.isoformat(timespec="seconds"),
+        "matches": check.matches,
+        "transactions_backup": check.transactions_backup,
+        "transactions_live": check.transactions_live,
+        "sampled": check.sampled,
+        "sample_mismatches": check.sample_mismatches,
+        "receipts_backup": check.receipts_backup,
+        "receipts_live": check.receipts_live,
+        "accounts": [{"name": a.name, "same": a.same,
+                      "backup_count": a.backup_count,
+                      "live_count": a.live_count,
+                      "backup_balance": a.backup_balance,
+                      "live_balance": a.live_balance}
+                     for a in check.accounts]}
+
+
 @router.post("/backups/upload")
 async def upload_backup(file: UploadFile = File(...)):
     """Store an uploaded backup in the default backup folder (not restored).
@@ -209,3 +242,24 @@ def delete_legacy_data(body: CleanupIn | None = None):
             409, f"Some old files could not be deleted ({exc}). Close any "
             "window that shows the PFI data folder and try again.") from exc
     return {"freed": freed, **_leftovers_out(data_dir)}
+
+
+# --- rating prompt -----------------------------------------------------------
+class RatingIn(BaseModel):
+    outcome: str
+
+
+@router.get("/rating")
+def rating_status(db: Session = Depends(get_db)):
+    """Whether to ask for a Microsoft Store rating now."""
+    return rating.status(db)
+
+
+@router.post("/rating")
+def rating_answer(body: RatingIn, db: Session = Depends(get_db)):
+    """Store the answer to the rating prompt."""
+    try:
+        state = rating.record(db, body.outcome)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return {**rating.status(db), "state": state}

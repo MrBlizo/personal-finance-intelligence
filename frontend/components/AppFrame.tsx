@@ -12,6 +12,7 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
+import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
 
 export const NAV = [
@@ -109,6 +110,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
             <main className="main">{children}</main>
           </div>
           <DownloadToasts />
+          <RatePrompt />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>

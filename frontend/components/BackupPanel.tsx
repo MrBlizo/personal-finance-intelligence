@@ -57,6 +57,74 @@ export function useRestore(onDone: (safety: string) => void, onError: (m: string
   return { restore, dialog };
 }
 
+type AccountCheck = {
+  name: string; same: boolean; backup_count: number | null; live_count: number | null;
+  backup_balance: string | null; live_balance: string | null;
+};
+export type BackupCheck = {
+  name: string; created: string; matches: boolean;
+  transactions_backup: number; transactions_live: number;
+  sampled: number; sample_mismatches: number;
+  receipts_backup: number; receipts_live: number; accounts: AccountCheck[];
+};
+
+/** Test a stored backup (unpack and compare, nothing restored), asking
+ *  for its password when it needs one. */
+export function useBackupTest(onError: (m: string) => void) {
+  const t = useT();
+  const [ask, setAsk] = useState<{ name: string; error?: string } | null>(null);
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [result, setResult] = useState<BackupCheck | null>(null);
+  const test = async (name: string, password?: string) => {
+    setBusy(name);
+    try {
+      const r = await post<BackupCheck>(`/api/backups/${name}/test`, password ? { password } : {});
+      setAsk(null); setPw(""); setResult(r);
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 423) setAsk({ name, error: password ? e.message : undefined });
+      else onError((e as Error).message);
+    } finally { setBusy(null); }
+  };
+  const when = (iso: string) => new Date(iso).toLocaleString("de-CH");
+  const differing = result?.accounts.filter((a) => !a.same) ?? [];
+  const dialog: ReactNode = (<>
+    {ask && <Modal title={t("Backup password")} onClose={() => { setAsk(null); setPw(""); }} actions={<>
+      <Button appearance="primary" disabled={!!busy || !pw} onClick={() => test(ask.name, pw)}>
+        {busy ? t("Testing…") : t("Test")}</Button>
+      <Button onClick={() => { setAsk(null); setPw(""); }}>{t("Cancel")}</Button></>}>
+      {ask.error && <Banner kind="error">{ask.error}</Banner>}
+      <p>{t("This backup is protected with a password. Enter the password used when it was made.")}</p>
+      <FField label={t("Password")}>
+        <Input type="password" value={pw} autoFocus onChange={(_, d) => setPw(d.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && pw) test(ask.name, pw); }} />
+      </FField>
+    </Modal>}
+    {result && <Modal title={t("Backup test")} onClose={() => setResult(null)}
+      actions={<Button appearance="primary" onClick={() => setResult(null)}>{t("Done")}</Button>}>
+      {result.matches
+        ? <Banner kind="success">{t("This backup works and matches your current data exactly: {n} transactions in {a} accounts, every balance the same.",
+            { n: result.transactions_live, a: result.accounts.length })}</Banner>
+        : <Banner kind="warning">{t("This backup works: it opens and passes the integrity check. Your data has changed since it was made ({d}), so the differences below are expected if you added or edited something since then.",
+            { d: when(result.created) })}</Banner>}
+      <ul className="caption" style={{ paddingInlineStart: 18 }}>
+        <li>{t("Transactions: {b} in the backup, {l} now.", { b: result.transactions_backup, l: result.transactions_live })}</li>
+        <li>{t("{s} transactions picked at random were compared field by field: {m} differ.", { s: result.sampled, m: result.sample_mismatches })}</li>
+        <li>{t("Receipts: {b} in the backup, {l} now.", { b: result.receipts_backup, l: result.receipts_live })}</li>
+      </ul>
+      {differing.length > 0 && <div className="table-wrap" style={{ maxHeight: 220 }}>
+        <table><thead><tr><th>{t("Account")}</th><th className="num">{t("In the backup")}</th><th className="num">{t("Now")}</th></tr></thead>
+          <tbody>{differing.map((a) => (<tr key={a.name}><td>{a.name}</td>
+            <td className="num">{a.backup_balance === null ? t("not in the backup")
+              : t("{b} ({n} transactions)", { b: a.backup_balance, n: a.backup_count ?? 0 })}</td>
+            <td className="num">{a.live_balance === null ? t("deleted since")
+              : t("{b} ({n} transactions)", { b: a.live_balance, n: a.live_count ?? 0 })}</td></tr>))}
+          </tbody></table></div>}
+    </Modal>}
+  </>);
+  return { test, busy, dialog };
+}
+
 /** Upload a .pfibak file, then confirm and restore it. */
 export function RestoreFromFile({ label, appearance, onDone, onError }: {
   label?: string; appearance?: "primary" | "secondary";
@@ -103,6 +171,7 @@ export function BackupPanel({ onMessage, onRestored }: {
   };
   const fail = (m: string) => onMessage({ kind: "error", text: m });
   const { restore, dialog } = useRestore(done, fail);
+  const tester = useBackupTest(fail);
   const shell = typeof window !== "undefined" && inShell();
   const chosen = folder ?? data?.chosen_folder ?? "";
 
@@ -190,6 +259,9 @@ export function BackupPanel({ onMessage, onRestored }: {
                 <Tooltip content={t("Download")} relationship="label">
                   <Button appearance="subtle" size="small" icon={<ArrowDownload20Regular />} as="a"
                     href={downloadUrl(`/api/backups/${b.name}/download`)} /></Tooltip>
+                {!b.legacy && <Tooltip content={t("Open this backup in a temporary folder and compare it with your current data. Nothing is restored.")} relationship="description">
+                  <Button appearance="subtle" size="small" disabled={tester.busy === b.name}
+                    onClick={() => tester.test(b.name)}>{tester.busy === b.name ? t("Testing…") : t("Test")}</Button></Tooltip>}
                 {!b.legacy && <Button appearance="subtle" size="small" onClick={() => setConfirm(b)}>{t("Restore")}</Button>}
                 {b.legacy && <Tooltip content={t("Backups from PFI 0.3 can only be restored with PFI 0.4.0.")} relationship="label">
                   <Button appearance="subtle" size="small" disabledFocusable>{t("Restore")}</Button></Tooltip>}</td></tr>))}
@@ -199,6 +271,7 @@ export function BackupPanel({ onMessage, onRestored }: {
       { d: new Date(confirm.created).toLocaleString("de-CH") })}
       onYes={() => restore(confirm.name)} onClose={() => setConfirm(null)} />}
     {dialog}
+    {tester.dialog}
     {pwModal && <Modal title={t("Backup password")} onClose={() => { setPwModal(false); setPwError(null); }} actions={<>
       <Button appearance="primary" onClick={savePassword}>{t("Save")}</Button>
       <Button onClick={() => { setPwModal(false); setPwError(null); }}>{t("Cancel")}</Button></>}>
