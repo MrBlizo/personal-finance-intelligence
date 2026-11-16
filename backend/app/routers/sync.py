@@ -21,7 +21,8 @@ class SetupIn(BaseModel):
 
 def _out(db: Session) -> dict:
     st = sync.status(db, get_settings().data_dir)
-    return {**asdict(st), "suggestions": sync.suggest_folders()}
+    return {**asdict(st), "suggestions": sync.suggest_folders(),
+            "phone_ready": sync.phone_can_find(st.folder)}
 
 
 @router.get("")

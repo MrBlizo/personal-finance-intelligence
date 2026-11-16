@@ -114,11 +114,14 @@ IconData categoryIcon(String? key, String? name) {
 
 class CategoryAvatar extends StatelessWidget {
   const CategoryAvatar(
-      {super.key, this.icon, this.name, this.color, this.size = 44});
+      {super.key, this.icon, this.name, this.color, this.size = 44, this.square = false});
   final String? icon;
   final String? name;
   final String? color;
   final double size;
+
+  /// A rounded square tile instead of a circle (budget lists).
+  final bool square;
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +130,11 @@ class CategoryAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-          color: c.withValues(alpha: 0.18), shape: BoxShape.circle),
+      decoration: square
+          ? BoxDecoration(
+              color: c.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(size * 0.32))
+          : BoxDecoration(color: c.withValues(alpha: 0.18), shape: BoxShape.circle),
       child: Icon(categoryIcon(icon, name), size: size * 0.5, color: c),
     );
   }

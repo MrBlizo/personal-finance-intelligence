@@ -80,13 +80,17 @@ export function SyncPanel({ onMessage, onSynced }: {
       </>) : (
         <Button appearance="primary" icon={<Phone20Regular />} onClick={open}>{t("Set up sync")}</Button>)}
     </SettingRow>
+    {s?.enabled && !s.phone_ready && (
+      <div style={{ padding: "0 16px 8px" }}><Banner kind="warning">
+        {t("The phone app looks for the folder Apps › PFI Sync at the top of your OneDrive. Choose OneDrive\\Apps\\PFI Sync here (Stop syncing, then Set up sync) so your phone can find it.")}
+      </Banner></div>)}
     {s?.enabled && s.last_error && (
       <div style={{ padding: "0 16px 8px" }}><Banner kind="warning">{s.last_error}</Banner></div>)}
     {s?.enabled && (
       <SettingRow title={t("Devices")}
         description={s.devices.length
           ? s.devices.map((d) => `${d.name} (${when(d.seen)})`).join(" · ")
-          : t("No other device has synced yet. Open the PFI phone app, choose Sync and enter the same folder and passphrase.")}>
+          : t("No phone has synced yet. On the phone: PFI › Settings (gear) › Set up sync › OneDrive, sign in with the same Microsoft account as this PC's OneDrive, then enter the same passphrase.")}>
         {s.pending > 0 && <Badge appearance="tint" color="warning">
           {t("{n} changes waiting", { n: s.pending })}</Badge>}
       </SettingRow>)}

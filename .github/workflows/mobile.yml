@@ -53,9 +53,11 @@ jobs:
           if ! grep -q "lintVital" android/build.gradle.kts; then
             printf '\nsubprojects {\n    tasks.matching { it.name.startsWith("lintVital") }.configureEach { enabled = false }\n}\n' >> android/build.gradle.kts
           fi
-      - name: Dependencies
+      - name: Dependencies and launcher icons
         working-directory: mobile
-        run: flutter pub get
+        run: |
+          flutter pub get
+          dart run flutter_launcher_icons
       - name: Analyze
         working-directory: mobile
         run: flutter analyze --no-fatal-infos --no-fatal-warnings

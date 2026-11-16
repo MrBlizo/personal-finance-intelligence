@@ -150,6 +150,29 @@ void main() {
     expect(dec.rows.firstWhere((r) => r.category?.id == food.id).available, 18000);
   });
 
+  test('an emptied folder gets everything again', () async {
+    final acc = a.repo.addAccount('Cash', 'cash', 'CHF', 0, DateTime(2026, 1, 1));
+    a.repo.saveTransaction(accountId: acc, date: DateTime(2026, 11, 1), amount: -500,
+        kind: 'expense', payee: 'Bread');
+    expect((await a.run(store)).sent, greaterThan(0));
+    Directory(store.root).deleteSync(recursive: true);
+    await a.join(store); // set up again: new folder, new salt
+    expect((await a.run(store)).sent, greaterThan(0));
+    final c = Device('C');
+    await c.join(store);
+    await c.run(store);
+    expect(c.repo.transactions().map((t) => t.title), ['Bread']);
+  });
+
+  test('own files removed from the folder are sent again', () async {
+    final acc = a.repo.addAccount('Cash', 'cash', 'CHF', 0, DateTime(2026, 1, 1));
+    a.repo.saveTransaction(accountId: acc, date: DateTime(2026, 11, 1), amount: -500,
+        kind: 'expense', payee: 'Milk');
+    await a.run(store);
+    Directory('${store.root}/changes').deleteSync(recursive: true);
+    expect((await a.run(store)).sent, greaterThan(0));
+  });
+
   test('normTime orders mixed precision', () {
     expect(normTime('2026-11-16 10:00:00').compareTo(normTime('2026-11-16 10:00:00.001')),
         lessThan(0));

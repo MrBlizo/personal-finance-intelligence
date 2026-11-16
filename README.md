@@ -179,4 +179,9 @@ Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[MIT](LICENSE) © 2026 Ibrahim (MrBlizo)
+[GNU AGPL-3.0-or-later](LICENSE) © 2026 Ibrahim (MrBlizo).
+
+You may use, study, share and change PFI. If you distribute a changed
+version, or offer it to others over a network, you must publish your source
+code under the same license. Releases up to 0.7.0 were published under the
+MIT license and stay available under it.

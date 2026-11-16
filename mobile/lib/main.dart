@@ -66,17 +66,18 @@ class _WelcomePageState extends State<WelcomePage> {
   @override
   Widget build(BuildContext context) {
     final app = appOf(context);
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             const Spacer(),
-            CircleAvatar(
-              radius: 36,
-              backgroundColor: scheme.primaryContainer,
-              child: Icon(Icons.savings_outlined, size: 36, color: scheme.onPrimaryContainer),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset('assets/branding/icon.png', width: 76, height: 76),
+              ),
             ),
             const SizedBox(height: 24),
             Text(app.t('Welcome to PFI'),

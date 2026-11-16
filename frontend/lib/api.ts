@@ -42,6 +42,7 @@ export interface SyncStatus {
   device_name: string | null; last_sync: string | null; last_error: string | null;
   sent: number; received: number; pending: number; devices: SyncDevice[];
   suggestions: { provider: string; path: string }[];
+  phone_ready: boolean;
 }
 export interface BackupList {
   folder: string; default_folder: string; chosen_folder: string | null;

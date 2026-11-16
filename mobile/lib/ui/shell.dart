@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/repo.dart';
+import '../state.dart';
 import 'edit_transaction.dart';
 import 'settings.dart';
 import 'widgets.dart';
+
+part 'budget.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -20,20 +23,20 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final app = appOf(context);
     final pages = [
-      HomePage(onSeeAll: () => setState(() => tab = 1)),
-      const TransactionsPage(),
+      HomePage(onTab: (i) => setState(() => tab = i)),
       const BudgetPage(),
+      const TransactionsPage(),
       const AccountsPage(),
     ];
     return Scaffold(
       body: SafeArea(child: pages[tab]),
-      floatingActionButton: tab == 3
-          ? null
-          : FloatingActionButton.large(
+      floatingActionButton: tab == 0 || tab == 2
+          ? FloatingActionButton.large(
               onPressed: () => openEditor(context),
               tooltip: app.t('Add transaction'),
               child: const Icon(Icons.add_rounded, size: 36),
-            ),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: tab,
         onDestinationSelected: (i) => setState(() => tab = i),
@@ -43,16 +46,16 @@ class _HomeShellState extends State<HomeShell> {
               selectedIcon: const Icon(Icons.home_rounded),
               label: app.t('Home')),
           NavigationDestination(
-              icon: const Icon(Icons.receipt_long_outlined),
-              selectedIcon: const Icon(Icons.receipt_long_rounded),
-              label: app.t('Transactions')),
-          NavigationDestination(
-              icon: const Icon(Icons.pie_chart_outline_rounded),
-              selectedIcon: const Icon(Icons.pie_chart_rounded),
-              label: app.t('Budget')),
-          NavigationDestination(
               icon: const Icon(Icons.account_balance_wallet_outlined),
               selectedIcon: const Icon(Icons.account_balance_wallet_rounded),
+              label: app.t('Budget')),
+          NavigationDestination(
+              icon: const Icon(Icons.receipt_long_outlined),
+              selectedIcon: const Icon(Icons.receipt_long_rounded),
+              label: app.t('Spending')),
+          NavigationDestination(
+              icon: const Icon(Icons.account_balance_outlined),
+              selectedIcon: const Icon(Icons.account_balance_rounded),
               label: app.t('Accounts')),
         ],
       ),
@@ -106,8 +109,10 @@ class _SyncIndicator extends StatelessWidget {
 
 // --- Home ------------------------------------------------------------
 class HomePage extends StatelessWidget {
-  const HomePage({super.key, required this.onSeeAll});
-  final VoidCallback onSeeAll;
+  const HomePage({super.key, required this.onTab});
+
+  /// Switches the bottom tab (1 Budget, 2 Spending, 3 Accounts).
+  final void Function(int) onTab;
 
   @override
   Widget build(BuildContext context) {
@@ -134,19 +139,21 @@ class HomePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Card(
-                color: scheme.primaryContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(app.t('Cash on hand'),
-                        style: TextStyle(color: scheme.onPrimaryContainer)),
-                    const SizedBox(height: 6),
-                    Text(money(context, repo.cash(), base),
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(color: scheme.onPrimaryContainer)),
-                  ]),
-                ),
+              _Hero(
+                label: app.t('Cash on hand'),
+                value: money(context, repo.cash(), base),
+                actions: [
+                  _QuickAction(Icons.add_rounded, app.t('Add'), () => openEditor(context)),
+                  _QuickAction(Icons.account_balance_wallet_outlined, app.t('Budget'), () => onTab(1)),
+                  _QuickAction(Icons.receipt_long_outlined, app.t('Spending'), () => onTab(2)),
+                  _QuickAction(
+                      app.syncEnabled ? Icons.sync_rounded : Icons.cloud_outlined,
+                      app.t('Sync'),
+                      app.syncEnabled
+                          ? () => app.syncNow()
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const SyncSetupPage()))),
+                ],
               ),
               const SizedBox(height: 12),
               Row(children: [
@@ -169,8 +176,24 @@ class HomePage extends StatelessWidget {
                           color: env.readyToAssign < 0 ? scheme.error : null)),
                 ),
               ),
+              if (!app.syncEnabled) ...[
+                const SizedBox(height: 12),
+                Card(
+                  color: scheme.tertiaryContainer,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    leading: Icon(Icons.sync_rounded, color: scheme.onTertiaryContainer),
+                    title: Text(app.t('Connect to PFI on my PC'),
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text(app.t('Use the same OneDrive account and passphrase as on your PC.')),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SyncSetupPage())),
+                  ),
+                ),
+              ],
               SectionTitle(app.t('Recent'),
-                  action: TextButton(onPressed: onSeeAll, child: Text(app.t('See all')))),
+                  action: TextButton(onPressed: () => onTab(2), child: Text(app.t('See all')))),
               if (recent.isEmpty)
                 _EmptyHint(app.t('No transactions yet'), app.t('Tap + to add your first one.'))
               else
@@ -181,6 +204,77 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The big gradient card at the top of Home with round quick actions.
+class _Hero extends StatelessWidget {
+  const _Hero({required this.label, required this.value, required this.actions});
+  final String label;
+  final String value;
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final a = dark ? Color.lerp(scheme.primary, Colors.black, 0.45)! : scheme.primary;
+    final b = Color.lerp(a, Colors.black, 0.35)!;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+            begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [a, b]),
+        boxShadow: [
+          BoxShadow(color: a.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label.toUpperCase(),
+            style: const TextStyle(
+                color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
+        const SizedBox(height: 6),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(value,
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+        ),
+        const SizedBox(height: 20),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: actions),
+      ]),
+    );
+  }
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction(this.icon, this.label, this.onTap);
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: Column(children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18), shape: BoxShape.circle),
+              child: Icon(icon, color: Colors.white),
+            ),
+            const SizedBox(height: 6),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+          ]),
+        ),
+      );
 }
 
 class _Pill extends StatelessWidget {
@@ -339,140 +433,6 @@ Future<bool> confirmDelete(BuildContext context) async {
         ),
       ) ??
       false;
-}
-
-// --- Budget (envelopes) ----------------------------------------------
-class BudgetPage extends StatefulWidget {
-  const BudgetPage({super.key});
-  @override
-  State<BudgetPage> createState() => _BudgetPageState();
-}
-
-class _BudgetPageState extends State<BudgetPage> {
-  DateTime month = monthStart(DateTime.now());
-
-  @override
-  Widget build(BuildContext context) {
-    final app = appOf(context);
-    final scheme = Theme.of(context).colorScheme;
-    final env = app.repo.envelopeMonth(month);
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 120),
-      children: [
-        _Header(app.t('Budget')),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(children: [
-            IconButton(
-                onPressed: () => setState(() => month = addMonths(month, -1)),
-                icon: const Icon(Icons.chevron_left)),
-            Expanded(
-                child: Text(DateFormat.yMMMM(app.lang).format(month),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium)),
-            IconButton(
-                onPressed: () => setState(() => month = addMonths(month, 1)),
-                icon: const Icon(Icons.chevron_right)),
-          ]),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Card(
-              color: env.readyToAssign < 0 ? scheme.errorContainer : scheme.primaryContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(22),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(app.t('Ready to assign')),
-                  Text(money(context, env.readyToAssign, env.currency),
-                      style: Theme.of(context).textTheme.headlineMedium),
-                  const SizedBox(height: 8),
-                  Text('${app.t('Assigned')} ${money(context, env.assigned, env.currency)}  ·  '
-                      '${app.t('Activity')} ${money(context, env.activity, env.currency)}'),
-                ]),
-              ),
-            ),
-            if (env.missingFx.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(app.t(
-                    'Some amounts are missing an exchange rate ({c}). Update the rates in PFI on your PC.',
-                    {'c': env.missingFx.join(', ')})),
-              ),
-            const SizedBox(height: 12),
-            Card(
-              child: Column(children: [
-                for (final r in env.rows) _EnvelopeTile(r, month, env.currency),
-              ]),
-            ),
-          ]),
-        ),
-      ],
-    );
-  }
-}
-
-class _EnvelopeTile extends StatelessWidget {
-  const _EnvelopeTile(this.r, this.month, this.currency);
-  final EnvelopeRow r;
-  final DateTime month;
-  final String currency;
-
-  @override
-  Widget build(BuildContext context) {
-    final app = appOf(context, listen: false);
-    final scheme = Theme.of(context).colorScheme;
-    final c = r.category;
-    final over = r.available < 0;
-    final short = r.need > r.assigned;
-    final pillColor = over
-        ? scheme.errorContainer
-        : short
-            ? Colors.amber.withValues(alpha: 0.35)
-            : Colors.green.withValues(alpha: 0.2);
-    return ListTile(
-      contentPadding: EdgeInsetsDirectional.fromSTEB(c?.parentId == null ? 16 : 32, 2, 16, 2),
-      leading: CategoryAvatar(icon: c?.icon, name: c?.name, color: c?.color, size: 38),
-      title: Text(c?.name ?? app.t('Uncategorised'),
-          style: TextStyle(fontWeight: c?.parentId == null ? FontWeight.w700 : FontWeight.w500)),
-      subtitle: Text(r.need > 0
-          ? app.t('Needs {a} this month', {'a': money(context, r.need, currency)})
-          : '${app.t('Assigned')} ${money(context, r.assigned, currency)}'),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(color: pillColor, borderRadius: BorderRadius.circular(12)),
-        child: Text(money(context, r.available, currency),
-            style: const TextStyle(fontWeight: FontWeight.w700)),
-      ),
-      onTap: c == null ? null : () => _assign(context, c.id, c.name),
-    );
-  }
-
-  Future<void> _assign(BuildContext context, int id, String name) async {
-    final app = appOf(context, listen: false);
-    final ctl = TextEditingController(text: (r.assigned / 100).toStringAsFixed(2));
-    final value = await showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(app.t('Assign to {c}', {'c': name})),
-        content: TextField(
-          controller: ctl,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-          decoration: InputDecoration(suffixText: currency),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(app.t('Cancel'))),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, parseMinor(ctl.text)),
-              child: Text(app.t('Save'))),
-        ],
-      ),
-    );
-    if (value == null) return;
-    app.repo.setAssigned(id, month, value);
-    app.changed();
-  }
 }
 
 // --- Accounts --------------------------------------------------------

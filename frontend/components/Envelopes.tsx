@@ -33,15 +33,16 @@ function AssignCell({ row, month, onSaved }: {
   row: EnvelopeRow; month: string; onSaved: (m: EnvelopeMonth) => void;
 }) {
   const t = useT();
-  const [text, setText] = useState(String(row.assigned));
+  const fmt2 = (n: number) => n.toFixed(2);
+  const [text, setText] = useState(fmt2(row.assigned));
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => setText(String(row.assigned)), [row.assigned]);
+  useEffect(() => setText(fmt2(row.assigned)), [row.assigned]);
   if (row.category_id === null) return <span className="muted">—</span>;
   const save = async () => {
     const v = evalAmount(text);
     if (v === null) { setErr(t("Not a number")); return; }
     setErr(null);
-    if (v === row.assigned) { setText(String(v)); return; }
+    if (v === row.assigned) { setText(fmt2(v)); return; }
     try {
       onSaved(await put<EnvelopeMonth>(`/api/envelopes/${month}/${row.category_id}`,
         { amount: String(v) }));
@@ -58,10 +59,49 @@ function AssignCell({ row, month, onSaved }: {
   );
 }
 
-function TargetBar({ row }: { row: EnvelopeRow }) {
-  if (!row.target || row.need <= 0) return null;
-  const share = Math.max(0, Math.min(1, row.assigned / row.need));
-  return <div className="target-bar"><span style={{ width: `${share * 100}%` }} /></div>;
+function Stat({ label, value }: { label: string; value: string }) {
+  return <div className="stat"><div className="stat-label">{label}</div><div className="stat-value">{value}</div></div>;
+}
+
+type Group = { key: string; label: string; items: EnvelopeRow[]; parentId: Id | null };
+
+/** Category groups for the table: parents with their children, singles together. */
+function buildGroups(v: EnvelopeMonth, t: ReturnType<typeof useT>): Group[] {
+  const out: Group[] = [];
+  const singles: EnvelopeRow[] = [];
+  for (const g of v.groups) {
+    if (g.items.length > 1) {
+      const parent = g.items[0];
+      const items = g.items.filter((r, i) => i > 0 || r.assigned !== 0 || r.activity !== 0 || r.available !== 0);
+      out.push({ key: String(g.id), label: catLabel(parent.name, t), items, parentId: parent.category_id });
+    } else singles.push(...g.items);
+  }
+  const plain = singles.filter((r) => r.category_id !== null);
+  const none = singles.filter((r) => r.category_id === null);
+  if (plain.length) out.push({ key: "singles", label: t("Other categories"), items: plain, parentId: null });
+  if (none.length) out.push({ key: "none", label: t("Uncategorised"), items: none, parentId: null });
+  return out;
+}
+
+const sum = (rows: EnvelopeRow[], k: "assigned" | "activity" | "available") =>
+  rows.reduce((s, r) => s + r[k], 0);
+
+function rowLabel(r: EnvelopeRow, g: Group, t: ReturnType<typeof useT>) {
+  if (r.category_id === null) return t("Uncategorised spending");
+  if (r.category_id === g.parentId) return t("{c} (general)", { c: catLabel(r.name, t) });
+  return catLabel(r.name, t);
+}
+
+/** Status text and progress bar of one category row. */
+function state(r: EnvelopeRow): { label: string; cls: string; share: number } {
+  const funds = r.carry_in + r.assigned;
+  const spent = -Math.min(0, r.activity);
+  if (r.available < 0) return { label: "Overspent", cls: "overspent", share: 1 };
+  if (r.status === "underfunded")
+    return { label: "Underfunded", cls: "underfunded", share: r.need > 0 ? Math.min(1, r.assigned / r.need) : 0 };
+  if (funds > 0 && r.available === 0 && spent > 0) return { label: "Fully spent", cls: "spent", share: 1 };
+  if (funds > 0) return { label: "Funded", cls: "funded", share: Math.min(1, spent / funds) };
+  return { label: "", cls: "none", share: 0 };
 }
 
 export function Envelopes({ lang }: { lang: string }) {
@@ -74,6 +114,12 @@ export function Envelopes({ lang }: { lang: string }) {
   const [target, setTarget] = useState<EnvelopeRow | null>(null);
   const [quick, setQuick] = useState<{ mode: string; data: QuickAssign } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "overspent" | "underfunded" | "available">("all");
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Id | null>(null);
+  const age = useLoad(() => get<{ age: number | null }>("/api/analytics/age-of-money", { months: 3 }), []);
+  const qUnder = useLoad(() => post<QuickAssign>("/api/envelopes/quick-assign", { month, mode: "underfunded" }), [month, view.data]);
+  const qLast = useLoad(() => post<QuickAssign>("/api/envelopes/quick-assign", { month, mode: "last_month" }), [month, view.data]);
   const v = view.data;
   const cur = v?.currency ?? "";
   const rows = v ? v.groups.flatMap((g) => g.items) : [];
@@ -90,9 +136,21 @@ export function Envelopes({ lang }: { lang: string }) {
   };
   const ready = v?.ready_to_assign ?? 0;
 
+  const groups = v ? buildGroups(v, t) : [];
+  const counts = {
+    overspent: rows.filter((r) => r.available < 0).length,
+    underfunded: rows.filter((r) => r.status === "underfunded").length,
+    available: rows.filter((r) => r.available > 0).length,
+  };
+  const keep = (r: EnvelopeRow) => filter === "all" ? true
+    : filter === "overspent" ? r.available < 0
+      : filter === "underfunded" ? r.status === "underfunded" : r.available > 0;
+  const carried = rows.reduce((s, r) => s + r.carry_in, 0);
+  const sel = selected === null ? null : rows.find((r) => r.category_id === selected) ?? null;
+
   return (
     <>
-      <div className="row" style={{ marginBottom: 12 }}>
+      <div className="budget-top">
         <div className="month-nav">
           <Button appearance="subtle" icon={<ChevronLeft20Regular />} aria-label={t("Previous month")}
             onClick={() => setMonth(shift(month, -1))} />
@@ -101,97 +159,159 @@ export function Envelopes({ lang }: { lang: string }) {
             onClick={() => setMonth(shift(month, 1))} />
         </div>
         <span className="grow" />
-        <Menu>
-          <MenuTrigger disableButtonEnhancement>
-            <Button icon={<Flash20Regular />}>{t("Quick assign")}</Button>
-          </MenuTrigger>
-          <MenuPopover><MenuList>
-            <MenuItem onClick={() => previewQuick("underfunded")}>{t("Fund what targets still need")}</MenuItem>
-            <MenuItem onClick={() => previewQuick("last_month")}>{t("Assign the same as last month")}</MenuItem>
-          </MenuList></MenuPopover>
-        </Menu>
         <Button icon={<ArrowSwap20Regular />} onClick={() => setMove({})}>{t("Move money")}</Button>
       </div>
       {(error || view.error) && <Banner kind="error" onClose={() => setError(null)}>{error ?? view.error}</Banner>}
       {view.loading && !v && <Spinner />}
       {v && (
         <>
-          <div className={`hero ${ready < 0 ? "bad" : ready > 0 ? "good" : ""}`}>
-            <div>
-              <div className="hero-label">{t("Ready to Assign")}</div>
-              <div className="hero-value">{money(ready, cur)}</div>
-              <div className="caption">
-                {ready > 0 ? t("Give this money a job: type amounts in the Assigned column.")
-                  : ready < 0 ? t("You assigned more than you have. Take money back from a category.")
-                    : t("All your money has a job.")}
-                {v.assigned_in_future > 0 && " " + t("{a} is assigned in later months.",
-                  { a: money(v.assigned_in_future, cur) })}
-              </div>
+          <div className="budget-stats">
+            <div className={`unassigned ${ready < 0 ? "bad" : ready > 0 ? "good" : ""}`}>
+              <div className="stat-label">{t("Ready to Assign")}</div>
+              <div className="stat-big">{money(ready, cur)}</div>
+              <div className="stat-note">{ready > 0 ? t("Give this money a job")
+                : ready < 0 ? t("More assigned than you have") : t("All of it is assigned")}</div>
             </div>
-            <div className="row" style={{ gap: 24 }}>
-              <div><div className="hero-label">{t("Assigned")}</div>
-                <div className="kpi-value">{money(v.total_assigned, cur)}</div></div>
-              <div><div className="hero-label">{t("Activity")}</div>
-                <div className="kpi-value">{money(v.total_activity, cur)}</div></div>
-              <div><div className="hero-label">{t("Available")}</div>
-                <div className="kpi-value">{money(v.total_available, cur)}</div></div>
-            </div>
+            <Stat label={t("Assigned")} value={money(v.total_assigned, cur)} />
+            <Stat label={t("Activity")} value={money(v.total_activity, cur)} />
+            <Stat label={t("Available")} value={money(v.total_available, cur)} />
+            <Stat label={t("Age of money")} value={age.data?.age == null ? "—"
+              : t("{n} days", { n: age.data.age })} />
           </div>
-          {v.overspent > 0 && (
-            <Banner kind="warning" title={t("{a} overspent", { a: money(v.overspent, cur) })}>
-              {t("Cover it by moving money from a category that has some left. Overspending that is not covered is taken from Ready to Assign next month.")}
-            </Banner>)}
           {v.missing_fx.length > 0 && (
             <Banner kind="warning">{t("No exchange rate for {c}; those transactions are left out.",
               { c: v.missing_fx.join(", ") })}</Banner>)}
-          <div className="card table-wrap" style={{ padding: "8px 12px" }}>
-            <table className="env-table">
-              <thead><tr>
-                <th>{t("Category")}</th><th className="num">{t("Assigned")}</th>
-                <th className="num">{t("Activity")}</th><th className="num">{t("Available")}</th>
-                <th />
-              </tr></thead>
-              <tbody>
-                {v.groups.map((g) => g.items.map((r, i) => (
-                  <tr key={`${g.id}-${r.category_id}`}
-                    className={i === 0 && g.items.length > 1 ? "env-group" : undefined}>
-                    <td>
-                      <div className="cat-cell" style={{ paddingInlineStart: r.parent_id ? 28 : 0 }}>
-                        <CategoryIcon name={r.name} icon={r.icon} color={r.color} size={r.parent_id ? 28 : 32} />
-                        <span>
-                          <span className="cell-main">{catLabel(r.name, t)}</span>
-                          {r.target && (
-                            <span className="cell-sub">
-                              {r.status === "underfunded"
-                                ? t("{a} more needed this month", { a: money(r.shortfall) })
-                                : t("Target: {a}", { a: money(r.need) })}
-                              <TargetBar row={r} />
-                            </span>)}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="num"><AssignCell row={r} month={month} onSaved={view.setData} /></td>
-                    <td className="num muted">{money(r.activity)}</td>
-                    <td className="num">
-                      <span className={`pill ${r.available === 0 && r.status === "ok" ? "zero" : r.status}`}>
-                        {money(r.available)}</span>
-                    </td>
-                    <td className="actions">
-                      {r.category_id !== null && (<>
-                        {r.available < 0 && (
-                          <Button size="small" appearance="subtle" onClick={() =>
-                            setMove({ to: r.category_id, amount: -r.available })}>{t("Cover")}</Button>)}
-                        <Tooltip content={t("Target")} relationship="label">
-                          <Button size="small" appearance="subtle" icon={<Target20Regular />}
-                            onClick={() => setTarget(r)} /></Tooltip>
-                      </>)}
-                    </td>
-                  </tr>)))}
-              </tbody>
-            </table>
+          <div className="budget-layout">
+            <div className="budget-main">
+              <div className="budget-filters">
+                {([["all", t("All"), null], ["overspent", t("Overspent"), counts.overspent],
+                  ["underfunded", t("Underfunded"), counts.underfunded],
+                  ["available", t("Money available"), counts.available]] as const).map(([k, label, n]) => (
+                  <button key={k} className={`chip ${filter === k ? "on" : ""} ${k}`}
+                    onClick={() => setFilter(k)}>
+                    {label}{n !== null && <span className="count">{n}</span>}
+                  </button>))}
+                <span className="grow" />
+                <Button size="small" appearance="subtle" onClick={() => setCollapsed(
+                  collapsed.size ? new Set() : new Set(groups.map((g) => g.key)))}>
+                  {collapsed.size ? t("Expand all") : t("Collapse all")}</Button>
+              </div>
+              <div className="card env-card">
+                <table className="env-table">
+                  <thead><tr>
+                    <th>{t("Category")}</th><th className="num">{t("Assigned")}</th>
+                    <th className="num">{t("Activity")}</th><th className="num">{t("Available")}</th>
+                  </tr></thead>
+                  <tbody>
+                    {groups.map((g) => {
+                      const items = g.items.filter(keep);
+                      if (!items.length) return null;
+                      const open = !collapsed.has(g.key);
+                      return [
+                        <tr key={`h-${g.key}`} className="env-group-row" onClick={() => {
+                          const next = new Set(collapsed);
+                          if (open) next.add(g.key); else next.delete(g.key);
+                          setCollapsed(next);
+                        }}>
+                          <td><span className={`chev ${open ? "open" : ""}`}><ChevronRight20Regular /></span>
+                            <span className="group-name">{g.label}</span>
+                            <span className="count">{g.items.length}</span></td>
+                          <td className="num">{money(sum(g.items, "assigned"))}</td>
+                          <td className="num">{money(sum(g.items, "activity"))}</td>
+                          <td className="num">{money(sum(g.items, "available"))}</td>
+                        </tr>,
+                        ...(open ? items.map((r) => (
+                          <tr key={`${g.key}-${r.category_id}`}
+                            className={`env-row ${r.category_id !== null && r.category_id === selected ? "selected" : ""}`}
+                            onClick={() => setSelected(r.category_id === selected ? null : r.category_id)}>
+                            <td>
+                              <div className="cat-cell">
+                                <CategoryIcon name={r.name} icon={r.icon} color={r.color} size={30} />
+                                <div className="cat-text">
+                                  <div className="cat-line">
+                                    <span className="cell-main">{rowLabel(r, g, t)}</span>
+                                    <span className={`state ${state(r).cls}`}>{t(state(r).label)}</span>
+                                  </div>
+                                  <div className={`bar ${state(r).cls}`}><span style={{ width: `${state(r).share * 100}%` }} /></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="num" onClick={(e) => e.stopPropagation()}>
+                              <AssignCell row={r} month={month} onSaved={view.setData} /></td>
+                            <td className="num muted">{money(r.activity)}</td>
+                            <td className="num">
+                              <span className={`pill ${r.available === 0 && r.status === "ok" ? "zero" : r.available < 0 ? "overspent" : r.status === "underfunded" ? "underfunded" : "funded"}`}>
+                                {money(r.available)}</span>
+                            </td>
+                          </tr>)) : []),
+                      ];
+                    })}
+                  </tbody>
+                  <tfoot><tr>
+                    <td>{t("Total")}</td><td className="num">{money(v.total_assigned)}</td>
+                    <td className="num">{money(v.total_activity)}</td>
+                    <td className="num">{money(v.total_available)}</td>
+                  </tr></tfoot>
+                </table>
+              </div>
+              <p className="caption" style={{ marginTop: 8 }}>
+                {t("Money left in a category carries over to next month. Ready to Assign counts the balances of checking, savings, cash and card accounts; transfers to investment or loan accounts leave the budget.")}</p>
+            </div>
+            <aside className="budget-side card">
+              {sel ? (<>
+                <div className="side-head">
+                  <CategoryIcon name={sel.name} icon={sel.icon} color={sel.color} size={36} />
+                  <div><h3>{catLabel(sel.name, t)}</h3>
+                    <div className="caption">{monthName(month, lang)}</div></div>
+                  <span className="grow" />
+                  <Button size="small" appearance="subtle" onClick={() => setSelected(null)}>{t("Close")}</Button>
+                </div>
+                <dl className="ledger">
+                  <dt>{t("Carried over")}</dt><dd>{money(sel.carry_in, cur)}</dd>
+                  <dt>{t("Assigned")}</dt><dd>+ {money(sel.assigned, cur)}</dd>
+                  <dt>{t("Activity")}</dt><dd>{money(sel.activity, cur)}</dd>
+                  <dt className="total">{t("Available")}</dt><dd className="total">{money(sel.available, cur)}</dd>
+                </dl>
+                {sel.available < 0
+                  ? <div className="side-note bad">{t("{a} overspent. Cover it from a category that has money left.", { a: money(-sel.available, cur) })}</div>
+                  : sel.status === "underfunded"
+                    ? <div className="side-note warn">{t("{a} more needed this month", { a: money(sel.shortfall, cur) })}</div>
+                    : sel.target ? <div className="side-note good">{t("You've met this month's target.")}</div> : null}
+                <div className="side-title">{t("Target")}</div>
+                <p className="caption">{sel.target ? t("Target: {a}", { a: money(sel.need, cur) }) : t("No target yet.")}</p>
+                <div className="side-actions">
+                  <Button icon={<Target20Regular />} onClick={() => setTarget(sel)}>
+                    {sel.target ? t("Edit target") : t("Set a target")}</Button>
+                  {sel.available < 0 && <Button appearance="primary" onClick={() =>
+                    setMove({ to: sel.category_id, amount: -sel.available })}>{t("Cover")}</Button>}
+                  <Button icon={<ArrowSwap20Regular />} onClick={() =>
+                    setMove({ from: sel.category_id })}>{t("Move money")}</Button>
+                </div>
+              </>) : (<>
+                <h3>{t("This month")}</h3>
+                <p className="caption">{t("Select a category to see its details.")}</p>
+                <dl className="ledger">
+                  <dt>{t("Carried over")}</dt><dd>{money(carried, cur)}</dd>
+                  <dt>{t("Assigned")}</dt><dd>+ {money(v.total_assigned, cur)}</dd>
+                  <dt>{t("Activity")}</dt><dd>{money(v.total_activity, cur)}</dd>
+                  <dt className="total">{t("Available")}</dt><dd className="total">{money(v.total_available, cur)}</dd>
+                </dl>
+                {v.overspent > 0
+                  ? <div className="side-note bad">{t("{a} overspent", { a: money(v.overspent, cur) })}</div>
+                  : v.underfunded > 0
+                    ? <div className="side-note warn">{t("{a} still needed for targets", { a: money(v.underfunded, cur) })}</div>
+                    : <div className="side-note good">{t("This month's funding is complete")}</div>}
+                <div className="side-title">{t("Quick assign")}</div>
+                <p className="caption">{t("Each option shows its changes first.")}</p>
+                <button className="quick" onClick={() => previewQuick("underfunded")}>
+                  <Flash20Regular /><span>{t("Fund targets")}</span>
+                  <b>{qUnder.data ? money(qUnder.data.total) : "…"}</b></button>
+                <button className="quick" onClick={() => previewQuick("last_month")}>
+                  <Flash20Regular /><span>{t("Assigned last month")}</span>
+                  <b>{qLast.data ? money(qLast.data.total) : "…"}</b></button>
+              </>)}
+            </aside>
           </div>
-          <p className="caption" style={{ marginTop: 8 }}>
-            {t("Money left in a category carries over to next month. Ready to Assign counts the balances of checking, savings, cash and card accounts; transfers to investment or loan accounts leave the budget.")}</p>
         </>)}
       {move && (
         <FormModal title={t("Move money")} onClose={() => setMove(null)}

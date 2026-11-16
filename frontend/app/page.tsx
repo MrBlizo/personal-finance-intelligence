@@ -3,8 +3,10 @@ import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { Button, Link as FLink, Switch, Tab, TabList, Tooltip } from "@fluentui/react-components";
 import {
-  ArrowDown20Regular, ArrowUp20Regular, Settings20Regular,
+  Add24Regular, ArrowDown20Regular, ArrowImport24Regular, ArrowSwap24Regular, ArrowUp20Regular,
+  CalendarLtr24Regular, Settings20Regular, Target24Regular,
 } from "@fluentui/react-icons";
+import { openQuickAdd } from "@/components/QuickAdd";
 import { RestoreFromFile } from "@/components/BackupPanel";
 import Plot from "@/components/Plot";
 import { Banner, Empty, Kpi, Modal, PageHead, Progress, Section, Spinner, useLoad } from "@/components/ui";
@@ -13,7 +15,7 @@ import {
   Settings, Summary, get, insightText, post, put,
 } from "@/lib/api";
 import { date, money, pct, signClass } from "@/lib/format";
-import { useT } from "@/lib/i18n";
+import { useI18n, useT } from "@/lib/i18n";
 
 const PERIODS: Record<string, string> = {
   this_month: "This month", last_3_months: "3 months",
@@ -22,6 +24,23 @@ const PERIODS: Record<string, string> = {
 const SEV_GLYPH: Record<string, string> = {
   warning: "", positive: "", info: "",
 };
+
+/** "Good morning" etc. for the hour of the day. */
+function greeting(h: number): string {
+  if (h < 5) return "Good evening";
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function Action({ icon, label, href, onClick }: {
+  icon: ReactNode; label: string; href?: string; onClick?: () => void;
+}) {
+  const body = <><span className="qa-circle" aria-hidden>{icon}</span><span className="qa-label">{label}</span></>;
+  return href
+    ? <Link className="qa" href={href}>{body}</Link>
+    : <button type="button" className="qa" onClick={onClick}>{body}</button>;
+}
 
 type Dash = { summary: Summary; charts: Record<string, PlotFigure> };
 const CARD_LABELS: Record<HomeCardId, string> = {
@@ -61,6 +80,7 @@ function Customize({ layout, onClose, onSave }: {
 
 export default function Home() {
   const t = useT();
+  const { lang } = useI18n();
   const [period, setPeriod] = useState("last_12_months");
   const periods = useLoad(() =>
     get<Record<string, [string, string]>>("/api/analytics/periods"));
@@ -193,7 +213,8 @@ export default function Home() {
 
   return (
     <>
-      <PageHead title={t("Home")} sub={t("Your finances at a glance")}>
+      <PageHead title={t(greeting(new Date().getHours()))}
+        sub={new Date().toLocaleDateString(lang === "ar" ? "ar-MA" : lang === "fr" ? "fr-CH" : "en-GB", { weekday: "long", day: "numeric", month: "long" })}>
         <TabList size="small" selectedValue={period}
           onTabSelect={(_, d) => setPeriod(String(d.value))}>
           {Object.entries(PERIODS).map(([k, label]) => (
@@ -238,17 +259,31 @@ export default function Home() {
       {!s && dash.loading && <Spinner label={t("Loading…")} />}
       {s && (
         <>
-          <div className="kpis">
-            <Kpi label={t("Net worth")} value={money(s.net_worth, cur)}
-              sub={`${t("Liquid")} ${money(s.liquid, undefined, 0)} · ${t("Invested")} ${money(s.investments, undefined, 0)}`} />
-            <Kpi label={t("Income")} value={money(s.income, cur)}
-              sub={t("Ø {v} / month", { v: money(s.avg_monthly_income, undefined, 0) })} />
-            <Kpi label={t("Expenses")} value={money(s.expenses, cur)}
-              sub={t("Ø {v} / month", { v: money(s.avg_monthly_expenses, undefined, 0) })} />
-            <Kpi label={t("Net saved")} value={money(s.net, cur)} cls={signClass(s.net)}
-              sub={t("{n} transactions", { n: s.transactions })} />
-            <Kpi label={t("Savings rate")} value={pct(s.savings_rate)}
-              cls={signClass(s.savings_rate)} sub={t("(income − expenses) / income")} />
+          <div className="home-top">
+            <div className="home-hero">
+              <div className="home-hero-label">{t("Net worth")}</div>
+              <div className="home-hero-value">{money(s.net_worth, cur)}</div>
+              <div className="home-hero-sub">
+                {t("Liquid")} {money(s.liquid, undefined, 0)} · {t("Invested")} {money(s.investments, undefined, 0)}
+              </div>
+              <div className="quick-actions">
+                <Action icon={<Add24Regular />} label={t("Add")} onClick={openQuickAdd} />
+                <Action icon={<ArrowImport24Regular />} label={t("Import")} href="/import/" />
+                <Action icon={<ArrowSwap24Regular />} label={t("Budget")} href="/budgets/" />
+                <Action icon={<Target24Regular />} label={t("Goals")} href="/goals/" />
+                <Action icon={<CalendarLtr24Regular />} label={t("Bills")} href="/recurring/" />
+              </div>
+            </div>
+            <div className="home-kpis">
+              <Kpi label={t("Income")} value={money(s.income, cur)}
+                sub={t("Avg. {v} / month", { v: money(s.avg_monthly_income, undefined, 0) })} />
+              <Kpi label={t("Expenses")} value={money(s.expenses, cur)}
+                sub={t("Avg. {v} / month", { v: money(s.avg_monthly_expenses, undefined, 0) })} />
+              <Kpi label={t("Net saved")} value={money(s.net, cur)} cls={signClass(s.net)}
+                sub={t("{n} transactions", { n: s.transactions })} />
+              <Kpi label={t("Savings rate")} value={pct(s.savings_rate)}
+                cls={signClass(s.savings_rate)} sub={t("(income − expenses) / income")} />
+            </div>
           </div>
           <div className="home-cards">
             {(layout ?? []).filter((c) => !c.hidden).map((c) => {
