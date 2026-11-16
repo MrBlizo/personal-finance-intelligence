@@ -23,7 +23,8 @@ telemetry.
 ## Sync between your PC and your phone (optional)
 
 If you turn on sync (Settings › Sync), PFI writes your changes as files into
-a folder in your own cloud drive (OneDrive), and reads the files your other
+a folder in your own cloud drive (OneDrive or Google Drive), and reads the
+files your other
 devices wrote there. Every file is encrypted on the device with AES-256-GCM,
 using a key derived from a passphrase only you know; the cloud provider
 stores the encrypted files under its own terms and cannot read them. The
@@ -36,6 +37,12 @@ account and the permission "Files.ReadWrite", which it uses only for the
 sync folder (`Apps/PFI Sync`). The sign-in is handled by Microsoft; PFI
 keeps only the sign-in tokens it receives, in the Android keystore. Stop
 syncing removes the key and the sign-in from that device.
+
+With Google Drive, PFI on the PC and on the phone asks you to sign in with
+your Google account and the permission "drive.appdata". It lets PFI see only
+its own hidden app folder in your Drive, not your other files; the sync files
+are kept there. The refresh token is stored protected by Windows on the PC
+and in the Android keystore on the phone.
 
 ## The Android app
 
@@ -50,18 +57,16 @@ PFI makes only these requests, and only for the purposes described:
 | Purpose | Service | Data sent | When |
 |---|---|---|---|
 | Exchange rates | [Exchange API](https://github.com/fawazahmed0/exchange-api) via cdn.jsdelivr.net or currency-api.pages.dev | currency codes (e.g. `chf`) and a date | once a day if enabled in Settings, or when you click "Update now" |
-| Stock & ETF prices | api.twelvedata.com | the symbol you entered (e.g. `VT`), a date range and your personal Twelve Data API key | once a day for holdings with Twelve Data as price source, or on request |
-| Stock & ETF prices | www.alphavantage.co | the symbol you entered (e.g. `TSCO.LON`) and your personal Alpha Vantage API key | once a day for holdings with Alpha Vantage as price source, or on request |
-| Market prices | stooq.com | the symbol you entered (e.g. `vt.us`), a date range and your personal stooq API key (if you entered one) | once a day for holdings with stooq as price source, or on request |
+| Stock, ETF & fund prices | query1.finance.yahoo.com | the symbol you entered (e.g. `VWRL.L`) and a date range | once a day for holdings with Yahoo Finance as price source, or on request |
 | Crypto prices | api.coingecko.com | the coin id (e.g. `bitcoin`) and a currency code | once a day for holdings with CoinGecko as price source, or on request |
 
 These services receive your IP address as part of any internet request;
 their own privacy policies apply. You can switch both automatic updates off
 in Settings and enter rates and prices manually.
 
-Your price-provider API keys (Twelve Data, Alpha Vantage, stooq) are stored
-in your local database and each is only sent to its own provider; they are
-never shown again in the app (only their last four characters).
+PFI needs no API keys for prices. (Versions before 0.7.1 offered Twelve Data,
+Alpha Vantage and stooq with your own key; keys saved by those versions stay
+in your local database only and are no longer sent anywhere.)
 
 ## Windows features
 

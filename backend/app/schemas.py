@@ -358,8 +358,8 @@ class HoldingIn(_UpperCurrency):
     asset_class: AssetClass
     currency: Currency
     notes: str | None = None
-    price_source: Literal["manual", "stooq", "twelvedata", "alphavantage",
-                          "coingecko"] = "manual"
+    price_source: Literal["manual", "yahoo", "stooq", "twelvedata",
+                          "alphavantage", "coingecko"] = "manual"
     price_symbol: Annotated[str | None, Field(max_length=64)] = None
 
 

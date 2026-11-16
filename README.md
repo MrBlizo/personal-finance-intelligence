@@ -76,9 +76,9 @@ Shown with synthetic sample data (no real finances).
   avalanche, snowball and minimum-only plans with payoff dates and total
   interest for any extra monthly amount. Month-by-month schedule per loan, and the
   payment needed to be debt-free by a chosen date.
-- **Investments:** average-cost positions, end-of-day prices from Twelve Data
-  (US listings) or Alpha Vantage (worldwide) with your free key, stooq,
-  CoinGecko (crypto), or entered manually; money-weighted (XIRR) and
+- **Investments:** average-cost positions, end-of-day prices from Yahoo
+  Finance (stocks, ETFs and funds worldwide, no key), CoinGecko (crypto), or
+  entered manually; money-weighted (XIRR) and
   time-weighted returns, dividend income, target allocation with drift.
 - **Forecast:** recurring items plus a block-bootstrap Monte Carlo of your
   everyday spending, with percentile bands and the chance of going below a

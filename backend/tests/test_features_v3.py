@@ -1,7 +1,7 @@
 """Tests for v0.3: automation, learned categories, investments, reports."""
 import io
 import json
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -182,8 +182,17 @@ def test_performance_endpoint(api):
     assert alloc["bond"]["rebalance"] == pytest.approx(220)
 
 
-STOOQ = ("Date,Open,High,Low,Close,Volume\n2026-11-05,1,1,1,121.5,10\n"
-         "2026-11-06,1,1,1,122.25,10\n")
+def _yahoo(*days_closes, offset=-18000):
+    ts = [int(datetime(*d, 14, 30, tzinfo=timezone.utc).timestamp())
+          for d, _ in days_closes]
+    return json.dumps({"chart": {"result": [{
+        "meta": {"currency": "USD", "gmtoffset": offset},
+        "timestamp": ts,
+        "indicators": {"quote": [{"close": [c for _, c in days_closes]}]},
+    }], "error": None}}).encode()
+
+
+YAHOO = _yahoo(((2026, 11, 5), 121.5), ((2026, 11, 6), 122.25))
 
 
 def test_price_update_keeps_manual_prices(api, monkeypatch):
@@ -192,89 +201,54 @@ def test_price_update_keeps_manual_prices(api, monkeypatch):
         "price_date": "2026-11-06", "price": "999"})
     calls = []
 
-    def fake(url, timeout=20.0):
-        calls.append(url)
-        return STOOQ.encode()
+    def fake(url, timeout=20.0, headers=None):
+        calls.append((url, headers or {}))
+        return YAHOO
     monkeypatch.setattr(prices, "_get", fake)
-    no_key = api.post("/api/prices/update").json()
-    assert no_key["updated"] == 0 and "API key" in no_key["errors"][0]["error"]
-    s = api.put("/api/settings", json={"stooq_api_key": "abc123XYZ"}).json()
-    assert s["stooq_api_key_set"] and s["stooq_api_key_hint"] == "3XYZ"
-    assert "abc123XYZ" not in json.dumps(s)
     res = api.post("/api/prices/update").json()
-    assert res["updated"] == 1 and res["new_prices"] == 1
-    assert "s=vt.us" in calls[0] and "apikey=abc123XYZ" in calls[0]
+    assert res["updated"] == 1 and res["new_prices"] == 1, res
+    url, headers = calls[0]
+    # the old stooq symbol vt.us is asked from Yahoo as VT, without a key
+    assert "/chart/VT?" in url and "apikey" not in url
+    assert "Mozilla" in headers["User-Agent"]
     rows = {p["price_date"]: p for p in
             api.get(f"/api/holdings/{h}/prices").json()}
     assert rows["2026-11-06"]["price"] == 999
-    assert rows["2026-11-05"]["source"] == "stooq"
+    assert rows["2026-11-05"]["source"] == "yahoo"
+    held = api.get("/api/holdings").json()[0]
+    assert held["price_source"] == "yahoo" and held["price_symbol"] == "VT"
 
 
 def test_price_update_reports_errors(api, monkeypatch):
     _portfolio(api)
-    api.put("/api/settings", json={"stooq_api_key": "k"})
-    monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0: b"No data")
+    monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0,
+                        headers=None: json.dumps({"chart": {
+                            "result": None, "error": {
+                                "description": "No data found"}}}).encode())
     res = api.post("/api/prices/update").json()
-    assert res["updated"] == 0 and "vt.us" in res["errors"][0]["error"]
-    page = b"Get your apikey:\n 1. Open https://stooq.com/q/d/?s=spy.us"
-    monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0: page)
-    res = api.post("/api/prices/update").json()
-    assert "did not accept the API key" in res["errors"][0]["error"]
+    err = res["errors"][0]["error"]
+    assert res["updated"] == 0 and "'VT'" in err and "No data found" in err
 
 
-TWELVE = {"meta": {"symbol": "VT", "currency": "USD"}, "status": "ok",
-          "values": [{"datetime": "2026-11-06", "close": "122.25000"},
-                     {"datetime": "2026-11-05", "close": "121.50000"}]}
-ALPHA = {"Meta Data": {"2. Symbol": "TSCO.LON"}, "Time Series (Daily)": {
-    "2026-11-06": {"1. open": "1", "4. close": "3.9000"},
-    "2026-11-05": {"1. open": "1", "4. close": "3.8500"},
-    "2020-01-02": {"1. open": "1", "4. close": "1.0000"}}}
+def test_old_keyed_sources_move_to_yahoo():
+    assert prices.yahoo_symbol("vt.us", "stooq") == "VT"
+    assert prices.yahoo_symbol("vwrl.uk", "stooq") == "VWRL.L"
+    assert prices.yahoo_symbol("sap.de", "stooq") == "SAP.DE"
+    assert prices.yahoo_symbol("TSCO.LON", "alphavantage") == "TSCO.L"
+    assert prices.yahoo_symbol("aapl", "twelvedata") == "AAPL"
+    assert prices.yahoo_symbol("NESN.SW") == "NESN.SW"
 
 
-def test_twelvedata_and_alphavantage_sources(api, monkeypatch):
-    acc = make_account(api, "Broker", type_="investment", opening="0")
-    td = api.post("/api/holdings", json={
-        "account_id": acc, "symbol": "VT", "name": "World ETF",
-        "asset_class": "etf", "currency": "USD",
-        "price_source": "twelvedata"})
-    assert td.status_code == 201, td.text
-    td = td.json()
-    av = api.post("/api/holdings", json={
-        "account_id": acc, "symbol": "TSCO", "name": "Tesco",
-        "asset_class": "stock", "currency": "GBP",
-        "price_source": "alphavantage", "price_symbol": "TSCO.LON"}).json()
-    listed = {h["id"]: h for h in api.get("/api/holdings").json()}
-    assert listed[td["id"]]["price_source"] == "twelvedata"
-    calls = []
-
-    def fake(url, timeout=20.0, headers=None):
-        calls.append((url, headers or {}))
-        return json.dumps(TWELVE if "twelvedata" in url else ALPHA).encode()
-    monkeypatch.setattr(prices, "_get", fake)
-    res = api.post("/api/prices/update").json()
-    msgs = " ".join(e["error"] for e in res["errors"])
-    assert res["updated"] == 0 and "twelvedata.com/account/api-keys" in msgs
-    assert "alphavantage.co/support" in msgs and not calls
-    s = api.put("/api/settings", json={
-        "twelvedata_api_key": "td_KEY1234",
-        "alphavantage_api_key": "AVKEY987"}).json()
-    assert s["twelvedata_api_key_hint"] == "1234"
-    assert s["alphavantage_api_key_set"] and s["stooq_api_key_set"] is False
-    dumped = json.dumps(s)
-    assert "td_KEY1234" not in dumped and "AVKEY987" not in dumped
-    res = api.post("/api/prices/update").json()
-    assert res["updated"] == 2 and res["new_prices"] == 4, res
-    td_url, td_headers = next(c for c in calls if "twelvedata" in c[0])
-    av_url = next(c[0] for c in calls if "alphavantage" in c[0])
-    # Twelve Data gets its key in a header, never in the URL.
-    assert "symbol=VT" in td_url and "td_KEY1234" not in td_url
-    assert td_headers == {"Authorization": "apikey td_KEY1234"}
-    assert "symbol=TSCO.LON" in av_url and "apikey=AVKEY987" in av_url
-    rows = {p["price_date"]: p for p in
-            api.get(f"/api/holdings/{av['id']}/prices").json()}
-    # only days inside the requested window are stored
-    assert rows["2026-11-06"]["price"] == 3.9 and "2020-01-02" not in rows
-    assert rows["2026-11-06"]["source"] == "alphavantage"
+def test_yahoo_days_use_the_exchange_time_zone(monkeypatch):
+    # 23:30 UTC on Nov 5 is Nov 6 in Tokyo (+9 h).
+    ts = int(datetime(2026, 11, 5, 23, 30, tzinfo=timezone.utc).timestamp())
+    payload = json.dumps({"chart": {"result": [{
+        "meta": {"gmtoffset": 32400}, "timestamp": [ts],
+        "indicators": {"quote": [{"close": [2500.0]}]}}]}}).encode()
+    monkeypatch.setattr(prices, "_get", lambda url, timeout=20.0,
+                        headers=None: payload)
+    got = prices.fetch_yahoo("7203.T", date(2026, 11, 1), date(2026, 11, 7))
+    assert got == {date(2026, 11, 6): 2500.0}
 
 
 def test_twelvedata_and_alphavantage_errors(monkeypatch):

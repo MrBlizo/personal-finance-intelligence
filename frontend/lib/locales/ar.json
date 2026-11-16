@@ -1121,5 +1121,9 @@
   "Where to keep the sync files": "أين تُحفظ ملفات المزامنة",
   "Add an account": "إضافة حساب",
   "Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.": "أضف حسابًا واستورد كشفًا بنكيًا. هل تستخدم PFI على جهاز آخر؟ فعّل المزامنة بنفس التخزين السحابي وعبارة المرور.",
-  "Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.": "ما زالت بيانات تجريبية من إصدار سابق من PFI موجودة. احذفها للاحتفاظ ببياناتك فقط."
+  "Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.": "ما زالت بيانات تجريبية من إصدار سابق من PFI موجودة. احذفها للاحتفاظ ببياناتك فقط.",
+  "Average-cost method · prices from Yahoo Finance, CoinGecko or entered manually": "طريقة متوسط التكلفة · الأسعار من Yahoo Finance أو CoinGecko أو تُدخل يدويًا",
+  "Give a holding a price source (Yahoo Finance or CoinGecko) to download prices.": "اختر مصدر أسعار للاستثمار (Yahoo Finance أو CoinGecko) لتنزيل أسعاره.",
+  "Symbol as shown on finance.yahoo.com, e.g. AAPL, VT, VWRL.L, SAP.DE or NESN.SW. Leave empty to use the symbol above. No key needed.": "الرمز كما يظهر على finance.yahoo.com، مثل AAPL أو VT أو VWRL.L أو SAP.DE أو NESN.SW. اتركه فارغًا لاستخدام الرمز أعلاه. لا حاجة لمفتاح.",
+  "Yahoo Finance (stocks, ETFs, funds)": "Yahoo Finance (أسهم، صناديق متداولة، صناديق)"
 }

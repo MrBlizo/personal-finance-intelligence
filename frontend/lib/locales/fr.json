@@ -1121,5 +1121,9 @@
   "Where to keep the sync files": "Où garder les fichiers de synchronisation",
   "Add an account": "Ajouter un compte",
   "Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.": "Ajoutez un compte et importez un relevé bancaire. Vous utilisez déjà PFI sur un autre appareil ? Configurez la synchronisation avec le même stockage cloud et la même phrase secrète.",
-  "Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.": "Des données de démonstration d'une version précédente de PFI sont encore présentes. Supprimez-les pour ne garder que vos propres données."
+  "Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.": "Des données de démonstration d'une version précédente de PFI sont encore présentes. Supprimez-les pour ne garder que vos propres données.",
+  "Average-cost method · prices from Yahoo Finance, CoinGecko or entered manually": "Méthode du coût moyen · cours de Yahoo Finance, CoinGecko ou saisis à la main",
+  "Give a holding a price source (Yahoo Finance or CoinGecko) to download prices.": "Choisissez une source de cours (Yahoo Finance ou CoinGecko) pour un placement afin de télécharger ses cours.",
+  "Symbol as shown on finance.yahoo.com, e.g. AAPL, VT, VWRL.L, SAP.DE or NESN.SW. Leave empty to use the symbol above. No key needed.": "Symbole tel qu'affiché sur finance.yahoo.com, p. ex. AAPL, VT, VWRL.L, SAP.DE ou NESN.SW. Laissez vide pour utiliser le symbole ci-dessus. Aucune clé nécessaire.",
+  "Yahoo Finance (stocks, ETFs, funds)": "Yahoo Finance (actions, ETF, fonds)"
 }
