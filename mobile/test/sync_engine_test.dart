@@ -80,8 +80,14 @@ void main() {
     expect(txns.single.title, 'Migros');
     expect(txns.single.amount, -4250);
     expect(txns.single.categoryName, 'Groceries');
+    // Both devices started with the same default categories: they are
+    // merged once (no duplicates), after which nothing travels back.
+    await a.run(store);
+    expect(a.repo.categories().length, b.repo.categories().length);
     expect((await b.run(store)).sent, 0);
-    expect((await a.run(store)).received, 0);
+    final again = await a.run(store);
+    expect(again.received, 0);
+    expect(again.sent, 0);
   });
 
   test('edits, deletes and last writer wins', () async {
