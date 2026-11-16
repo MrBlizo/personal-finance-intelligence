@@ -124,7 +124,11 @@ void main() {
         kind: 'expense', payee: 'Bread');
     await b.run(store);
     await a.run(store);
-    a.repo.saveTransaction(accountId: accA, date: DateTime(2026, 11, 4), amount: -400,
+    // After the merge one of the two rows stands for both, so take the id
+    // the app shows now (accA may have been merged into B's row).
+    final wallet = a.repo.accounts().singleWhere((x) => x.name == 'Wallet').id;
+    expect(wallet == accA || a.repo.accounts().every((x) => x.id != accA), isTrue);
+    a.repo.saveTransaction(accountId: wallet, date: DateTime(2026, 11, 4), amount: -400,
         kind: 'expense', payee: 'Milk');
     await a.run(store);
     await b.run(store);

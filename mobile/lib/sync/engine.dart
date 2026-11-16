@@ -276,7 +276,7 @@ class SyncEngine {
       [rid]).first['u'] as String?;
 
   bool _update(String table, int rid, String localUid,
-      Map<String, Object?> values, String u) {
+      Map<String, Object?> values, String u, {bool seen = true}) {
     if (normTime(u).compareTo(normTime(_localTime(table, rid))) <= 0) {
       return false;
     }
@@ -284,7 +284,7 @@ class SyncEngine {
     final sets = [...cols.map((c) => '$c = ?'), 'updated_at = ?'].join(', ');
     db.execute('UPDATE $table SET $sets WHERE rowid = ?',
         [...cols.map((c) => values[c]), u, rid]);
-    _seen(table, localUid, u);
+    if (seen) _seen(table, localUid, u);
     return true;
   }
 
@@ -314,7 +314,10 @@ class SyncEngine {
             'INSERT OR REPLACE INTO sync_aliases (table_name, alias_uid, uid) '
             'VALUES (?, ?, ?)',
             [table, uid, localUid]);
-        return _update(table, hit.first['rid'] as int, localUid, values, u);
+        // Not marked as seen: this device still sends its own row (with its
+        // own uid), so the other devices learn the alias too.
+        return _update(table, hit.first['rid'] as int, localUid, values, u,
+            seen: false);
       }
     }
     final names = [...values.keys, 'uid', 'updated_at'];

@@ -723,7 +723,7 @@ def _last_del(conn: Connection, table: str, uid: str) -> str:
 
 
 def _update(conn: Connection, table: str, rid: int, local_uid: str,
-            values: dict, u: str) -> bool:
+            values: dict, u: str, seen: bool = True) -> bool:
     local_u = conn.execute(text(
         f"SELECT CAST(updated_at AS TEXT) FROM {table} WHERE rowid = :r"),
         {"r": rid}).scalar()
@@ -733,7 +733,8 @@ def _update(conn: Connection, table: str, rid: int, local_uid: str,
     conn.execute(text(
         f"UPDATE {table} SET {sets}{', ' if sets else ''}updated_at = :_u "
         f"WHERE rowid = :_r"), {**values, "_u": u, "_r": rid})
-    _seen(conn, table, local_uid, u)
+    if seen:
+        _seen(conn, table, local_uid, u)
     return True
 
 
@@ -761,7 +762,10 @@ def _apply_upsert(conn: Connection, ids: _UidMap, rec: dict) -> bool:
                 "INSERT OR REPLACE INTO sync_aliases (table_name, alias_uid, "
                 "uid) VALUES (:t, :a, :u)"),
                 {"t": table, "a": uid, "u": hit.uid})
-            return _update(conn, table, hit.rid, hit.uid, values, u)
+            # Not marked as seen: this device still sends its own row (with
+            # its own uid), so the others learn the alias too.
+            return _update(conn, table, hit.rid, hit.uid, values, u,
+                           seen=False)
     names = list(values) + ["uid", "updated_at"]
     conn.execute(text(
         f"INSERT INTO {table} ({', '.join(names)}) VALUES "
