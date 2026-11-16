@@ -596,7 +596,7 @@ Future<void> addAccountDialog(BuildContext context) async {
 }
 
 const currencies = [
-  'CHF', 'EUR', 'USD', 'GBP', 'MAD', 'CAD', 'AUD', 'JPY', 'CNY', 'SEK',
+  'USD', 'EUR', 'GBP', 'CHF', 'MAD', 'CAD', 'AUD', 'JPY', 'CNY', 'SEK',
   'NOK', 'DKK', 'PLN', 'CZK', 'HUF', 'TRY', 'AED', 'SAR', 'EGP', 'TND',
   'DZD', 'XOF', 'INR', 'BRL', 'MXN', 'ZAR',
 ];

@@ -307,7 +307,7 @@ export default function Import() {
           { n: undo.rows_imported, f: undo.filename })}
         onYes={async () => { await del(`/api/import/batches/${undo.id}`); batches.reload(); }} />}
       <div style={{ marginTop: 16 }}>
-        <YnabImport baseCurrency={refs.data?.settings.base_currency ?? "CHF"} />
+        <YnabImport baseCurrency={refs.data?.settings.base_currency ?? "USD"} />
       </div>
     </>
   );

@@ -24,7 +24,7 @@ export default function Ious() {
   const [remove, setRemove] = useState<Iou | null>(null);
   const d = data.data;
   const cur = d?.currency ?? "";
-  const base = refs.data?.settings.base_currency ?? "CHF";
+  const base = refs.data?.settings.base_currency ?? "USD";
   const items = (d?.items ?? []).filter((i) => (show === "open") === !i.settled_on);
 
   return (

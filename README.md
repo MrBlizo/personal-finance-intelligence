@@ -11,8 +11,8 @@ your devices: the data lives in one local SQLite file, there is no account
 and no PFI server. The optional Android app syncs through a folder in your
 own OneDrive, encrypted with your passphrase.
 
-**English · Français · العربية**, base currency of your choice (CHF, EUR,
-MAD, USD…) with accounts in any currency.
+**English · Français · العربية**, base currency of your choice (USD, EUR,
+GBP, CHF, MAD…) with accounts in any currency.
 
 <a href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">
   <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft">
@@ -28,20 +28,22 @@ Sync on the PC and on the phone, with the same OneDrive and passphrase.
 
 ## Screenshots
 
-Shown with the built-in demo data (Settings → Load demo data).
+Shown with synthetic sample data (no real finances).
 
 | | |
 |---|---|
 | ![Home: net worth, income vs. expenses and spending breakdown](packaging/store-screenshots/1-home.png) | ![Transactions with categories and filters](packaging/store-screenshots/2-transactions.png) |
-| **Home:** net worth, income vs. expenses, where the money goes | **Transactions:** categories, filters, CSV export |
+| **Home:** net worth with quick actions, income vs. expenses, net worth | **Transactions:** categories, filters, CSV export |
+| ![Envelope budget with groups, progress bars and the month panel](packaging/store-screenshots/11-budget.png) | ![Budget in dark mode with a category selected](packaging/store-screenshots/10-dark-mode.png) |
+| **Budget:** envelopes with groups, filters, targets and quick assign | **Dark mode:** light, dark or follow Windows |
 | ![Investments: money- and time-weighted returns](packaging/store-screenshots/3-investments.png) | ![Bills and recurring items](packaging/store-screenshots/4-bills.png) |
 | **Investments:** money- (XIRR) and time-weighted returns | **Bills & recurring:** due dates and reminders |
 | ![Cash-flow forecast with 50 % and 90 % ranges](packaging/store-screenshots/5-forecast.png) | ![Reports and exports](packaging/store-screenshots/6-reports.png) |
 | **Forecast:** Monte Carlo with 50 % and 90 % ranges | **Reports:** PDF, Excel and CSV |
 | ![Debt payoff planner comparing strategies](packaging/store-screenshots/7-debt-payoff.png) | ![Spending calendar heatmap and year in review](packaging/store-screenshots/8-calendar.png) |
 | **Debt payoff:** highest interest first, smallest balance first, minimums only | **Spending calendar:** daily heatmap and year in review |
-| ![Editing many transactions at once](packaging/store-screenshots/9-bulk-edit.png) | ![PFI in dark mode](packaging/store-screenshots/10-dark-mode.png) |
-| **Bulk edit:** category, account, tags or delete for many rows | **Dark mode:** light, dark or follow Windows |
+| ![Editing many transactions at once](packaging/store-screenshots/9-bulk-edit.png) | |
+| **Bulk edit:** category, account, tags or delete for many rows | |
 
 ## Features
 
@@ -74,9 +76,9 @@ Shown with the built-in demo data (Settings → Load demo data).
   avalanche, snowball and minimum-only plans with payoff dates and total
   interest for any extra monthly amount. Month-by-month schedule per loan, and the
   payment needed to be debt-free by a chosen date.
-- **Investments:** average-cost positions, end-of-day prices from Twelve Data
-  (US listings) or Alpha Vantage (worldwide) with your free key, stooq,
-  CoinGecko (crypto), or entered manually; money-weighted (XIRR) and
+- **Investments:** average-cost positions, end-of-day prices from Yahoo
+  Finance (stocks, ETFs and funds worldwide, no key), CoinGecko (crypto), or
+  entered manually; money-weighted (XIRR) and
   time-weighted returns, dividend income, target allocation with drift.
 - **Forecast:** recurring items plus a block-bootstrap Monte Carlo of your
   everyday spending, with percentile bands and the chance of going below a
@@ -97,7 +99,7 @@ Shown with the built-in demo data (Settings → Load demo data).
   splits and budget assignments, with a dry run first.
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
-  a password (AES-256); one-click "Move to another PC".
+  a password (AES-256); move to a new PC through sync.
 - **Phone app and sync (0.7):** the PFI app for Android keeps the same data
   as the PC through a folder in your OneDrive, encrypted with your
   passphrase (no PFI server). See [mobile/README.md](mobile/README.md) and
@@ -139,8 +141,8 @@ Double-click **`build.bat`**. It runs the backend tests, builds the screens,
 packages the backend, builds `PFI.exe`, smoke-tests the packaged app and
 creates:
 
-- `dist\PFI-Setup-0.7.0.exe`: installer for direct download;
-- `dist\PFI-0.7.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.7.1.exe`: installer for direct download;
+- `dist\PFI-0.7.1.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:

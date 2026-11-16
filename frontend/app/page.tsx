@@ -7,12 +7,11 @@ import {
   CalendarLtr24Regular, Settings20Regular, Target24Regular,
 } from "@fluentui/react-icons";
 import { openQuickAdd } from "@/components/QuickAdd";
-import { RestoreFromFile } from "@/components/BackupPanel";
 import Plot from "@/components/Plot";
 import { Banner, Empty, Kpi, Modal, PageHead, Progress, Section, Spinner, useLoad } from "@/components/ui";
 import {
   Account, EnvelopeMonth, Goal, HomeCard, HomeCardId, Insight, PlotFigure, Reminder,
-  Settings, Summary, get, insightText, post, put,
+  Settings, Summary, get, insightText, put,
 } from "@/lib/api";
 import { date, money, pct, signClass } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
@@ -106,10 +105,8 @@ export default function Home() {
     ? get<Account[]>("/api/accounts") : Promise.resolve(null), [shown.has("accounts")]);
   const goals = useLoad(() => shown.has("goals")
     ? get<Goal[]>("/api/goals") : Promise.resolve(null), [shown.has("goals")]);
-  const [seeding, setSeeding] = useState(false);
-  const [restoreError, setRestoreError] = useState<string | null>(null);
   const s = dash.data?.summary;
-  const cur = s?.currency ?? "CHF";
+  const cur = s?.currency ?? "USD";
   const empty = s && s.transactions === 0 && s.net_worth === 0;
 
   const renderCard = (id: HomeCardId): ReactNode => {
@@ -241,21 +238,11 @@ export default function Home() {
         </Banner>)}
       {empty && (
         <Banner kind="info" title={t("Welcome")}
-          action={<Button appearance="primary" size="small" disabled={seeding}
-            onClick={async () => {
-              setSeeding(true);
-              try { await post("/api/demo"); await dash.reload(); insights.reload(); }
-              finally { setSeeding(false); }
-            }}>{seeding ? t("Generating…") : t("Load demo data")}</Button>}>
-          {t("Add an account and import a bank CSV, or explore with synthetic demo data (removable in Settings).")}
+          action={<div className="row">
+            <Link href="/accounts/"><Button appearance="primary" size="small">{t("Add an account")}</Button></Link>
+            <Link href="/settings/"><Button size="small">{t("Set up sync")}</Button></Link></div>}>
+          {t("Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.")}
         </Banner>)}
-      {empty && (
-        <Banner kind="info" title={t("Moving from another PC?")}
-          action={<RestoreFromFile appearance="primary" label={t("Restore from a backup")}
-            onDone={() => { window.location.reload(); }} onError={(m) => setRestoreError(m)} />}>
-          {t("Choose the move file (.pfibak) you created on the old PC under Settings → Backups.")}
-        </Banner>)}
-      {restoreError && <Banner kind="error" onClose={() => setRestoreError(null)}>{restoreError}</Banner>}
       {!s && dash.loading && <Spinner label={t("Loading…")} />}
       {s && (
         <>

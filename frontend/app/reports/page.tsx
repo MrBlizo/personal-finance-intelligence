@@ -30,7 +30,7 @@ export default function Reports() {
     ? get<{ base_currency: string; items: { tag: string; spent: number; received: number; transactions: number }[] }>("/api/analytics/tags")
     : Promise.resolve(null), [tab]);
   const r = rep.data;
-  const cur = r?.currency ?? "CHF";
+  const cur = r?.currency ?? "USD";
 
   const nwFig: PlotFigure | null = nw.data ? {
     data: [

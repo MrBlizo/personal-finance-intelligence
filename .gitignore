@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 backend/.env
+backend/google-oauth.json
 backend/.devdata/
 backend/build/
 backend/dist/

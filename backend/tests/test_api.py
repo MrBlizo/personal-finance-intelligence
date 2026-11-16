@@ -5,7 +5,9 @@ import stat
 from datetime import date, timedelta
 from pathlib import Path
 
-from conftest import cat_id, make_account
+import pytest
+
+from conftest import cat_id, load_demo, make_account
 
 from app.security import TokenMiddleware
 
@@ -191,9 +193,10 @@ def test_forecast_reproducible(api):
 
 
 def test_demo_dashboard_charts_insights(api):
-    r = api.post("/api/demo")
-    assert r.status_code == 200 and r.json()["transactions"] > 500
-    assert api.post("/api/demo").status_code == 409
+    assert load_demo()["transactions"] > 500
+    with pytest.raises(ValueError):
+        load_demo()
+    assert api.post("/api/demo").status_code == 405
     dash = api.get("/api/analytics/dashboard").json()
     assert dash["summary"]["income"] > 0
     for name in ("monthly_cashflow", "savings_rate", "category_breakdown",
@@ -213,7 +216,7 @@ def test_demo_dashboard_charts_insights(api):
     fc = api.get("/api/forecast").json()
     assert fc["lookback_days_used"] >= 28
     goals = api.get("/api/goals").json()
-    assert {g["currency"] for g in goals} == {"CHF", "MAD"}
+    assert {g["currency"] for g in goals} == {"USD", "MAD"}
     assert api.delete("/api/demo").json()["removed_accounts"] == 6
     assert api.get("/api/accounts").json() == []
 

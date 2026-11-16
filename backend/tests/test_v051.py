@@ -10,7 +10,7 @@ from app.db import SessionLocal
 from app.models import SchemaVersion
 from app.services import backup as bk
 from app.services import rating
-from conftest import make_account
+from conftest import load_demo, make_account
 
 DATA = Path(os.environ["PFI_DATA_DIR"])
 
@@ -130,7 +130,7 @@ def test_rating_waits_for_use_and_data(api):
 
 def test_demo_transactions_do_not_count(api):
     _age_database(60)
-    assert api.post("/api/demo").status_code == 200
+    load_demo()
     st = api.get("/api/rating").json()
     assert st["transactions"] == 0 and st["due"] is False
     api.delete("/api/demo")

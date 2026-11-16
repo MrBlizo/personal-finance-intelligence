@@ -34,33 +34,36 @@ Intelligence is a desktop (WinUI 3) app. It runs a local analysis service on
 a local SQLite database on their own PC. This component needs the
 full-trust desktop model."
 
-**Notes for certification:** "No account needed. Open the app, Home ›
-'Load demo data' fills it with synthetic data to test every screen
-(removable in Settings). First start takes a few seconds while the private
-database is created."
+**Notes for certification:** "No account needed. Open the app, add an
+account (Accounts › Add account) and a few transactions (Ctrl+N), or import
+any bank CSV file under Import. First start takes a few seconds while the
+private database is created."
 
-## What's new in 0.7 (paste into "What's new in this version")
+## What's new in 0.7.1 (paste into "What's new in this version")
 
 **English**
 
-Version 0.7
-• Sync with the new PFI phone app: your accounts, transactions, budgets and goals stay the same on your PC and your phone.
-• Sync goes through a folder in your own OneDrive. Everything is encrypted with your passphrase before it leaves the PC; there is no PFI server.
-• Set it up in Settings › Sync. Changes made on both devices are merged, and the most recent edit wins.
+Version 0.7.1
+• New look: a home page with your net worth and quick actions, and a budget screen with groups, progress bars, filters and a side panel for each category.
+• The window is used edge to edge; Settings fill wide screens in two columns.
+• Sync through Google Drive, besides OneDrive. Phone sync is easier to set up and recovers when the sync folder was emptied.
+• New app icon. US dollar is the default currency for new users.
 
 **Français**
 
-Version 0.7
-• Synchronisation avec la nouvelle application mobile PFI : vos comptes, transactions, budgets et objectifs restent identiques sur votre PC et votre téléphone.
-• La synchronisation passe par un dossier de votre propre OneDrive. Tout est chiffré avec votre phrase secrète avant de quitter le PC ; il n'y a pas de serveur PFI.
-• À configurer dans Paramètres › Synchronisation. Les modifications faites sur les deux appareils sont fusionnées, la plus récente l'emporte.
+Version 0.7.1
+• Nouveau look : un accueil avec votre patrimoine net et des actions rapides, et un écran budget avec groupes, barres de progression, filtres et un panneau latéral pour chaque catégorie.
+• La fenêtre est utilisée d'un bord à l'autre ; les Paramètres remplissent les grands écrans sur deux colonnes.
+• Synchronisation via Google Drive, en plus de OneDrive. La synchronisation avec le téléphone est plus simple à configurer et se rétablit si le dossier a été vidé.
+• Nouvelle icône. Le dollar américain est la devise par défaut des nouveaux utilisateurs.
 
 **العربية**
 
-الإصدار 0.7
-• المزامنة مع تطبيق PFI الجديد على الهاتف: تبقى حساباتك ومعاملاتك وميزانياتك وأهدافك متطابقة على حاسوبك وهاتفك.
-• تمر المزامنة عبر مجلد في OneDrive الخاص بك. يُشفَّر كل شيء بعبارة المرور قبل مغادرة الحاسوب، ولا يوجد خادم لـ PFI.
-• يمكن إعدادها من الإعدادات › المزامنة. تُدمج التغييرات من الجهازين، ويُعتمد التعديل الأحدث.
+الإصدار 0.7.1
+• مظهر جديد: صفحة رئيسية تعرض صافي ثروتك مع إجراءات سريعة، وشاشة ميزانية بمجموعات وأشرطة تقدّم ومرشحات ولوحة جانبية لكل فئة.
+• تُستخدم النافذة من الحافة إلى الحافة؛ وتملأ الإعدادات الشاشات العريضة في عمودين.
+• المزامنة عبر Google Drive إضافة إلى OneDrive. أصبح إعداد المزامنة مع الهاتف أسهل، وتستعيد عملها إذا أُفرغ مجلد المزامنة.
+• أيقونة جديدة. الدولار الأمريكي هو العملة الافتراضية للمستخدمين الجدد.
 
 ## 3. Store listing: English
 
@@ -81,8 +84,8 @@ learns your categories from the transactions you categorise yourself.
 • Bills & recurring payments: rent, salary and subscriptions post themselves
 on the due date, and Windows reminds you before they are due.
 • Budgets and savings goals with progress and projections.
-• Investments with prices from Twelve Data, Alpha Vantage, stooq and
-CoinGecko, money-weighted and
+• Investments with prices from Yahoo Finance and
+CoinGecko (no keys needed), money-weighted and
 time-weighted returns, dividends and target allocation.
 • Cash-flow forecast with probability bands, built from your own history.
 • Insights: unusual expenses, subscriptions, category changes.
@@ -133,7 +136,7 @@ attribuez vous-même.
 • Factures et paiements récurrents : loyer, salaire et abonnements se
 comptabilisent seuls à l'échéance, et Windows vous les rappelle à l'avance.
 • Budgets et objectifs d'épargne avec suivi et projections.
-• Placements avec cours Twelve Data, Alpha Vantage, stooq et CoinGecko,
+• Placements avec cours Yahoo Finance et CoinGecko (sans clé),
 rendements pondérés par les
 capitaux et dans le temps, dividendes et répartition cible.
 • Prévision de trésorerie avec intervalles de probabilité.
@@ -165,7 +168,7 @@ placements, trésorerie, patrimoine, gestion d'argent
 • الفواتير والدفعات المتكررة: الإيجار والراتب والاشتراكات تُسجَّل تلقائياً
 في موعدها، ويذكّرك Windows قبل استحقاقها.
 • ميزانيات وأهداف ادخار مع التقدم والتوقعات.
-• استثمارات بأسعار من Twelve Data وAlpha Vantage وstooq وCoinGecko، عائد مرجّح بالأموال وزمنياً،
+• استثمارات بأسعار من Yahoo Finance وCoinGecko (دون مفاتيح)، عائد مرجّح بالأموال وزمنياً،
 توزيعات الأرباح والتوزيع المستهدف.
 • توقع التدفق النقدي مع نطاقات احتمالية.
 • تحليلات: مصاريف غير عادية، اشتراكات، تغيرات حسب الفئة.

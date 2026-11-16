@@ -27,7 +27,7 @@ export default function Accounts() {
   const [recon, setRecon] = useState<Account | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
-  const base = refs.data?.settings.base_currency ?? "CHF";
+  const base = refs.data?.settings.base_currency ?? "USD";
   const accounts = (refs.data?.accounts ?? []).filter((a) => showArchived || !a.is_archived);
   const total = (types: string[]) => accounts.filter((a) => types.includes(a.type))
     .reduce((s, a) => s + (a.balance_base ?? 0) + a.holdings_base, 0);

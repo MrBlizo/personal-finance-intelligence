@@ -1,5 +1,9 @@
 """Download market prices for holdings from free price providers.
 
+* ``yahoo``: end-of-day closes from Yahoo Finance for stocks, ETFs, funds
+  and indices on most exchanges (``AAPL``, ``VWRL.L``, ``SAP.DE``,
+  ``NESN.SW``); no key. Holdings set to the older keyed providers below are
+  fetched from Yahoo too, with their symbol converted.
 * ``twelvedata``: end-of-day closes from Twelve Data. The free plan (800
   requests a day, 8 a minute) covers US-listed stocks and ETFs; symbols
   such as ``AAPL`` or ``VT``. Needs a free personal API key.
@@ -55,6 +59,17 @@ ALPHA_KEY_HELP = (
     "Alpha Vantage needs a free API key. Get one on "
     "https://www.alphavantage.co/support/#api-key and paste it in "
     "Settings > Exchange rates & prices > Alpha Vantage API key.")
+YAHOO_URL = ("https://query1.finance.yahoo.com/v8/finance/chart/{sym}"
+             "?period1={p1}&period2={p2}&interval=1d&events=history")
+_YAHOO_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+             "(KHTML, like Gecko) Chrome/130.0 Safari/537.36")
+# stooq / Alpha Vantage market suffixes -> Yahoo Finance suffixes.
+_SUFFIX = {"us": "", "uk": ".L", "lon": ".L", "de": ".DE", "dex": ".DE",
+           "f": ".F", "fra": ".F", "pa": ".PA", "par": ".PA", "as": ".AS",
+           "ams": ".AS", "sw": ".SW", "swx": ".SW", "vx": ".SW", "jp": ".T",
+           "hk": ".HK", "tsx": ".TO", "to": ".TO", "mi": ".MI", "mil": ".MI",
+           "mc": ".MC", "st": ".ST", "co": ".CO", "ol": ".OL", "he": ".HE",
+           "br": ".BR", "ls": ".LS", "vi": ".VI", "pl": ".WA"}
 GECKO_URL = ("https://api.coingecko.com/api/v3/coins/{coin}/market_chart"
              "?vs_currency={cur}&days={days}")
 
@@ -283,6 +298,82 @@ def fetch_alphavantage(symbol: str, start: date, end: date,
     return out
 
 
+def yahoo_symbol(symbol: str, provider: str = "yahoo") -> str:
+    """Return the Yahoo Finance symbol for a symbol of another provider.
+
+    Parameters
+    ----------
+    symbol : str
+        The symbol as entered, e.g. ``vt.us`` (stooq) or ``TSCO.LON``.
+    provider : str
+        The provider the symbol was written for.
+    """
+    sym = symbol.strip()
+    if provider in ("stooq", "alphavantage") and "." in sym:
+        base, suffix = sym.rsplit(".", 1)
+        if suffix.lower() in _SUFFIX:
+            return base.upper() + _SUFFIX[suffix.lower()]
+    return sym.upper() if provider != "yahoo" else sym
+
+
+def fetch_yahoo(symbol: str, start: date, end: date) -> dict[date, float]:
+    """Return daily closes from Yahoo Finance (no key needed).
+
+    Parameters
+    ----------
+    symbol : str
+        The Yahoo Finance symbol, e.g. ``AAPL`` or ``VWRL.L``.
+    start : date
+        The first day requested.
+    end : date
+        The last day requested.
+
+    Returns
+    -------
+    dict of date to float
+        The closing price per trading day.
+
+    Raises
+    ------
+    PriceFetchError
+        If Yahoo cannot be reached or does not know the symbol.
+    """
+    p1 = int(datetime(start.year, start.month, start.day,
+                      tzinfo=timezone.utc).timestamp())
+    p2 = int(datetime(end.year, end.month, end.day,
+                      tzinfo=timezone.utc).timestamp()) + 86400
+    url = YAHOO_URL.format(sym=urllib.parse.quote(symbol), p1=p1, p2=p2)
+    try:
+        raw = _get(url, headers={"User-Agent": _YAHOO_UA})
+    except Exception as exc:
+        raise PriceFetchError(f"Yahoo Finance could not be reached for "
+                              f"{symbol}: {exc}. Check the internet "
+                              "connection and try again.") from exc
+    data = _json(raw, "Yahoo Finance", symbol).get("chart") or {}
+    result = (data.get("result") or [None])[0]
+    if not result:
+        err = (data.get("error") or {}).get("description") or "no data"
+        raise PriceFetchError(
+            f"Yahoo Finance has no prices for '{symbol}' ({err}). Use the "
+            "symbol shown on finance.yahoo.com, with the exchange suffix "
+            "for non-US listings (e.g. VWRL.L, SAP.DE, NESN.SW).")
+    stamps = result.get("timestamp") or []
+    quote = ((result.get("indicators") or {}).get("quote") or [{}])[0]
+    closes = quote.get("close") or []
+    offset = int((result.get("meta") or {}).get("gmtoffset") or 0)
+    out = {}
+    for ts, close in zip(stamps, closes):
+        if close is None:
+            continue
+        day = datetime.fromtimestamp(ts + offset, timezone.utc).date()
+        if start <= day <= end:
+            out[day] = float(close)
+    if not out:
+        raise PriceFetchError(
+            f"Yahoo Finance has no prices for '{symbol}' in this period.")
+    return out
+
+
 def fetch_coingecko(coin: str, currency: str, days: int = 365
                     ) -> dict[date, float]:
     """Return daily crypto prices from CoinGecko.
@@ -361,6 +452,11 @@ def update_holding(db: Session, holding: Holding,
         The number of new price rows.
     """
     today = today or date.today()
+    if holding.price_source in ("stooq", "twelvedata", "alphavantage"):
+        # The keyed providers are gone since 0.7.1: move to Yahoo Finance.
+        holding.price_symbol = yahoo_symbol(
+            holding.price_symbol or holding.symbol, holding.price_source)
+        holding.price_source = "yahoo"
     last = db.scalar(select(AssetPrice.price_date).where(
         AssetPrice.holding_id == holding.id,
         AssetPrice.source == holding.price_source)
@@ -368,15 +464,8 @@ def update_holding(db: Session, holding: Holding,
     start = (last - timedelta(days=7)) if last else \
         today - timedelta(days=HISTORY_DAYS)
     symbol = holding.price_symbol or holding.symbol
-    if holding.price_source == "stooq":
-        prices = fetch_stooq(symbol, start, today,
-                             prefs.get(db, "stooq_api_key"))
-    elif holding.price_source == "twelvedata":
-        prices = fetch_twelvedata(symbol, start, today,
-                                  prefs.get(db, "twelvedata_api_key"))
-    elif holding.price_source == "alphavantage":
-        prices = fetch_alphavantage(symbol, start, today,
-                                    prefs.get(db, "alphavantage_api_key"))
+    if holding.price_source == "yahoo":
+        prices = fetch_yahoo(symbol, start, today)
     elif holding.price_source == "coingecko":
         prices = fetch_coingecko(symbol, holding.currency,
                                  (today - start).days + 1)

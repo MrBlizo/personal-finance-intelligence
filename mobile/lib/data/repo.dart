@@ -141,7 +141,7 @@ class Repo {
   final AppDatabase app;
   Database get db => app.db;
 
-  String get baseCurrency => app.setting('base_currency') ?? 'CHF';
+  String get baseCurrency => app.setting('base_currency') ?? 'USD';
 
   List<Account> accounts({bool includeArchived = false}) {
     final rows = db.select(

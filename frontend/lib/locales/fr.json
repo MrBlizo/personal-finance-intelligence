@@ -1110,5 +1110,20 @@
   "Bills": "Factures",
   "Good morning": "Bonjour",
   "Good afternoon": "Bon après-midi",
-  "Good evening": "Bonsoir"
+  "Good evening": "Bonsoir",
+  "Keep PFI on this PC and the PFI phone app in step through your OneDrive, Dropbox or Google Drive. Everything is encrypted with your passphrase; there is no PFI server.": "Gardez PFI sur ce PC et l'app mobile PFI synchronisés via votre OneDrive, Dropbox ou Google Drive. Tout est chiffré avec votre phrase secrète ; il n'y a pas de serveur PFI.",
+  "OneDrive or Dropbox folder": "Dossier OneDrive ou Dropbox",
+  "PFI keeps its encrypted sync files in a hidden app folder of your Google Drive and cannot see your other files. Sign in here, then choose Google Drive in the phone app with the same Google account.": "PFI garde ses fichiers de synchronisation chiffrés dans un dossier d'application caché de votre Google Drive et ne voit pas vos autres fichiers. Connectez-vous ici, puis choisissez Google Drive dans l'app mobile avec le même compte Google.",
+  "Sign in with Google": "Se connecter avec Google",
+  "Sign out": "Se déconnecter",
+  "Signed in": "Connecté",
+  "Waiting for Google…": "En attente de Google…",
+  "Where to keep the sync files": "Où garder les fichiers de synchronisation",
+  "Add an account": "Ajouter un compte",
+  "Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.": "Ajoutez un compte et importez un relevé bancaire. Vous utilisez déjà PFI sur un autre appareil ? Configurez la synchronisation avec le même stockage cloud et la même phrase secrète.",
+  "Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.": "Des données de démonstration d'une version précédente de PFI sont encore présentes. Supprimez-les pour ne garder que vos propres données.",
+  "Average-cost method · prices from Yahoo Finance, CoinGecko or entered manually": "Méthode du coût moyen · cours de Yahoo Finance, CoinGecko ou saisis à la main",
+  "Give a holding a price source (Yahoo Finance or CoinGecko) to download prices.": "Choisissez une source de cours (Yahoo Finance ou CoinGecko) pour un placement afin de télécharger ses cours.",
+  "Symbol as shown on finance.yahoo.com, e.g. AAPL, VT, VWRL.L, SAP.DE or NESN.SW. Leave empty to use the symbol above. No key needed.": "Symbole tel qu'affiché sur finance.yahoo.com, p. ex. AAPL, VT, VWRL.L, SAP.DE ou NESN.SW. Laissez vide pour utiliser le symbole ci-dessus. Aucune clé nécessaire.",
+  "Yahoo Finance (stocks, ETFs, funds)": "Yahoo Finance (actions, ETF, fonds)"
 }

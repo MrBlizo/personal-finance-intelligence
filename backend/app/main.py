@@ -205,6 +205,7 @@ def create_app() -> FastAPI:
                    investments, analytics, automation, reports, budgeting,
                    sync_router):
         app.include_router(module.router)
+    app.include_router(sync_router.oauth_router)
     if settings.frontend_dist.is_dir():
         app.mount("/", UiFiles(directory=settings.frontend_dist,
                                html=True), name="ui")

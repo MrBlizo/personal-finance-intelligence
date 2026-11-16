@@ -13,7 +13,7 @@ from ..migrations import run_migrations
 from ..models import Account
 from ..services import backup as bk
 from ..services import rating
-from ..services.demo import remove_demo, seed_demo
+from ..services.demo import remove_demo
 
 router = APIRouter(prefix="/api")
 
@@ -43,14 +43,6 @@ def shutdown(request: Request):
             "or PFI.exe.")
     server.should_exit = True
     return {"status": "stopping"}
-
-
-@router.post("/demo")
-def create_demo(db: Session = Depends(get_db)):
-    try:
-        return seed_demo(db)
-    except ValueError as exc:
-        raise HTTPException(409, str(exc)) from exc
 
 
 @router.delete("/demo")

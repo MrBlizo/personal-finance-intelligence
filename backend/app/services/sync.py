@@ -32,7 +32,7 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..db import Base
-from . import secret_store
+from . import gdrive, secret_store
 
 log = logging.getLogger(__name__)
 
@@ -220,6 +220,22 @@ class FolderStore:
         tmp = path.with_name(path.name + ".tmp")
         tmp.write_bytes(data)
         os.replace(tmp, path)
+
+
+def open_store(folder: str, data_dir: Path
+               ) -> "FolderStore | gdrive.DriveStore":
+    """Return the store for a sync place: a folder or Google Drive.
+
+    Parameters
+    ----------
+    folder : str
+        The sync folder, or ``gdrive:appdata`` for Google Drive.
+    data_dir : Path
+        The application data folder.
+    """
+    if folder == gdrive.FOLDER:
+        return gdrive.DriveStore(data_dir)
+    return FolderStore(Path(folder))
 
 
 # --- schema helpers ---------------------------------------------------
@@ -441,6 +457,8 @@ def phone_can_find(folder: str | None) -> bool:
     """
     if not folder:
         return False
+    if folder == gdrive.FOLDER:
+        return True
     parts = [x.lower() for x in re.split(r"[\\/]+", folder) if x]
     return len(parts) >= 3 and parts[-2:] == ["apps", "pfi sync"] and any(
         "onedrive" in x or "dropbox" in x for x in parts[:-2])
@@ -475,11 +493,17 @@ def setup(db: Session, data_dir: Path, folder: str, passphrase: str,
     """
     if len(passphrase or "") < 8:
         raise SyncError("Choose a sync passphrase of at least 8 characters.")
-    root = Path(folder).expanduser()
-    if not root.is_absolute():
-        raise SyncError("Choose the full path of a folder, e.g. "
-                        r"C:\Users\you\OneDrive\Apps\PFI Sync.")
-    store = FolderStore(root)
+    if folder == gdrive.FOLDER:
+        if not gdrive.signed_in(data_dir):
+            raise SyncError("Sign in to Google Drive first.")
+        root: Path | str = gdrive.FOLDER
+        store = gdrive.DriveStore(data_dir)
+    else:
+        root = Path(folder).expanduser()
+        if not root.is_absolute():
+            raise SyncError("Choose the full path of a folder, e.g. "
+                            r"C:\Users\you\OneDrive\Apps\PFI Sync.")
+        store = FolderStore(root)
     try:
         manifest = store.read_manifest()
         if manifest is None:
@@ -495,7 +519,8 @@ def setup(db: Session, data_dir: Path, folder: str, passphrase: str,
             store.write_manifest(manifest)
         else:
             if manifest.get("app") != "PFI" or "kdf" not in manifest:
-                raise SyncError(f"{root / MANIFEST} is not a PFI sync folder.")
+                raise SyncError(f"{MANIFEST} in {root} is not a PFI sync "
+                                "folder.")
             if int(manifest.get("format", 0)) > FORMAT:
                 raise SyncError(
                     "This sync folder was created by a newer version of "
@@ -513,6 +538,8 @@ def setup(db: Session, data_dir: Path, folder: str, passphrase: str,
                     "The passphrase does not match the one used to create "
                     "this sync folder. Enter the passphrase from your "
                     "other device.")
+    except gdrive.DriveError as exc:
+        raise SyncError(str(exc)) from exc
     except OSError as exc:
         raise SyncError(
             f"{root} cannot be used ({exc.strerror or exc}). Choose a "
@@ -827,6 +854,10 @@ def run(db: Session, data_dir: Path) -> SyncResult:
         db.rollback()
         _record(db, {"at": _now(), "error": str(exc)})
         raise
+    except gdrive.DriveError as exc:
+        db.rollback()
+        _record(db, {"at": _now(), "error": str(exc)})
+        raise SyncError(str(exc)) from exc
     except OSError as exc:
         db.rollback()
         msg = (f"The sync folder cannot be used ({exc.strerror or exc}). "
@@ -851,7 +882,7 @@ def _run(db: Session, data_dir: Path) -> SyncResult:
     if _get(conn, "enabled") != "1" or key is None or not folder or not me:
         raise SyncError("Sync is not set up on this device. Choose a sync "
                         "folder and passphrase in Settings first.")
-    store = FolderStore(Path(folder))
+    store = open_store(folder, data_dir)
     manifest = store.read_manifest()
     if manifest is None:
         raise SyncError(

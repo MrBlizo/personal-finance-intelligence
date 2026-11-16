@@ -52,7 +52,7 @@ function Budgets() {
   const [edit, setEdit] = useState<BudgetItem | "new" | null>(null);
   const [remove, setRemove] = useState<BudgetItem | null>(null);
   const s = status.data;
-  const cur = s?.currency ?? "CHF";
+  const cur = s?.currency ?? "USD";
   const used = new Set(s?.items.map((i) => i.category_id));
 
   return (

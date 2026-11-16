@@ -5,7 +5,6 @@ import {
 } from "@fluentui/react-components";
 import {
   ArrowDownload20Regular, FolderOpen20Regular, LockClosed16Regular,
-  ArrowSwap20Regular,
 } from "@fluentui/react-icons";
 import { Banner, Confirm, Empty, Modal, SettingRow, useLoad } from "@/components/ui";
 import { ApiError, Backup, BackupList, api, downloadUrl, get, post, put } from "@/lib/api";
@@ -14,15 +13,6 @@ import { useT } from "@/lib/i18n";
 import { inShell, pickFolder } from "@/lib/shell";
 
 type Msg = { kind: "success" | "error" | "warning"; text: string };
-
-function startDownload(name: string) {
-  const a = document.createElement("a");
-  a.href = downloadUrl(`/api/backups/${name}/download`);
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-}
 
 /** Restore a stored backup, asking for its password when it needs one. */
 export function useRestore(onDone: (safety: string) => void, onError: (m: string) => void) {
@@ -163,7 +153,6 @@ export function BackupPanel({ onMessage, onRestored }: {
   const [pwModal, setPwModal] = useState(false);
   const [pw1, setPw1] = useState(""); const [pw2, setPw2] = useState("");
   const [pwError, setPwError] = useState<string | null>(null);
-  const [move, setMove] = useState<Backup | null>(null);
   const [confirm, setConfirm] = useState<Backup | null>(null);
   const done = (safety: string) => {
     list.reload(); onRestored();
@@ -184,13 +173,12 @@ export function BackupPanel({ onMessage, onRestored }: {
       return true;
     } catch (e) { fail((e as Error).message); return false; }
   };
-  const create = async (kind: "manual" | "move") => {
+  const create = async (kind: "manual") => {
     setBusy(kind);
     try {
       const b = await post<Backup>("/api/backups", { kind });
       list.reload();
-      if (kind === "move") { startDownload(b.name); setMove(b); }
-      else onMessage({ kind: b.warning ? "warning" : "success",
+      onMessage({ kind: b.warning ? "warning" : "success",
         text: b.warning ?? t("Backup {n} created.", { n: b.name }) });
     } catch (e) { fail((e as Error).message); }
     finally { setBusy(null); }
@@ -238,11 +226,6 @@ export function BackupPanel({ onMessage, onRestored }: {
       {data?.has_password && <Button appearance="subtle" onClick={() =>
         saveSettings({ encrypt: false, clear_password: true }, t("Backup password removed."))}>{t("Remove")}</Button>}
     </SettingRow>
-    <SettingRow icon={""} title={t("Move to another PC")}
-      description={t("Saves one file with all your data and receipts to the Downloads folder. Open it in PFI on the new PC.")}>
-      <Button icon={<ArrowSwap20Regular />} disabled={busy === "move"} onClick={() => create("move")}>
-        {busy === "move" ? t("Preparing…") : t("Create move file")}</Button>
-    </SettingRow>
     <div className="setting-body table-wrap" style={{ maxHeight: 280 }}>
       <div className="caption" style={{ marginBottom: 8 }}>{t("Folder:")} <code>{data?.folder}</code></div>
       {data?.backups.length === 0 && <Empty>{t("No backups yet.")}</Empty>}
@@ -281,15 +264,6 @@ export function BackupPanel({ onMessage, onRestored }: {
         <Input type="password" value={pw1} onChange={(_, d) => setPw1(d.value)} /></FField>
       <FField label={t("Repeat password")}>
         <Input type="password" value={pw2} onChange={(_, d) => setPw2(d.value)} /></FField>
-    </Modal>}
-    {move && <Modal title={t("Move to another PC")} onClose={() => setMove(null)}
-      actions={<Button appearance="primary" onClick={() => setMove(null)}>{t("Done")}</Button>}>
-      <ol className="steps">
-        <li>{t("The file {n} is being saved to your Downloads folder.", { n: move.name })}</li>
-        <li>{t("Copy it to the new PC, for example with a USB stick or OneDrive.")}</li>
-        <li>{t("On the new PC, install PFI and choose “Restore from a backup” on the first screen (or Settings → Backups → Restore from file).")}</li>
-        {move.encrypted && <li>{t("You will need your backup password.")}</li>}
-      </ol>
     </Modal>}
   </>);
 }

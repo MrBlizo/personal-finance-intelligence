@@ -54,3 +54,10 @@ def make_account(api, name="Checking", currency="CHF", type_="checking",
         "opening_balance": opening, "opening_date": opening_date})
     assert r.status_code == 201, r.text
     return r.json()["id"]
+
+
+def load_demo():
+    """Fill the test database with the demo data (no longer in the UI)."""
+    from app.services.demo import seed_demo
+    with SessionLocal() as db:
+        return seed_demo(db)

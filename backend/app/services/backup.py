@@ -23,6 +23,7 @@ import sqlite3
 import struct
 import tempfile
 import zipfile
+import zlib
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -470,7 +471,7 @@ def _extract(path: Path, work: Path, password: str | None,
                 if not str(target).startswith(str((work / "out").resolve())):
                     raise BackupError("The backup contains unsafe paths.")
             zf.extractall(work / "out")
-    except zipfile.BadZipFile as exc:
+    except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
         raise BackupError(
             "This file is not a PFI backup or it is damaged. Choose a file "
             "made with 'Back up now'.") from exc
