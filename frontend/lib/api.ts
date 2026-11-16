@@ -36,6 +36,13 @@ export interface Backup {
   name: string; kind: string; size: number; created: string;
   folder: string; encrypted: boolean; legacy: boolean; warning: string | null;
 }
+export interface SyncDevice { id: string; name: string; seen: string | null }
+export interface SyncStatus {
+  enabled: boolean; folder: string | null; device_id: string | null;
+  device_name: string | null; last_sync: string | null; last_error: string | null;
+  sent: number; received: number; pending: number; devices: SyncDevice[];
+  suggestions: { provider: string; path: string }[];
+}
 export interface BackupList {
   folder: string; default_folder: string; chosen_folder: string | null;
   folder_warning: string | null; encrypt: boolean; has_password: boolean;

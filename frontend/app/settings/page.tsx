@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-icons";
 import { usePrefs } from "@/components/AppFrame";
 import { BackupPanel } from "@/components/BackupPanel";
+import { SyncPanel } from "@/components/SyncPanel";
 import { OldDataRow } from "@/components/OldDataRow";
 import { CategoryDialog } from "@/components/CategoryDialog";
 import { CategoryIcon } from "@/components/CategoryIcon";
@@ -329,6 +330,11 @@ export default function SettingsPage() {
                           onClick={async () => { await del(`/api/rules/${r.id}`); rules.reload(); }} /></td>
                     </tr>))}</tbody></table></div>)}
             </section>
+          </div>
+
+          <div className="group-title">{t("Sync")}</div>
+          <div className="settings-group">
+            <SyncPanel onMessage={setMsg} onSynced={() => { refs.reload(); rules.reload(); }} />
           </div>
 
           <div className="group-title">{t("Backup & data")}</div>
