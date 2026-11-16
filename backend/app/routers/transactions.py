@@ -18,7 +18,7 @@ from ..db import get_db
 from ..models import (
     Account, Attachment, Category, ImportBatch, ImportPreset, Tag,
     Transaction, TransactionSplit, TransactionTag)
-from ..services import importer
+from ..services import importer, search
 from ..services.learn_apply import auto_categorize_batch
 from ..services.fx import FxConverter
 from ..services.ledger import base_currency
@@ -87,6 +87,7 @@ def list_transactions(
         account_id: int | None = None, category_id: int | None = None,
         kind: str | None = None, q: str | None = None,
         uncategorized: bool = False, tag: str | None = None,
+        reviewed: bool | None = None,
         limit: int = Query(100, ge=1, le=5000), offset: int = 0,
         db: Session = Depends(get_db)):
     stmt = select(Transaction)
@@ -111,16 +112,17 @@ def list_transactions(
     if uncategorized:
         stmt = stmt.where(Transaction.category_id.is_(None),
                           Transaction.kind != "transfer", not_split())
+    if reviewed is not None:
+        stmt = stmt.where(Transaction.reviewed.is_(reviewed))
+    problems: list[str] = []
     if q:
-        like = f"%{q}%"
-        stmt = stmt.where(or_(Transaction.description.ilike(like),
-                              Transaction.merchant.ilike(like),
-                              Transaction.notes.ilike(like)))
+        stmt, problems = search.apply(stmt, q)
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     rows = db.scalars(stmt.order_by(
         Transaction.txn_date.desc(), Transaction.id.desc())
         .limit(limit).offset(offset)).all()
-    return {"total": total, "items": _to_out(db, list(rows))}
+    return {"total": total, "items": _to_out(db, list(rows)),
+            "problems": problems}
 
 
 @router.post("/transactions", response_model=s.TransactionOut,

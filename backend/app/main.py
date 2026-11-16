@@ -19,7 +19,7 @@ from .db import SessionLocal, init_engine, sqlite_url
 from .migrations import run_migrations
 from .routers import analytics, automation, core, extras, investments
 from .routers import planning, system, tools
-from .routers import reports
+from .routers import budgeting, reports
 from .routers import transactions
 from .security import TokenMiddleware
 from .seed import seed_defaults
@@ -176,7 +176,7 @@ def create_app() -> FastAPI:
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
     for module in (system, core, transactions, extras, tools, planning,
-                   investments, analytics, automation, reports):
+                   investments, analytics, automation, reports, budgeting):
         app.include_router(module.router)
     if settings.frontend_dist.is_dir():
         app.mount("/", UiFiles(directory=settings.frontend_dist,

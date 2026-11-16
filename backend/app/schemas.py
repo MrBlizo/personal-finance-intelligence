@@ -8,7 +8,8 @@ from decimal import Decimal
 from typing import Annotated, Literal
 
 from pydantic import (
-    BaseModel, ConfigDict, Field, PlainSerializer, field_validator)
+    BaseModel, ConfigDict, Field, PlainSerializer, field_validator,
+    model_validator)
 
 Money = Annotated[Decimal, PlainSerializer(float, return_type=float,
                                            when_used="json")]
@@ -55,6 +56,15 @@ class SettingsOut(BaseModel):
     twelvedata_api_key_hint: str | None = None
     alphavantage_api_key_set: bool = False
     alphavantage_api_key_hint: str | None = None
+    budget_mode: str = "limits"
+    accent_color: str | None = None
+    home_layout: list[dict] = []
+
+
+class HomeCard(BaseModel):
+    id: Literal["net_worth", "this_month", "budgets", "upcoming",
+                "cash_flow", "spending", "accounts", "goals", "review"]
+    hidden: bool = False
 
 
 class SettingsIn(_UpperCurrency):
@@ -78,6 +88,11 @@ class SettingsIn(_UpperCurrency):
         max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
     alphavantage_api_key: Annotated[str | None, Field(
         max_length=128, pattern=r"^[A-Za-z0-9_-]*$")] = None
+    budget_mode: Literal["limits", "envelope"] | None = None
+    #: An accent colour as #RRGGBB, or "" to follow Windows.
+    accent_color: Annotated[str | None, Field(
+        pattern=r"^(#[0-9A-Fa-f]{6})?$")] = None
+    home_layout: list[HomeCard] | None = None
 
     @field_validator("base_currency", mode="before")
     @classmethod
@@ -140,6 +155,8 @@ class CategoryIn(BaseModel):
     kind: Literal["income", "expense"]
     parent_id: int | None = None
     color: str | None = None
+    icon: Annotated[str | None, Field(
+        max_length=40, pattern=r"^[a-z0-9_-]*$")] = None
 
 
 class CategoryOut(CategoryIn, ORM):
@@ -209,6 +226,7 @@ class TransactionOut(ORM):
     notes: str | None
     cleared: bool = False
     reconciled: bool = False
+    reviewed: bool = True
     splits: list[dict] = []
     tags: list[str] = []
     attachments: int = 0
@@ -217,6 +235,8 @@ class TransactionOut(ORM):
 class TransactionPage(BaseModel):
     total: int
     items: list[TransactionOut]
+    #: Search filters that were not understood, explained for the user.
+    problems: list[str] = []
 
 
 class TransferIn(BaseModel):
@@ -376,3 +396,84 @@ class PriceOut(PriceIn, ORM):
     id: int
     holding_id: int
     price: Money
+
+
+# --- 0.6: envelopes, period budgets, IOUs ----------------------------------
+Month = Annotated[str, Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")]
+
+
+class AssignIn(BaseModel):
+    amount: Annotated[Decimal, Field(ge=Decimal("-1e12"), le=Decimal("1e12"))]
+
+
+class MoveIn(BaseModel):
+    month: Month
+    amount: Annotated[Decimal, Field(gt=0, le=Decimal("1e12"))]
+    #: None means Ready to Assign.
+    from_category_id: int | None = None
+    to_category_id: int | None = None
+
+
+class QuickAssignIn(BaseModel):
+    month: Month
+    mode: Literal["underfunded", "last_month"]
+    apply: bool = False
+
+
+class TargetIn(BaseModel):
+    kind: Literal["monthly", "weekly", "yearly", "by_date"]
+    amount: Annotated[Decimal, Field(gt=0, le=Decimal("1e12"))]
+    due_date: date | None = None
+
+    @model_validator(mode="after")
+    def _due(self):
+        if self.kind == "by_date" and self.due_date is None:
+            raise ValueError(
+                "A 'by date' target needs the date the money is needed. "
+                "Pick a date or choose another kind of target.")
+        return self
+
+
+class PeriodBudgetIn(BaseModel):
+    name: Annotated[str, Field(min_length=1, max_length=120)]
+    amount: Annotated[Decimal, Field(gt=0, le=Decimal("1e12"))]
+    period: Literal["weekly", "monthly", "custom"]
+    start_date: date
+    end_date: date | None = None
+    tag_id: int | None = None
+    category_ids: list[int] = []
+    notes: str | None = None
+
+    @model_validator(mode="after")
+    def _end(self):
+        if self.period == "custom":
+            if self.end_date is None:
+                raise ValueError(
+                    "A custom budget needs an end date. Pick the last day "
+                    "of the trip or project.")
+            if self.end_date < self.start_date:
+                raise ValueError(
+                    "The end date is before the start date. Swap the two "
+                    "dates.")
+        return self
+
+
+class IouIn(_UpperCurrency):
+    person: Annotated[str, Field(min_length=1, max_length=120)]
+    direction: Literal["lent", "borrowed"]
+    amount: Annotated[Decimal, Field(gt=0, le=Decimal("1e12"))]
+    currency: Currency
+    iou_date: date
+    due_date: date | None = None
+    note: str | None = None
+
+
+class IouPaymentIn(BaseModel):
+    paid_on: date
+    amount: Annotated[Decimal, Field(gt=0, le=Decimal("1e12"))]
+    note: Annotated[str | None, Field(max_length=200)] = None
+
+
+class ReviewIn(BaseModel):
+    #: The transactions to approve; empty approves every one waiting.
+    ids: list[int] = []

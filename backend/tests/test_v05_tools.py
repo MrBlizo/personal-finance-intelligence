@@ -187,7 +187,7 @@ def test_migration_from_v04(tmp_path):
         for version, name, _ in MIGRATIONS[:4]:
             conn.execute(text("INSERT INTO schema_version (version, name) "
                               "VALUES (:v, :n)"), {"v": version, "n": name})
-    assert run_migrations(engine) == 5
+    assert run_migrations(engine) == MIGRATIONS[-1][0]
     cols = {c["name"] for c in inspect(engine).get_columns("transactions")}
     assert {"cleared", "reconciliation_id"} <= cols
     assert "debt_terms" in inspect(engine).get_table_names()

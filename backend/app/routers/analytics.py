@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..services import charts
+from ..services import charts, flows
 from ..services.forecast import cash_flow_forecast
 from ..services.frame import expenses, incomes, load_transactions
 from ..services.fx import FxConverter
@@ -16,7 +16,8 @@ from ..services.planning import add_months, budget_status
 router = APIRouter(prefix="/api")
 CHARTS = ("monthly_cashflow", "savings_rate", "category_breakdown",
           "category_trend", "weekday_heatmap", "top_merchants",
-          "budget_vs_actual", "net_worth", "allocation")
+          "budget_vs_actual", "net_worth", "allocation", "money_flow",
+          "balance_history", "age_of_money")
 
 
 def _period(start: date | None, end: date | None) -> tuple[date, date]:
@@ -95,6 +96,14 @@ def _chart(name: str, db: Session, fx: FxConverter, base: str,
             _net_worth_points(db, fx, base, end, months), base)
     if name == "allocation":
         return charts.allocation(holding_valuations(db, fx, base), base)
+    if name == "money_flow":
+        return flows.money_flow(df, base)
+    if name in ("balance_history", "age_of_money"):
+        months = max(2, min(36, round((end - start).days / 30.4) + 1))
+        days = charts.month_range(end, months)
+        if name == "balance_history":
+            return flows.balance_history(db, fx, base, days)
+        return flows.age_of_money(db, fx, base, days)["figure"]
     raise HTTPException(
         404, f"Unknown chart '{name}'. Available: {', '.join(CHARTS)}.")
 
@@ -120,6 +129,28 @@ def dashboard(start: date | None = None, end: date | None = None,
     return {"summary": _summary(db, fx, base, start, end),
             "charts": {n: _chart(n, db, fx, base, start, end, None, cache)
                        for n in charts_}}
+
+
+@router.get("/analytics/payees")
+def payees_report(start: date | None = None, end: date | None = None,
+                  db: Session = Depends(get_db)):
+    """Spending per payee in the period, largest first."""
+    start, end = _period(start, end)
+    fx, base = FxConverter.from_db(db), base_currency(db)
+    df = load_transactions(db, fx, base, start, end)
+    return {"currency": base, "start": start, "end": end,
+            "payees": flows.payee_totals(expenses(df))}
+
+
+@router.get("/analytics/age-of-money")
+def age_of_money(end: date | None = None, months: int = Query(12, ge=2,
+                                                              le=36),
+                 db: Session = Depends(get_db)):
+    """The age of money now and at the end of each recent month."""
+    end = end or date.today()
+    out = flows.age_of_money(db, FxConverter.from_db(db), base_currency(db),
+                             charts.month_range(end, months))
+    return {"age": out["age"], "points": out["points"]}
 
 
 @router.get("/insights")

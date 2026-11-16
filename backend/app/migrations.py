@@ -68,12 +68,74 @@ def _v05_reconcile_debts(conn: Connection) -> None:
             "ON transactions (reconciliation_id)"))
 
 
+_NOW = "strftime('%Y-%m-%d %H:%M:%f', 'now')"
+_NEW_UID = "lower(hex(randomblob(16)))"
+
+
+def _add_column(conn: Connection, table: str, ddl: str) -> None:
+    name = ddl.split()[0]
+    if name not in {c["name"] for c in inspect(conn).get_columns(table)}:
+        conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {ddl}"))
+
+
+def _v06_envelopes_sync(conn: Connection) -> None:
+    for model in (models.BudgetAssignment, models.BudgetTarget,
+                  models.PeriodBudget, models.PeriodBudgetCategory,
+                  models.Iou, models.IouPayment, models.SyncTombstone):
+        model.__table__.create(conn, checkfirst=True)
+    _add_column(conn, "categories", "icon VARCHAR(40)")
+    _add_column(conn, "transactions",
+                "reviewed BOOLEAN NOT NULL DEFAULT 1")
+    for table in models.SYNCED_TABLES:
+        _add_column(conn, table, "uid VARCHAR(32)")
+        _add_column(conn, table, "updated_at DATETIME")
+        conn.execute(text(
+            f"UPDATE {table} SET uid = coalesce(uid, {_NEW_UID}), "
+            f"updated_at = coalesce(updated_at, {_NOW})"))
+
+
+def ensure_sync_triggers(conn: Connection) -> None:
+    """Create the uid index and the sync triggers of every synced table.
+
+    The triggers give rows written outside the ORM (migrations, restores,
+    bulk statements) a ``uid`` and an ``updated_at``, refresh
+    ``updated_at`` on every change and record deletions in
+    ``sync_tombstones``. Safe to run on every start.
+
+    Parameters
+    ----------
+    conn : Connection
+        The open connection to the application database.
+    """
+    for t in models.SYNCED_TABLES:
+        conn.execute(text(
+            f"CREATE UNIQUE INDEX IF NOT EXISTS ux_{t}_uid ON {t} (uid)"))
+        conn.execute(text(
+            f"CREATE TRIGGER IF NOT EXISTS trg_{t}_ins AFTER INSERT ON {t} "
+            f"WHEN NEW.uid IS NULL OR NEW.updated_at IS NULL BEGIN "
+            f"UPDATE {t} SET uid = coalesce(NEW.uid, {_NEW_UID}), "
+            f"updated_at = coalesce(NEW.updated_at, {_NOW}) "
+            f"WHERE rowid = NEW.rowid; END"))
+        conn.execute(text(
+            f"CREATE TRIGGER IF NOT EXISTS trg_{t}_upd AFTER UPDATE ON {t} "
+            f"WHEN NEW.updated_at IS OLD.updated_at BEGIN "
+            f"UPDATE {t} SET updated_at = {_NOW} WHERE rowid = NEW.rowid; "
+            f"END"))
+        conn.execute(text(
+            f"CREATE TRIGGER IF NOT EXISTS trg_{t}_del AFTER DELETE ON {t} "
+            f"WHEN OLD.uid IS NOT NULL BEGIN "
+            f"INSERT INTO sync_tombstones (table_name, uid, deleted_at) "
+            f"VALUES ('{t}', OLD.uid, {_NOW}); END"))
+
+
 MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (1, "initial schema", _initial_schema),
     (2, "import presets", _import_presets),
     (3, "automation and investment pricing", _v03_automation_investments),
     (4, "splits, tags and attachments", _v04_splits_tags_attachments),
     (5, "reconciliation and debt terms", _v05_reconcile_debts),
+    (6, "envelope budgets, IOUs, review queue and sync ids",
+     _v06_envelopes_sync),
 ]
 
 
@@ -108,6 +170,9 @@ def run_migrations(engine: Engine) -> int:
             func(conn)
             conn.execute(models.SchemaVersion.__table__.insert().values(
                 version=version, name=name))
+    if engine.dialect.name == "sqlite":
+        with engine.begin() as conn:
+            ensure_sync_triggers(conn)
     current = max(v for v, _, _ in MIGRATIONS)
     tables = set(inspect(engine).get_table_names())
     missing = set(Base.metadata.tables) - tables
