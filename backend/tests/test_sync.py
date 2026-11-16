@@ -239,6 +239,27 @@ def test_same_account_created_on_both_devices_is_merged(pair):
             ["Bread", "Milk"]
 
 
+def test_merged_row_is_still_announced_when_the_other_is_newer(pair):
+    # A's account was never sent before B's newer copy arrived and was
+    # merged into it; A must still announce its own uid, or B cannot place
+    # A's later transactions (they would wait forever).
+    a, b, folder = pair
+    a.setup(folder)
+    b.setup(folder)
+    acc_a = _add_account(a, "Wallet")
+    _tick()
+    acc_b = _add_account(b, "Wallet")
+    _add_txn(b, acc_b, "-3", "Bread")
+    b.run()
+    a.run()
+    _add_txn(a, acc_a, "-4", "Milk")
+    a.run()
+    res = b.run()
+    assert res.pending == 0
+    b.db.expire_all()
+    assert sorted(t.description for t in b.txns()) == ["Bread", "Milk"]
+
+
 def test_child_before_parent_waits(pair):
     a, b, folder = pair
     b.setup(folder)

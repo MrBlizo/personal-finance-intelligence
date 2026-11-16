@@ -13,6 +13,11 @@ on:
       - "backend/app/**"
       - "backend/tools/**"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Attach the APK to this existing release (e.g. v0.7.1); empty = build only"
+        required: false
+        default: ""
   release:
     types: [published]
 
@@ -108,10 +113,11 @@ jobs:
           name: pfi-android-apk
           path: ${{ env.APK }}
       - name: Attach the APK to the release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.release_tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" "$APK" --clobber
+          TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+        run: gh release upload "$TAG" "$APK" --clobber
       - name: Platform folders as generated
         if: always()
         run: tar czf "$RUNNER_TEMP/platforms.tgz" --exclude=build --exclude=.gradle -C mobile android ios .metadata 2>/dev/null || true
