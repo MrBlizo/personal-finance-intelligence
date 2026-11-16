@@ -3,6 +3,9 @@
 // drive's desktop app:
 //   OneDrive: OneDrive/Apps/PFI Sync
 //   Dropbox:  Dropbox/Apps/PFI Sync (the app folder of the "PFI Sync" app)
+// Google Drive: the hidden app data folder, which PFI on Windows reaches
+// through the Drive API too (backend/app/services/gdrive.py); flat names
+// "pfi-sync.json" and "<device>-<00000001>.pfisync".
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -16,19 +19,22 @@ import '../config.dart';
 import 'crypto.dart';
 import 'store.dart';
 
-enum CloudProvider { onedrive, dropbox }
+enum CloudProvider { onedrive, gdrive, dropbox }
 
 extension CloudProviderInfo on CloudProvider {
   String get title => switch (this) {
         CloudProvider.onedrive => 'OneDrive',
+        CloudProvider.gdrive => 'Google Drive',
         CloudProvider.dropbox => 'Dropbox',
       };
   String get pcFolder => switch (this) {
         CloudProvider.onedrive => r'OneDrive\Apps\PFI Sync',
+        CloudProvider.gdrive => 'Google Drive (PFI app data)',
         CloudProvider.dropbox => r'Dropbox\Apps\PFI Sync',
       };
   bool get configured => switch (this) {
         CloudProvider.onedrive => oneDriveClientId.isNotEmpty,
+        CloudProvider.gdrive => googleClientId.isNotEmpty,
         CloudProvider.dropbox => dropboxAppKey.isNotEmpty,
       };
 }
@@ -60,20 +66,27 @@ class CloudAuth {
   Uri get _authorize => switch (provider) {
         CloudProvider.onedrive => Uri.parse(
             'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'),
+        CloudProvider.gdrive =>
+          Uri.parse('https://accounts.google.com/o/oauth2/v2/auth'),
         CloudProvider.dropbox =>
           Uri.parse('https://www.dropbox.com/oauth2/authorize'),
       };
   Uri get _token => switch (provider) {
         CloudProvider.onedrive => Uri.parse(
             'https://login.microsoftonline.com/common/oauth2/v2.0/token'),
+        CloudProvider.gdrive => Uri.parse('https://oauth2.googleapis.com/token'),
         CloudProvider.dropbox =>
           Uri.parse('https://api.dropboxapi.com/oauth2/token'),
       };
   String get _clientId => switch (provider) {
         CloudProvider.onedrive => oneDriveClientId,
+        CloudProvider.gdrive => googleClientId,
         CloudProvider.dropbox => dropboxAppKey,
       };
+  String get _redirect =>
+      provider == CloudProvider.gdrive ? googleRedirect : oauthRedirect;
   static const _oneDriveScope = 'Files.ReadWrite offline_access';
+  static const _googleScope = 'https://www.googleapis.com/auth/drive.appdata';
 
   Future<bool> get signedIn async =>
       (await _storage.read(key: _refreshKey)) != null;
@@ -89,11 +102,12 @@ class CloudAuth {
     final url = _authorize.replace(queryParameters: {
       'client_id': _clientId,
       'response_type': 'code',
-      'redirect_uri': oauthRedirect,
+      'redirect_uri': _redirect,
       'code_challenge': await _challenge(verifier),
       'code_challenge_method': 'S256',
       'state': state,
       if (provider == CloudProvider.onedrive) 'scope': _oneDriveScope,
+      if (provider == CloudProvider.gdrive) 'scope': _googleScope,
       if (provider == CloudProvider.dropbox) 'token_access_type': 'offline',
     });
     final result = await FlutterWebAuth2.authenticate(
@@ -110,7 +124,7 @@ class CloudAuth {
     await _exchange({
       'grant_type': 'authorization_code',
       'code': code,
-      'redirect_uri': oauthRedirect,
+      'redirect_uri': _redirect,
       'code_verifier': verifier,
     });
   }
@@ -135,6 +149,10 @@ class CloudAuth {
     _expires = DateTime.now()
         .add(Duration(seconds: (json['expires_in'] as num? ?? 3600).toInt() - 60));
     final refresh = json['refresh_token'] as String?;
+    if (refresh == null && body['grant_type'] == 'authorization_code') {
+      throw SyncException('${provider.title} did not allow offline access. '
+          'Sign in again and allow PFI to keep its sync files.');
+    }
     if (refresh != null) await _storage.write(key: _refreshKey, value: refresh);
   }
 
@@ -151,6 +169,7 @@ class CloudAuth {
 
 SyncStore cloudStore(CloudProvider p, CloudAuth auth) => switch (p) {
       CloudProvider.onedrive => OneDriveStore(auth),
+      CloudProvider.gdrive => GoogleDriveStore(auth),
       CloudProvider.dropbox => DropboxStore(auth),
     };
 
@@ -349,5 +368,130 @@ class DropboxStore implements SyncStore {
           'autorename': false
         },
         data);
+  }
+}
+
+/// Google Drive's hidden app data folder (permission drive.appdata only).
+class GoogleDriveStore implements SyncStore {
+  GoogleDriveStore(this.auth);
+  final CloudAuth auth;
+  Map<String, String>? _files;
+  static final _name = RegExp(r'^([0-9a-f]{16})-(\d{8})\.pfisync$');
+  static const _api = 'https://www.googleapis.com/drive/v3';
+
+  @override
+  String get label => 'Google Drive › PFI app data';
+
+  Future<http.Response> _send(String method, Uri url,
+      {Map<String, String>? headers, List<int>? body}) async {
+    final req = http.Request(method, url)
+      ..headers['Authorization'] = 'Bearer ${await auth.token()}';
+    if (headers != null) req.headers.addAll(headers);
+    if (body != null) req.bodyBytes = body;
+    final r = await http.Response.fromStream(await req.send());
+    if (r.statusCode == 401) {
+      throw SyncException('Google Drive refused access. Sign in to Google '
+          'Drive again in Settings › Sync.');
+    }
+    if (r.statusCode >= 300) {
+      throw SyncException('Google Drive answered ${r.statusCode}. Check your '
+          'connection and try again.');
+    }
+    return r;
+  }
+
+  Future<Map<String, String>> _list() async {
+    if (_files != null) return _files!;
+    final files = <String, String>{};
+    String? page;
+    do {
+      final r = await _send(
+          'GET',
+          Uri.parse('$_api/files').replace(queryParameters: {
+            'spaces': 'appDataFolder',
+            'pageSize': '1000',
+            'fields': 'nextPageToken, files(id, name)',
+            if (page != null) 'pageToken': page,
+          }));
+      final j = jsonDecode(r.body) as Map<String, dynamic>;
+      for (final f in (j['files'] as List? ?? []).cast<Map<String, dynamic>>()) {
+        files.putIfAbsent(f['name'] as String, () => f['id'] as String);
+      }
+      page = j['nextPageToken'] as String?;
+    } while (page != null);
+    return _files = files;
+  }
+
+  Future<Uint8List?> _download(String name) async {
+    final id = (await _list())[name];
+    if (id == null) return null;
+    return (await _send('GET',
+            Uri.parse('$_api/files/$id').replace(queryParameters: {'alt': 'media'})))
+        .bodyBytes;
+  }
+
+  Future<void> _upload(String name, List<int> data, String mime) async {
+    final boundary = 'pfi${DateTime.now().microsecondsSinceEpoch}';
+    final meta = jsonEncode({
+      'name': name,
+      'parents': ['appDataFolder']
+    });
+    final body = <int>[
+      ...utf8.encode('--$boundary\r\nContent-Type: application/json; '
+          'charset=UTF-8\r\n\r\n$meta\r\n--$boundary\r\n'
+          'Content-Type: $mime\r\n\r\n'),
+      ...data,
+      ...utf8.encode('\r\n--$boundary--'),
+    ];
+    final r = await _send(
+        'POST',
+        Uri.parse('https://www.googleapis.com/upload/drive/v3/files')
+            .replace(queryParameters: {'uploadType': 'multipart', 'fields': 'id'}),
+        headers: {'Content-Type': 'multipart/related; boundary=$boundary'},
+        body: body);
+    (await _list())[name] = (jsonDecode(r.body) as Map<String, dynamic>)['id'] as String;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> readManifest() async {
+    final raw = await _download(manifestName);
+    return raw == null ? null : jsonDecode(utf8.decode(raw)) as Map<String, dynamic>;
+  }
+
+  @override
+  Future<void> writeManifest(Map<String, dynamic> manifest) => _upload(manifestName,
+      utf8.encode(const JsonEncoder.withIndent(' ').convert(manifest)), 'application/json');
+
+  @override
+  Future<List<String>> devices() async => {
+        for (final n in (await _list()).keys)
+          if (_name.firstMatch(n) case final m?) m[1]!
+      }.toList()
+        ..sort();
+
+  @override
+  Future<List<int>> numbers(String device) async => [
+        for (final n in (await _list()).keys)
+          if (_name.firstMatch(n) case final m? when m[1] == device) int.parse(m[2]!)
+      ]..sort();
+
+  @override
+  Future<Uint8List> read(String device, int number) async {
+    final name = '$device-${fileName(number)}';
+    final raw = await _download(name);
+    if (raw == null) {
+      throw SyncException('$name is missing in Google Drive. Try syncing again.');
+    }
+    return raw;
+  }
+
+  @override
+  Future<void> write(String device, int number, Uint8List data) async {
+    final name = '$device-${fileName(number)}';
+    if ((await _list()).containsKey(name)) {
+      throw SyncException('$name already exists in Google Drive. Set up sync '
+          'again on this phone.');
+    }
+    await _upload(name, data, 'application/octet-stream');
   }
 }
