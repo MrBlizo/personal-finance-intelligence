@@ -1,13 +1,15 @@
 # Personal Finance Intelligence
 
-**The offline budget app for Windows:** budgets, bank statement import, debt
-payoff plans and investments in one native app, with no account and no cloud.
+**The offline budget app for Windows, with an Android app that stays in
+sync:** budgets, bank statement import, debt payoff plans and investments,
+with no account and no PFI server.
 [Website and guides](https://mrblizo.github.io/personal-finance-intelligence/)
 
 A Windows desktop app to track income, expenses, investments and savings
 goals, forecast cash flow and analyse spending. Everything runs and stays on
-your PC: the data lives in one local SQLite file, there is no account and no
-cloud.
+your devices: the data lives in one local SQLite file, there is no account
+and no PFI server. The optional Android app syncs through a folder in your
+own OneDrive, encrypted with your passphrase.
 
 **English · Français · العربية**, base currency of your choice (CHF, EUR,
 MAD, USD…) with accounts in any currency.
@@ -18,6 +20,11 @@ MAD, USD…) with accounts in any currency.
 
 Free on the Microsoft Store for Windows 10 (2004) and Windows 11, x64; or
 build it yourself (see [Build](#build)).
+
+**Android:** download `PFI-<version>.apk` from the
+[latest release](https://github.com/MrBlizo/personal-finance-intelligence/releases/latest)
+and allow installing it when Android asks. Then set up sync in Settings ›
+Sync on the PC and on the phone, with the same OneDrive and passphrase.
 
 ## Screenshots
 

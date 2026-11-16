@@ -1,8 +1,9 @@
 # Privacy policy
 
-*Personal Finance Intelligence (PFI) · last updated 10 November 2026*
+*Personal Finance Intelligence (PFI) · last updated 16 November 2026*
 
-PFI is a desktop app that keeps your financial data on your own computer.
+PFI is a desktop app (with an optional Android app) that keeps your
+financial data on your own devices.
 
 ## What PFI stores
 
@@ -18,6 +19,29 @@ account. When you choose a OneDrive folder, OneDrive (not PFI) uploads those
 backup files under Microsoft's terms. Nothing is sent to the developer or to any server operated by the
 developer. There is no account, no analytics, no advertising and no
 telemetry.
+
+## Sync between your PC and your phone (optional)
+
+If you turn on sync (Settings › Sync), PFI writes your changes as files into
+a folder in your own cloud drive (OneDrive), and reads the files your other
+devices wrote there. Every file is encrypted on the device with AES-256-GCM,
+using a key derived from a passphrase only you know; the cloud provider
+stores the encrypted files under its own terms and cannot read them. The
+passphrase is not stored; the derived key is kept on each device (protected
+by Windows on the PC, by the Android keystore on the phone). Receipt files
+are not synced.
+
+On the phone, PFI asks you to sign in to OneDrive with your Microsoft
+account and the permission "Files.ReadWrite", which it uses only for the
+sync folder (`Apps/PFI Sync`). The sign-in is handled by Microsoft; PFI
+keeps only the access token it receives, in the Android keystore. Stop
+syncing removes the key and the sign-in from that device.
+
+## The Android app
+
+The phone app stores your data in a private database on the phone. It uses
+the network only for the sync described above. It has no account, no
+analytics, no advertising and no telemetry.
 
 ## Network requests
 
