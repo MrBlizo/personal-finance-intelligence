@@ -11,8 +11,8 @@ LOCK_MODES = ("off", "hello")
 THEMES = ("system", "light", "dark")
 BUDGET_MODES = ("limits", "envelope")
 #: The cards of the home page, in their default order.
-HOME_CARDS = ("net_worth", "this_month", "budgets", "upcoming", "cash_flow",
-              "spending", "accounts", "goals", "review")
+HOME_CARDS = ("review", "cash_flow", "spending", "budgets", "net_worth",
+              "upcoming", "insights", "accounts", "goals")
 
 DEFAULTS: dict[str, str] = {
     "fx_auto_update": "1",

@@ -5,6 +5,7 @@ import { Button, Input, Tab, TabList } from "@fluentui/react-components";
 import {
   ArrowDownload20Regular, DocumentPdf20Regular, Table20Regular,
 } from "@fluentui/react-icons";
+import { BalanceReport, FlowReport, PayeeReport } from "@/components/FlowReports";
 import Plot from "@/components/Plot";
 import { catLabel } from "@/components/refs";
 import { Banner, Empty, Kpi, PageHead, Section, Spinner, StatusBadge, useLoad } from "@/components/ui";
@@ -59,7 +60,13 @@ export default function Reports() {
         <Tab value="monthly">{t("Monthly report")}</Tab>
         <Tab value="networth">{t("Net worth over time")}</Tab>
         <Tab value="tags">{t("By tag")}</Tab>
+        <Tab value="flow">{t("Money flow")}</Tab>
+        <Tab value="balances">{t("Balances & age of money")}</Tab>
+        <Tab value="payees">{t("By payee")}</Tab>
       </TabList>
+      {tab === "flow" && <FlowReport />}
+      {tab === "balances" && <BalanceReport />}
+      {tab === "payees" && <PayeeReport />}
 
       {tab === "monthly" && (
         <>

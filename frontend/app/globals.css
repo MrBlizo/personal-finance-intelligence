@@ -405,3 +405,7 @@ td.editing .fui-Input, td.editing .fui-Select { width: 100%; min-width: 90px; }
 .search-help code { background: var(--tint); padding: 1px 6px; border-radius: 6px; }
 .review-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent); margin-inline-end: 6px; vertical-align: 1px; }
+.cell-button { background: none; border: 0; padding: 4px 6px; margin: -4px -6px;
+  font: inherit; color: inherit; cursor: pointer; border-radius: 10px;
+  text-align: start; max-width: 100%; }
+.cell-button:hover { background: var(--tint-strong); }

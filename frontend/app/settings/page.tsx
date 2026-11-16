@@ -11,7 +11,9 @@ import {
 import { usePrefs } from "@/components/AppFrame";
 import { BackupPanel } from "@/components/BackupPanel";
 import { OldDataRow } from "@/components/OldDataRow";
-import { ThemePref, useTheme } from "@/components/Theme";
+import { CategoryDialog } from "@/components/CategoryDialog";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { ACCENTS, ThemePref, useTheme } from "@/components/Theme";
 import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, PageHead, SettingRow, Spinner, useLoad,
@@ -274,8 +276,9 @@ export default function SettingsPage() {
               <div className="table-wrap" style={{ maxHeight: 420 }}>
                 <table><tbody>{cats.map((c) => (
                   <tr key={c.id}>
-                    <td><span className="dot" style={{ background: c.color ?? "var(--text-3)" }} />
-                      {catLabel(c.full_name, t)}</td>
+                    <td><span className="cat-cell" style={{ paddingInlineStart: c.parent_id ? 20 : 0 }}>
+                      <CategoryIcon name={c.name} icon={c.icon} color={c.color} size={26} />
+                      <span>{catLabel(c.full_name, t)}</span></span></td>
                     <td><Badge appearance="tint" color={c.kind === "income" ? "success" : "informative"}>
                       {t(c.kind === "income" ? "Income" : "Expense")}</Badge></td>
                     <td className="actions">
@@ -387,29 +390,8 @@ export default function SettingsPage() {
             await post("/api/fx-rates", { ...v, rate: String(v.rate) });
             rates.reload(); missing.reload(); refs.reload();
           }} />)}
-      {catModal && (() => {
-        const c = catModal === "new" ? null : catModal;
-        return (
-          <FormModal title={c ? t("Edit {name}", { name: catLabel(c.name, t) }) : t("Add category")}
-            onClose={() => setCatModal(null)}
-            initial={c ? { name: c.name, kind: c.kind, parent_id: c.parent_id, color: c.color ?? "#0072B2" }
-              : { name: "", kind: "expense", parent_id: "", color: "#0072B2" }}
-            fields={[
-              { name: "name", label: t("Name"), required: true },
-              { name: "kind", label: t("Kind"), type: "select", required: true,
-                options: [{ value: "expense", label: t("Expense") }, { value: "income", label: t("Income") }] },
-              { name: "parent_id", label: t("Parent (optional)"), type: "select",
-                options: cats.filter((x) => !x.parent_id && x.id !== c?.id)
-                  .map((x) => ({ value: x.id, label: `${t(x.name)} (${t(x.kind === "income" ? "Income" : "Expense")})` })) },
-              { name: "color", label: t("Colour"), type: "text", placeholder: "#0072B2" },
-            ]}
-            onSubmit={async (v) => {
-              const body = { name: v.name, kind: v.kind, parent_id: v.parent_id ? Number(v.parent_id) : null,
-                color: v.color || null };
-              if (c) await put(`/api/categories/${c.id}`, body); else await post("/api/categories", body);
-              refs.reload();
-            }} />);
-      })()}
+      {catModal && <CategoryDialog category={catModal === "new" ? null : catModal} all={cats}
+        onClose={() => setCatModal(null)} onSaved={() => refs.reload()} />}
       {ruleModal && (() => {
         const r = ruleModal === "new" ? null : ruleModal;
         return (

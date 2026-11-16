@@ -7,6 +7,7 @@ import {
 import { ArrowUpload20Regular, DocumentTable20Regular } from "@fluentui/react-icons";
 import { accountOptions, useRefs } from "@/components/refs";
 import { Banner, Confirm, Empty, PageHead, Section, Spinner, useLoad } from "@/components/ui";
+import { YnabImport } from "@/components/YnabImport";
 import {
   ImportBatch, ImportCheck, ImportPreview, ImportResult, PossibleDuplicate, api, del, get,
 } from "@/lib/api";
@@ -305,6 +306,9 @@ export default function Import() {
         text={t("Remove the {n} transactions imported from “{f}”? The archived original file is kept.",
           { n: undo.rows_imported, f: undo.filename })}
         onYes={async () => { await del(`/api/import/batches/${undo.id}`); batches.reload(); }} />}
+      <div style={{ marginTop: 16 }}>
+        <YnabImport baseCurrency={refs.data?.settings.base_currency ?? "CHF"} />
+      </div>
     </>
   );
 }

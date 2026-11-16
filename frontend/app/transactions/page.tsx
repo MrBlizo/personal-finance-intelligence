@@ -1,15 +1,18 @@
 "use client";
 import { useEffect, useState } from "react";
 import {
-  Badge, Button, Checkbox, Input, Select, Tooltip,
+  Badge, Button, Checkbox, Input, Select, Tab, TabList, Tooltip,
 } from "@fluentui/react-components";
 import {
   Add20Regular, ArrowDownload20Regular, ArrowSwap20Regular, Attach16Regular,
-  CheckmarkCircle16Regular, Delete20Regular, Edit20Regular, LockClosed16Regular,
+  Checkmark20Regular, CheckmarkCircle16Regular, Delete20Regular, Edit20Regular,
+  LockClosed16Regular,
   MoreHorizontal20Regular, Search20Regular,
   Sparkle20Regular,
 } from "@fluentui/react-icons";
 import { BulkBar } from "@/components/BulkBar";
+import { AmountCell, CategoryCell, SearchHelp, TextCell } from "@/components/InlineEdit";
+import { openQuickAdd } from "@/components/QuickAdd";
 import { TxnDetails } from "@/components/TxnDetails";
 import { accountOptions, catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
@@ -17,6 +20,7 @@ import {
   useLoad,
 } from "@/components/ui";
 import { Suggestion, TagInfo, Txn, del, downloadUrl, get, patch, post } from "@/lib/api";
+import { evalAmount } from "@/lib/calc";
 import { date, money, pct, signClass, today } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 
@@ -79,27 +83,37 @@ export default function Transactions() {
   const refs = useRefs();
   const [f, setF] = useState<Record<string, string>>({
     q: "", account_id: "", category_id: "", kind: "", start: "", end: "",
-    uncategorized: "", tag: "",
+    uncategorized: "", tag: "", reviewed: "",
   });
   const [offset, setOffset] = useState(0);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const acc = q.get("account");
-    if (acc || q.get("uncategorized") || q.get("tag") || q.get("start") || q.get("end")) {
+    if (acc || q.get("uncategorized") || q.get("tag") || q.get("start") || q.get("end")
+      || q.get("review") || q.get("q")) {
       setF((old) => ({ ...old, account_id: acc ?? "",
         uncategorized: q.get("uncategorized") ? "true" : "", tag: q.get("tag") ?? "",
-        start: q.get("start") ?? "", end: q.get("end") ?? "" }));
+        start: q.get("start") ?? "", end: q.get("end") ?? "",
+        reviewed: q.get("review") ? "false" : "", q: q.get("q") ?? "" }));
     }
   }, []);
-  const list = useLoad(() => get<{ total: number; items: Txn[] }>(
+  const list = useLoad(() => get<{ total: number; items: Txn[]; problems: string[] }>(
     "/api/transactions", { ...f, limit: PAGE, offset }),
   [JSON.stringify(f), offset]);
+  const waiting = useLoad(() => get<{ count: number }>("/api/review/count"), [list.data]);
+  useEffect(() => {
+    const again = () => list.reload();
+    window.addEventListener("pfi:transactions-changed", again);
+    return () => window.removeEventListener("pfi:transactions-changed", again);
+  }, [list]);
   const [sel, setSel] = useState<Set<number>>(new Set());
   const [modal, setModal] = useState<null | "add" | "transfer" | "suggest" | Txn>(null);
   const [confirm, setConfirm] = useState<Txn | null>(null);
   const [details, setDetails] = useState<Txn | null>(null);
   const tagList = useLoad(() => get<TagInfo[]>("/api/tags"), [details]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const alertError = (m: string) => setErr(m);
 
   const accounts = refs.data?.accounts ?? [];
   const cats = refs.data?.categories ?? [];
@@ -107,6 +121,12 @@ export default function Transactions() {
     setF({ ...f, [k]: v }); setOffset(0); setSel(new Set());
   };
   const reload = () => { list.reload(); refs.reload(); setSel(new Set()); };
+  const approve = async (ids: number[]) => {
+    const r = await post<{ approved: number }>("/api/review/approve", { ids });
+    setMsg(t("{n} transactions approved.", { n: r.approved }));
+    reload();
+  };
+  const reviewing = f.reviewed === "false";
   const items = list.data?.items ?? [];
   const base = refs.data?.settings.base_currency ?? "CHF";
 
@@ -122,15 +142,30 @@ export default function Transactions() {
           {t("Export CSV")}</Button>
         <Button icon={<ArrowSwap20Regular />} onClick={() => setModal("transfer")}>
           {t("Transfer")}</Button>
-        <Button appearance="primary" icon={<Add20Regular />} onClick={() => setModal("add")}>
-          {t("Add transaction")}</Button>
+        <Tooltip content={t("Ctrl+N from any page")} relationship="description">
+          <Button appearance="primary" icon={<Add20Regular />} onClick={openQuickAdd}>
+            {t("Add transaction")}</Button></Tooltip>
       </PageHead>
+      <TabList selectedValue={reviewing ? "review" : "all"} style={{ marginBottom: 8 }}
+        onTabSelect={(_, d) => setFilter("reviewed", d.value === "review" ? "false" : "")}>
+        <Tab value="all">{t("All")}</Tab>
+        <Tab value="review">{t("To review")}{waiting.data?.count
+          ? ` (${waiting.data.count})` : ""}</Tab>
+      </TabList>
+      {reviewing && !!waiting.data?.count && (
+        <Banner kind="info" title={t("{n} new transactions to review", { n: waiting.data.count })}
+          action={<Button appearance="primary" icon={<Checkmark20Regular />}
+            onClick={() => approve(sel.size ? [...sel] : [])}>
+            {sel.size ? t("Approve {n} selected", { n: sel.size }) : t("Approve all")}</Button>}>
+          {t("Imported and automatically posted transactions wait here until you check their category and amount.")}
+        </Banner>)}
       {msg && <Banner kind="success" onClose={() => setMsg(null)}>{msg}</Banner>}
+      {err && <Banner kind="error" onClose={() => setErr(null)}>{err}</Banner>}
       {list.error && <Banner kind="error">{list.error}</Banner>}
       <div className="filters">
-        <Input contentBefore={<Search20Regular />} style={{ minWidth: 260 }}
-          placeholder={t("Search description, payee, notes…")} value={f.q}
-          onChange={(_, d) => setFilter("q", d.value)} />
+        <Input contentBefore={<Search20Regular />} style={{ minWidth: 300 }}
+          placeholder={t("Search, or try payee:coop amount:>20")} value={f.q}
+          onChange={(_, d) => setFilter("q", d.value)} contentAfter={<SearchHelp />} />
         <Select value={f.account_id} onChange={(_, d) => setFilter("account_id", d.value)}>
           <option value="">{t("All accounts")}</option>
           {accountOptions(accounts).map((o) =>
@@ -159,6 +194,7 @@ export default function Transactions() {
         <Checkbox label={t("Uncategorised only")} checked={f.uncategorized === "true"}
           onChange={(_, d) => setFilter("uncategorized", d.checked ? "true" : "")} />
       </div>
+      {list.data?.problems?.map((p) => <Banner key={p} kind="warning">{p}</Banner>)}
       {sel.size > 0 && (
         <BulkBar ids={[...sel]} onClear={() => setSel(new Set())}
           onDone={(m) => { setMsg(m); reload(); }} />)}
@@ -182,29 +218,40 @@ export default function Transactions() {
                     const s = new Set(sel); if (d.checked) s.add(x.id); else s.delete(x.id); setSel(s);
                   }} /></td>
                   <td>{date(x.txn_date)}</td>
-                  <td><span className="cell-main">{x.description || "—"}
+                  <td><TextCell value={x.description} label={t("Double-click to edit the description")}
+                    onSave={async (v) => {
+                      try { await patch(`/api/transactions/${x.id}`, { description: v }); list.reload(); }
+                      catch (e) { alertError((e as Error).message); }
+                    }}>
+                    <span className="cell-main">{!x.reviewed && <span className="review-dot"
+                      title={t("Waiting for review")} />}{x.description || "—"}
                     {x.attachments > 0 && <Tooltip content={t("{n} receipts", { n: x.attachments })} relationship="label">
                       <Attach16Regular style={{ marginInlineStart: 4, verticalAlign: "middle" }} /></Tooltip>}</span>
                     {x.merchant && <span className="cell-sub">{x.merchant}</span>}
-                    {x.tags.length > 0 && <span>{x.tags.map((g) => <span key={g} className="tag-chip">{g}</span>)}</span>}</td>
+                    {x.tags.length > 0 && <span>{x.tags.map((g) => <span key={g} className="tag-chip">{g}</span>)}</span>}
+                  </TextCell></td>
                   <td>{x.kind === "transfer"
                     ? <Badge appearance="tint" color="informative">{t("Transfer")}</Badge>
                     : x.splits.length ? <span title={x.splits.map((p) =>
                         `${catLabel(p.category_name, t) || t("Uncategorised")}: ${money(p.amount, x.currency)}`).join("\n")}>
                         <Badge appearance="tint" color="brand">{t("Split")}</Badge>
                         <span className="cell-sub">{x.splits.map((p) => catLabel(p.category_name, t) || t("Uncategorised")).join(", ")}</span></span>
-                    : x.category_name ? catLabel(x.category_name, t)
-                    : <Badge appearance="tint" color="warning">{t("Uncategorised")}</Badge>}</td>
+                    : <CategoryCell x={x} cats={cats} onSaved={() => list.reload()}
+                      onError={alertError} />}</td>
                   <td>{x.account_name}</td>
                   <td className={`num ${signClass(x.amount)}`}>
+                    <AmountCell x={x} onSaved={() => list.reload()} onError={alertError}>
                     {x.reconciled ? <Tooltip content={t("Reconciled with a bank statement")} relationship="label">
                       <LockClosed16Regular className="txn-flag" /></Tooltip>
                       : x.cleared && <Tooltip content={t("Seen on the bank statement")} relationship="label">
                         <CheckmarkCircle16Regular className="txn-flag" /></Tooltip>}
-                    {money(x.amount, x.currency)}</td>
+                    {money(x.amount, x.currency)}</AmountCell></td>
                   <td className="num muted">{x.currency === base ? "" : money(x.amount_base)}</td>
                   <td className="actions">
                     {x.trade_id ? <span className="caption">{t("trade")}</span> : <>
+                      {!x.reviewed && <Tooltip content={t("Approve")} relationship="label">
+                        <Button appearance="subtle" size="small" icon={<Checkmark20Regular />}
+                          onClick={() => approve([x.id])} /></Tooltip>}
                       <Tooltip content={t("Edit")} relationship="label">
                         <Button appearance="subtle" size="small" icon={<Edit20Regular />}
                           onClick={() => setModal(x)} /></Tooltip>
@@ -265,9 +312,9 @@ export default function Transactions() {
                   { value: "income", label: t("Income (money in)") },
                   { value: "refund", label: t("Refund (money back on an expense)") }] },
               { name: "txn_date", label: t("Date"), type: "date", required: true, hidden: locked },
-              { name: "amount", label: t("Amount"), type: "number", step: "0.01",
+              { name: "amount", label: t("Amount"),
                 required: true, hidden: isTransfer || isSplit || locked, placeholder: "910.00",
-                help: t("Always positive; the type decides the direction.") },
+                help: t("Always positive; the type decides the direction. Sums like 12.50+3 work.") },
               { name: "category_id", label: t("Category"), type: "select",
                 options: categoryOptions(cats, catKind(v.type), t), hidden: isTransfer || isSplit },
               { name: "description", label: t("Description"), full: true },
@@ -276,7 +323,7 @@ export default function Transactions() {
             ]}
             onSubmit={async (v: Values) => {
               const body = clean(v, ["account_id", "category_id"]);
-              const size = Math.abs(Number(body.amount));
+              const size = Math.abs(evalAmount(String(body.amount ?? "")) ?? NaN);
               if (!isTransfer && !(size > 0)) throw new Error(t("Enter an amount above 0."));
               const signed = String(v.type === "expense" ? -size : size);
               const kind = v.type === "income" ? "income" : "expense";

@@ -62,8 +62,8 @@ class SettingsOut(BaseModel):
 
 
 class HomeCard(BaseModel):
-    id: Literal["net_worth", "this_month", "budgets", "upcoming",
-                "cash_flow", "spending", "accounts", "goals", "review"]
+    id: Literal["review", "cash_flow", "spending", "budgets", "net_worth",
+                "upcoming", "insights", "accounts", "goals"]
     hidden: bool = False
 
 

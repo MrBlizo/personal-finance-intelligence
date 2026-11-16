@@ -29,8 +29,8 @@ export interface Settings {
   accent_color: string | null;
   home_layout: HomeCard[];
 }
-export type HomeCardId = "net_worth" | "this_month" | "budgets" | "upcoming"
-  | "cash_flow" | "spending" | "accounts" | "goals" | "review";
+export type HomeCardId = "review" | "cash_flow" | "spending" | "budgets"
+  | "net_worth" | "upcoming" | "insights" | "accounts" | "goals";
 export interface HomeCard { id: HomeCardId; hidden: boolean }
 export interface Backup {
   name: string; kind: string; size: number; created: string;

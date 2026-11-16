@@ -12,6 +12,7 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
+import { QuickAddHotkey } from "./QuickAdd";
 import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
 
@@ -23,6 +24,7 @@ export const NAV = [
   { href: "/budgets/", label: "Budgets", glyph: "" },
   { href: "/goals/", label: "Goals", glyph: "" },
   { href: "/debts/", label: "Debt payoff", glyph: "\uE8C7" },
+  { href: "/ious/", label: "Lent & borrowed", glyph: "\uE716" },
   { href: "/recurring/", label: "Bills & recurring", glyph: "" },
   { href: "/investments/", label: "Investments", glyph: "" },
   { href: "/forecast/", label: "Forecast", glyph: "" },
@@ -121,6 +123,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
           </div>
           <DownloadToasts />
           <RatePrompt />
+          <QuickAddHotkey />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>
