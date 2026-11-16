@@ -123,7 +123,7 @@ export function Envelopes({ lang }: { lang: string }) {
               <div className="caption">
                 {ready > 0 ? t("Give this money a job: type amounts in the Assigned column.")
                   : ready < 0 ? t("You assigned more than you have. Take money back from a category.")
-                    : t("Every franc has a job.")}
+                    : t("All your money has a job.")}
                 {v.assigned_in_future > 0 && " " + t("{a} is assigned in later months.",
                   { a: money(v.assigned_in_future, cur) })}
               </div>

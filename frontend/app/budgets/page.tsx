@@ -28,7 +28,7 @@ export default function BudgetsPage() {
   return (
     <>
       <PageHead title={t("Budgets")} sub={mode === "envelope"
-        ? t("Give every franc a job: assign money to categories and spend from them.")
+        ? t("Give all your money a job: assign it to categories and spend from them.")
         : t("Monthly limits per expense category")}>
         <TabList selectedValue={mode ?? "limits"} onTabSelect={(_, d) =>
           choose(d.value as "limits" | "envelope")}>
