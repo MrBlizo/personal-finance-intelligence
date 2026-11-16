@@ -34,7 +34,7 @@ are not synced.
 On the phone, PFI asks you to sign in to OneDrive with your Microsoft
 account and the permission "Files.ReadWrite", which it uses only for the
 sync folder (`Apps/PFI Sync`). The sign-in is handled by Microsoft; PFI
-keeps only the access token it receives, in the Android keystore. Stop
+keeps only the sign-in tokens it receives, in the Android keystore. Stop
 syncing removes the key and the sign-in from that device.
 
 ## The Android app
