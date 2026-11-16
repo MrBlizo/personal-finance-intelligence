@@ -33,15 +33,17 @@ Shown with the built-in demo data (Settings → Load demo data).
 | | |
 |---|---|
 | ![Home: net worth, income vs. expenses and spending breakdown](packaging/store-screenshots/1-home.png) | ![Transactions with categories and filters](packaging/store-screenshots/2-transactions.png) |
-| **Home:** net worth, income vs. expenses, where the money goes | **Transactions:** categories, filters, CSV export |
+| **Home:** net worth with quick actions, income vs. expenses, net worth | **Transactions:** categories, filters, CSV export |
+| ![Envelope budget with groups, progress bars and the month panel](packaging/store-screenshots/11-budget.png) | ![Budget in dark mode with a category selected](packaging/store-screenshots/10-dark-mode.png) |
+| **Budget:** envelopes with groups, filters, targets and quick assign | **Dark mode:** light, dark or follow Windows |
 | ![Investments: money- and time-weighted returns](packaging/store-screenshots/3-investments.png) | ![Bills and recurring items](packaging/store-screenshots/4-bills.png) |
 | **Investments:** money- (XIRR) and time-weighted returns | **Bills & recurring:** due dates and reminders |
 | ![Cash-flow forecast with 50 % and 90 % ranges](packaging/store-screenshots/5-forecast.png) | ![Reports and exports](packaging/store-screenshots/6-reports.png) |
 | **Forecast:** Monte Carlo with 50 % and 90 % ranges | **Reports:** PDF, Excel and CSV |
 | ![Debt payoff planner comparing strategies](packaging/store-screenshots/7-debt-payoff.png) | ![Spending calendar heatmap and year in review](packaging/store-screenshots/8-calendar.png) |
 | **Debt payoff:** highest interest first, smallest balance first, minimums only | **Spending calendar:** daily heatmap and year in review |
-| ![Editing many transactions at once](packaging/store-screenshots/9-bulk-edit.png) | ![PFI in dark mode](packaging/store-screenshots/10-dark-mode.png) |
-| **Bulk edit:** category, account, tags or delete for many rows | **Dark mode:** light, dark or follow Windows |
+| ![Editing many transactions at once](packaging/store-screenshots/9-bulk-edit.png) | |
+| **Bulk edit:** category, account, tags or delete for many rows | |
 
 ## Features
 
