@@ -94,6 +94,12 @@ def _v06_envelopes_sync(conn: Connection) -> None:
             f"updated_at = coalesce(updated_at, {_NOW})"))
 
 
+def _v07_sync_state(conn: Connection) -> None:
+    for model in (models.SyncState, models.SyncSeen, models.SyncAlias,
+                  models.SyncPending):
+        model.__table__.create(conn, checkfirst=True)
+
+
 def ensure_sync_triggers(conn: Connection) -> None:
     """Create the uid index and the sync triggers of every synced table.
 
@@ -136,6 +142,7 @@ MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (5, "reconciliation and debt terms", _v05_reconcile_debts),
     (6, "envelope budgets, IOUs, review queue and sync ids",
      _v06_envelopes_sync),
+    (7, "sync with the phone app", _v07_sync_state),
 ]
 
 
