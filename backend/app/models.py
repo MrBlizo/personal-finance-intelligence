@@ -556,6 +556,41 @@ class SyncTombstone(Base):
     deleted_at: Mapped[str] = mapped_column(String(32))
 
 
+class SyncState(Base):
+    """Local sync bookkeeping (device id, folder, applied file numbers)."""
+
+    __tablename__ = "sync_state"
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    value: Mapped[str] = mapped_column(Text)
+
+
+class SyncSeen(Base):
+    """The last version of a synced row this device sent or applied."""
+
+    __tablename__ = "sync_seen"
+    table_name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    uid: Mapped[str] = mapped_column(String(32), primary_key=True)
+    u: Mapped[str] = mapped_column(String(48))
+
+
+class SyncAlias(Base):
+    """Another device's uid for a row that was merged into a local row."""
+
+    __tablename__ = "sync_aliases"
+    table_name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    alias_uid: Mapped[str] = mapped_column(String(32), primary_key=True)
+    uid: Mapped[str] = mapped_column(String(32))
+
+
+class SyncPending(Base):
+    """A received change whose parent row has not arrived yet."""
+
+    __tablename__ = "sync_pending"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    payload: Mapped[str] = mapped_column(Text)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+
+
 #: Tables whose rows carry ``uid``/``updated_at`` and are merged by sync.
 SYNCED_TABLES: tuple[str, ...] = tuple(
     m.__tablename__ for m in Base.__subclasses__()

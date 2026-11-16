@@ -1,0 +1,120 @@
+name: Phone app
+
+on:
+  push:
+    paths:
+      - "mobile/**"
+      - "backend/app/**"
+      - "backend/tools/**"
+      - ".github/workflows/mobile.yml"
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "backend/app/**"
+      - "backend/tools/**"
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Phone app (analyze, sync round trip with the PC, APK)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: backend/environment.yml
+          cache-environment: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: SQLite for the tests
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libsqlite3-dev
+      - name: Platform folders
+        working-directory: mobile
+        run: |
+          flutter --version
+          flutter create --org io.github.mrblizo --project-name pfi --platforms android,ios .
+          rm -f test/widget_test.dart
+          # Android lint crashes on some third-party plugin sources
+          # (url_launcher_android); our own code is checked by flutter analyze.
+          if ! grep -q "lintVital" android/build.gradle.kts; then
+            printf '\nsubprojects {\n    tasks.matching { it.name.startsWith("lintVital") }.configureEach { enabled = false }\n}\n' >> android/build.gradle.kts
+          fi
+      - name: Dependencies
+        working-directory: mobile
+        run: flutter pub get
+      - name: Analyze
+        working-directory: mobile
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: PC writes a sync folder (demo data)
+        run: python backend/tools/sync_fixture.py make "$RUNNER_TEMP/fx"
+      - name: Tests (phone reads the PC's folder and writes back)
+        working-directory: mobile
+        env:
+          PFI_SYNC_FIXTURE: ${{ runner.temp }}/fx
+        run: flutter test
+      - name: PC reads the phone's changes
+        run: python backend/tools/sync_fixture.py verify "$RUNNER_TEMP/fx"
+      - name: Build APK
+        working-directory: mobile
+        run: >
+          flutter build apk --release
+          --build-number=${{ github.run_number }}
+          --dart-define=DROPBOX_APP_KEY=${{ vars.DROPBOX_APP_KEY }}
+      - name: Sign with the PFI key
+        working-directory: mobile
+        env:
+          KEYSTORE_BASE64: ${{ secrets.PFI_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.PFI_KEYSTORE_PASSWORD }}
+          # Public fingerprint of the PFI signing key (see mobile/README.md).
+          EXPECTED_SHA256: b257cd102bc46317d828437efb52a2a90a30444e8a9d3c27c9ef08b633016f37
+        run: |
+          version=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+          out="build/PFI-$version.apk"
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::PFI_KEYSTORE_BASE64 is not set; the APK keeps the temporary debug signature."
+            cp build/app/outputs/flutter-apk/app-release.apk "$out"
+          else
+            tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/pfi.jks"
+            "$tools/apksigner" sign --ks "$RUNNER_TEMP/pfi.jks" --ks-key-alias pfi \
+              --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD \
+              --out "$out" build/app/outputs/flutter-apk/app-release.apk
+            rm -f "$RUNNER_TEMP/pfi.jks"
+            got=$("$tools/apksigner" verify --print-certs "$out" | grep -m1 'SHA-256 digest' | awk '{print $NF}')
+            if [ "$got" != "$EXPECTED_SHA256" ]; then
+              echo "::error::The APK was signed with an unexpected key ($got)."; exit 1
+            fi
+          fi
+          sha256sum "$out"
+          echo "APK=mobile/$out" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pfi-android-apk
+          path: ${{ env.APK }}
+      - name: Attach the APK to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "$APK" --clobber
+      - name: Platform folders as generated
+        if: always()
+        run: tar czf "$RUNNER_TEMP/platforms.tgz" --exclude=build --exclude=.gradle -C mobile android ios .metadata 2>/dev/null || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: platform-folders
+          path: ${{ runner.temp }}/platforms.tgz

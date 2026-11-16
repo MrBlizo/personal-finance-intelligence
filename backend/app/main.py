@@ -4,6 +4,7 @@ import logging
 import mimetypes
 import re
 import threading
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -21,6 +22,7 @@ from .routers import analytics, automation, core, extras, investments
 from .routers import planning, system, tools
 from .routers import budgeting, reports
 from .routers import transactions
+from .routers import sync as sync_router
 from .security import TokenMiddleware
 from .seed import seed_defaults
 from .services.automation import post_due
@@ -107,6 +109,28 @@ def background_tasks(data_dir: Path, db_path: Path) -> None:
         log.warning("Automatic price update skipped: %s", exc)
 
 
+SYNC_EVERY_SECONDS = 300
+
+
+def sync_loop(data_dir: Path) -> None:
+    """Sync with the other devices every few minutes while PFI runs."""
+    from .services import sync
+    time.sleep(20)
+    while True:
+        try:
+            with SessionLocal() as db:
+                if sync.status(db, data_dir).enabled:
+                    result = sync.run(db, data_dir)
+                    if result.sent or result.received:
+                        log.info("Sync: sent %d, received %d changes",
+                                 result.sent, result.received)
+        except sync.SyncError as exc:
+            log.warning("Sync skipped: %s", exc)
+        except Exception:
+            log.exception("Sync failed")
+        time.sleep(SYNC_EVERY_SECONDS)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
@@ -125,6 +149,8 @@ async def lifespan(app: FastAPI):
     if settings.background_tasks:
         threading.Thread(target=background_tasks,
                          args=(settings.data_dir, db_path),
+                         daemon=True).start()
+        threading.Thread(target=sync_loop, args=(settings.data_dir,),
                          daemon=True).start()
     try:
         yield
@@ -176,7 +202,8 @@ def create_app() -> FastAPI:
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
     for module in (system, core, transactions, extras, tools, planning,
-                   investments, analytics, automation, reports, budgeting):
+                   investments, analytics, automation, reports, budgeting,
+                   sync_router):
         app.include_router(module.router)
     if settings.frontend_dist.is_dir():
         app.mount("/", UiFiles(directory=settings.frontend_dist,

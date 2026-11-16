@@ -1,0 +1,36 @@
+name: pfi
+description: Personal Finance Intelligence for Android and iOS, in sync with PFI on Windows.
+publish_to: "none"
+version: 0.7.0+1
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cryptography: ^2.7.0
+  cryptography_flutter: ^2.3.2
+  flutter_secure_storage: ^9.2.2
+  flutter_web_auth_2: ^4.0.0
+  http: ^1.2.2
+  intl: any
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  provider: ^6.1.2
+  shared_preferences: ^2.3.2
+  sqlite3: ^2.4.6
+  sqlite3_flutter_libs: ^0.5.24
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/db/schema.sql
+    - assets/db/schema.json

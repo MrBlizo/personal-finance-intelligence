@@ -78,7 +78,7 @@ def test_migration_from_v05_fills_uids(tmp_path):
         for version, name, _ in MIGRATIONS[:5]:
             conn.execute(text("INSERT INTO schema_version (version, name) "
                               "VALUES (:v, :n)"), {"v": version, "n": name})
-    assert run_migrations(engine) == 6
+    assert run_migrations(engine) == MIGRATIONS[-1][0]
     with engine.begin() as conn:
         uid = conn.scalar(text("SELECT uid FROM accounts"))
         assert uid and len(uid) == 32
