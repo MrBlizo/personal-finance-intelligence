@@ -217,8 +217,15 @@ if (-not $ok) {
 }
 $results = @()
 try {
-    $demo = Invoke-RestMethod "$base/api/demo" -Method Post -Headers $h
-    $results += "demo: $($demo.transactions) transactions"
+    # Sample data for the checks below (the smoke-test data folder is thrown away).
+    $acc = Invoke-RestMethod "$base/api/accounts" -Method Post -Headers $h -ContentType "application/json" `
+        -Body '{"name":"Smoke test","type":"checking","currency":"USD","opening_balance":"1000","opening_date":"2026-01-01"}'
+    $day = (Get-Date).AddDays(-3).ToString("yyyy-MM-dd")
+    foreach ($tx in @(@{a = "2500"; d = "Salary"}, @{a = "-42.50"; d = "Groceries"})) {
+        $body = @{ account_id = $acc.id; txn_date = $day; amount = $tx.a; description = $tx.d } | ConvertTo-Json -Compress
+        Invoke-RestMethod "$base/api/transactions" -Method Post -Headers $h -ContentType "application/json" -Body $body | Out-Null
+    }
+    $results += "sample data: account $($acc.id), 2 transactions"
     $dash = Invoke-RestMethod "$base/api/analytics/dashboard" -Headers $h
     $results += "dashboard: net worth $([math]::Round($dash.summary.net_worth, 2)) $($dash.summary.currency)"
     $fc = Invoke-RestMethod "$base/api/forecast" -Headers $h
