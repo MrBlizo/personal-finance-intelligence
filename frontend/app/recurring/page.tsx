@@ -31,7 +31,7 @@ export default function RecurringPage() {
   const active = (rec.data ?? []).filter((r) => r.is_active);
   const monthly = (sign: number) => active.filter((r) => Math.sign(r.amount) === sign)
     .reduce((s, r) => s + Math.abs(r.amount) * PER_MONTH[r.frequency], 0);
-  const base = refs.data?.settings.base_currency ?? "CHF";
+  const base = refs.data?.settings.base_currency ?? "USD";
 
   return (
     <>

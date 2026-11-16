@@ -15,7 +15,7 @@ export default function ForecastPage() {
   const fc = useLoad(() => get<Forecast>("/api/forecast", { horizon_days: horizon, threshold }),
     [horizon, threshold]);
   const f = fc.data;
-  const cur = f?.base_currency ?? "CHF";
+  const cur = f?.base_currency ?? "USD";
 
   return (
     <>

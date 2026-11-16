@@ -61,7 +61,7 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-  String currency = 'CHF';
+  String currency = 'USD';
 
   @override
   Widget build(BuildContext context) {

@@ -76,7 +76,7 @@ export default function Investments() {
   const [msg, setMsg] = useState<{ kind: "success" | "info" | "warning" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const reload = () => { holdings.reload(); perf.reload(); alloc.reload(); refs.reload(); };
-  const base = refs.data?.settings.base_currency ?? "CHF";
+  const base = refs.data?.settings.base_currency ?? "USD";
   const invAccounts = accountOptions(refs.data?.accounts ?? [], (a) => a.type === "investment");
   const hs = holdings.data ?? [];
   const sum = (k: keyof Holding) => hs.reduce((s, h) => s + ((h[k] as number | null) ?? 0), 0);

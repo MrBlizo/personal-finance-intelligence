@@ -17,7 +17,7 @@ ZERO = Decimal("0")
 
 def base_currency(db: Session) -> str:
     """Return the reporting currency stored in settings."""
-    return get_setting(db, "base_currency", "CHF")
+    return get_setting(db, "base_currency", "USD")
 
 
 def account_balances(db: Session, as_of: date | None = None

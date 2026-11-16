@@ -47,7 +47,7 @@ export default function Debts() {
   const plan = useLoad(() => post<DebtPlan>("/api/debts/plan", { extra: extraNum.toFixed(2) }),
     [extraNum, debts.data]);
   const p = plan.data;
-  const cur = debts.data?.currency ?? "CHF";
+  const cur = debts.data?.currency ?? "USD";
   const owing = (debts.data?.debts ?? []).filter((d) => d.owed > 0);
   const missingTerms = owing.filter((d) => !d.has_terms);
   const figure = useMemo<PlotFigure | null>(() => {

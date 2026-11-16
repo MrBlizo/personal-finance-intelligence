@@ -67,7 +67,7 @@ export const FREQUENCIES: Record<string, string> = {
   weekly: "Weekly", biweekly: "Every 2 weeks", monthly: "Monthly",
   quarterly: "Quarterly", yearly: "Yearly",
 };
-export const CURRENCIES = ["CHF", "EUR", "MAD", "USD", "GBP", "JPY", "CAD",
+export const CURRENCIES = ["USD", "EUR", "GBP", "CHF", "MAD", "JPY", "CAD",
   "SEK", "NOK", "DKK", "PLN", "CZK", "AUD", "CNY", "TRY", "AED", "SAR"];
 
 /** File size for people: "820 KB", "1.4 MB", "1.2 GB". */

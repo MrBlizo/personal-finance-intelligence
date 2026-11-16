@@ -406,7 +406,7 @@ export default function SettingsPage() {
       {rateModal && (
         <FormModal title={t("Add exchange rate")} onClose={() => setRateModal(false)}
           initial={{ rate_date: today(), from_currency: missing.data?.missing[0] ?? "EUR",
-            to_currency: s?.base_currency ?? "CHF", rate: "" }}
+            to_currency: s?.base_currency ?? "USD", rate: "" }}
           fields={[
             { name: "rate_date", label: t("Valid from"), type: "date", required: true },
             { name: "rate", label: t("Rate"), type: "number", step: "any", required: true,

@@ -109,7 +109,7 @@ export default function Home() {
   const [seeding, setSeeding] = useState(false);
   const [restoreError, setRestoreError] = useState<string | null>(null);
   const s = dash.data?.summary;
-  const cur = s?.currency ?? "CHF";
+  const cur = s?.currency ?? "USD";
   const empty = s && s.transactions === 0 && s.net_worth === 0;
 
   const renderCard = (id: HomeCardId): ReactNode => {

@@ -75,7 +75,7 @@ export default function Goals() {
             initial={g ? { name: g.name, target_amount: g.target_amount, currency: g.currency,
               target_date: g.target_date, account_id: g.account_id, saved_amount: g.manual_saved_amount,
               priority: g.priority, notes: g.notes }
-              : { name: "", target_amount: "", currency: refs.data?.settings.base_currency ?? "CHF",
+              : { name: "", target_amount: "", currency: refs.data?.settings.base_currency ?? "USD",
                 target_date: "", account_id: "", saved_amount: "0", priority: 0, notes: "" }}
             fields={[
               { name: "name", label: t("Name"), required: true, full: true },

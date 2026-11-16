@@ -52,35 +52,36 @@ def seed_demo(db: Session, months: int = 14, seed: int = 7,
     rnd = random.Random(seed)
     today = today or date.today()
     start = add_months(today.replace(day=1), -months)
-    for d, rate in ((start, "0.94"), (today, "0.93")):
+    # Direct rates both ways, so the demo also adds up in a CHF or EUR base.
+    for d, rate in ((start, "1.08"), (today, "1.10")):
         db.add(ExchangeRate(rate_date=d, from_currency="EUR",
-                            to_currency="CHF", rate=Decimal(rate),
+                            to_currency="USD", rate=Decimal(rate),
                             source="demo"))
-    db.add(ExchangeRate(rate_date=start, from_currency="CHF",
-                        to_currency="MAD", rate=Decimal("11.2"),
-                        source="demo"))
-    db.add(ExchangeRate(rate_date=start, from_currency="USD",
-                        to_currency="CHF", rate=Decimal("0.80"),
-                        source="demo"))
+    for frm, to, rate in (("USD", "MAD", "9.9"), ("USD", "CHF", "0.885"),
+                          ("CHF", "USD", "1.13"), ("EUR", "CHF", "0.94"),
+                          ("CHF", "MAD", "11.2"), ("USD", "EUR", "0.92")):
+        db.add(ExchangeRate(rate_date=start, from_currency=frm,
+                            to_currency=to, rate=Decimal(rate),
+                            source="demo"))
     acc = {
         "pay": Account(name="Demo Salary Account", type="checking",
-                       currency="CHF", opening_balance=Decimal("4200"),
+                       currency="USD", opening_balance=Decimal("4200"),
                        opening_date=start, is_demo=True,
                        institution="Demo Bank"),
         "save": Account(name="Demo Savings", type="savings",
-                        currency="CHF", opening_balance=Decimal("12000"),
+                        currency="USD", opening_balance=Decimal("12000"),
                         opening_date=start, is_demo=True),
         "card": Account(name="Demo Credit Card", type="credit_card",
-                        currency="CHF", opening_balance=Decimal("0"),
+                        currency="USD", opening_balance=Decimal("0"),
                         opening_date=start, is_demo=True),
         "eur": Account(name="Demo EUR Wallet", type="cash",
                        currency="EUR", opening_balance=Decimal("300"),
                        opening_date=start, is_demo=True),
         "inv": Account(name="Demo Broker", type="investment",
-                       currency="CHF", opening_balance=Decimal("5000"),
+                       currency="USD", opening_balance=Decimal("5000"),
                        opening_date=start, is_demo=True),
         "loan": Account(name="Demo Car Loan", type="loan",
-                        currency="CHF", opening_balance=Decimal("-14500"),
+                        currency="USD", opening_balance=Decimal("-14500"),
                         opening_date=start, is_demo=True),
     }
     db.add_all(acc.values())
@@ -109,11 +110,12 @@ def seed_demo(db: Session, months: int = 14, seed: int = 7,
                 account_id=acc[name].id, txn_date=day, amount=signed,
                 kind="transfer", description=text, transfer_group=group))
 
-    shops = {"Groceries": ["Migros", "Coop", "Aldi", "Lidl"],
+    shops = {"Groceries": ["Trader Joe's", "Whole Foods", "Safeway",
+                           "Aldi"],
              "Restaurants": ["Pizzeria Roma", "Sushi Bar", "Bistro"],
              "Coffee & Snacks": ["Café Central", "Bakery"],
-             "Public Transport": ["SBB", "Bernmobil"],
-             "Clothing": ["H&M", "Zalando"],
+             "Public Transport": ["Metro", "City Bus"],
+             "Clothing": ["H&M", "Uniqlo"],
              "Entertainment": ["Cinema", "Concert Hall"],
              "Pharmacy": ["Pharmacy"]}
     for m in range(months + 1):
@@ -164,9 +166,10 @@ def seed_demo(db: Session, months: int = 14, seed: int = 7,
             xfer("pay", "card", last_day, round(card_spend, 2),
                  "Credit card payment")
     db.add_all(txns)
-    holdings = [("VWRL", "Vanguard FTSE All-World ETF", "etf", "CHF",
-                 95.0, 30), ("NESN", "Nestlé", "stock", "CHF", 92.0, 15),
-                ("CHBOND", "Swiss Bond Fund", "bond", "CHF", 100.0, 10)]
+    holdings = [("VT", "Vanguard Total World Stock ETF", "etf", "USD",
+                 105.0, 30), ("AAPL", "Apple", "stock", "USD", 190.0, 8),
+                ("BND", "Vanguard Total Bond Market ETF", "bond", "USD",
+                 72.0, 15)]
     for sym, name, cls, cur, price, qty in holdings:
         h = Holding(account_id=acc["inv"].id, symbol=sym, name=name,
                     asset_class=cls, currency=cur)
@@ -210,7 +213,7 @@ def seed_demo(db: Session, months: int = 14, seed: int = 7,
             db.add(Budget(category_id=cid, monthly_amount=Decimal(amount),
                           notes="demo"))
     db.add(SavingsGoal(name="Emergency fund (demo)",
-                       target_amount=Decimal("25000"), currency="CHF",
+                       target_amount=Decimal("25000"), currency="USD",
                        target_date=add_months(today, 18),
                        account_id=acc["save"].id, priority=2))
     db.add(SavingsGoal(name="Trip to Morocco (demo)",

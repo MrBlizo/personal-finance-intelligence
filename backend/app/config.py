@@ -39,6 +39,11 @@ class Settings(BaseSettings):
         The reporting currency used when the database is first created.
     background_tasks : bool
         The flag for the weekly backup and daily rate update at start-up.
+    google_client_id : str
+        The OAuth client id for Google Drive sync (overrides
+        ``google-oauth.json``).
+    google_client_secret : str
+        The OAuth client secret that goes with ``google_client_id``.
     """
 
     model_config = SettingsConfigDict(
@@ -49,8 +54,10 @@ class Settings(BaseSettings):
     frontend_dist: Path = PROJECT_DIR / "frontend" / "out"
     api_token: str = ""
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
-    base_currency_default: str = "CHF"
+    base_currency_default: str = "USD"
     background_tasks: bool = True
+    google_client_id: str = ""
+    google_client_secret: str = ""
 
     @property
     def sqlite_path(self) -> Path:

@@ -128,7 +128,7 @@ export default function Transactions() {
   };
   const reviewing = f.reviewed === "false";
   const items = list.data?.items ?? [];
-  const base = refs.data?.settings.base_currency ?? "CHF";
+  const base = refs.data?.settings.base_currency ?? "USD";
 
   return (
     <>

@@ -11,8 +11,8 @@ your devices: the data lives in one local SQLite file, there is no account
 and no PFI server. The optional Android app syncs through a folder in your
 own OneDrive, encrypted with your passphrase.
 
-**English · Français · العربية**, base currency of your choice (CHF, EUR,
-MAD, USD…) with accounts in any currency.
+**English · Français · العربية**, base currency of your choice (USD, EUR,
+GBP, CHF, MAD…) with accounts in any currency.
 
 <a href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">
   <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200" alt="Get it from Microsoft">
