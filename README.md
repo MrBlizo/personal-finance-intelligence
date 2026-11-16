@@ -42,7 +42,11 @@ Shown with the built-in demo data (Settings → Load demo data).
   loans; transfers between accounts (also across currencies); import of
   CSV, OFX/QFX, QIF and CAMT.053 statements with column presets,
   side-by-side review of possible duplicates and undo; bulk edit (category,
-  account, tags, delete) of many transactions at once.
+  account, tags, delete) of many transactions at once. Quick add (Ctrl+N)
+  remembers payees and accepts sums such as `12.50+3`; category, payee and
+  amount can be edited directly in the list; search filters such as
+  `payee:migros amount:>50 before:2026-06-01 is:unreviewed`; imported and
+  automatic transactions wait in a review queue.
 - **Reconcile:** tick the transactions on your bank statement until the
   difference is zero; reconciled transactions are locked (and can be
   unlocked by undoing the latest reconciliation).
@@ -52,11 +56,17 @@ Shown with the built-in demo data (Settings → Load demo data).
   category" baseline; the accuracy is shown in Settings).
 - **Bills & recurring:** salary, rent and subscriptions can post themselves on
   the due date, and Windows notifications remind you before they are due.
-- **Budgets & goals:** monthly limits per category with projection; savings
-  goals linked to accounts.
+- **Budgets & goals:** choose between monthly limits per category with
+  projection, or envelope budgeting (give all your money a job, move money
+  between categories, carry-over, monthly/weekly/yearly or by-date targets,
+  quick assign); weekly, monthly, yearly or custom period budgets across
+  several categories; savings goals linked to accounts.
+- **Lent & borrowed:** money you lent to or borrowed from friends, with
+  partial repayments and due dates.
 - **Debt payoff:** interest rate and minimum payment per loan or card;
   avalanche, snowball and minimum-only plans with payoff dates and total
-  interest for any extra monthly amount.
+  interest for any extra monthly amount. Month-by-month schedule per loan, and the
+  payment needed to be debt-free by a chosen date.
 - **Investments:** average-cost positions, end-of-day prices from Twelve Data
   (US listings) or Alpha Vantage (worldwide) with your free key, stooq,
   CoinGecko (crypto), or entered manually; money-weighted (XIRR) and
@@ -74,12 +84,16 @@ Shown with the built-in demo data (Settings → Load demo data).
   review (savings rate, no-spend days, biggest expense, top categories,
   change against the year before).
 - **Reports:** monthly PDF report, Excel workbook, CSV export, net-worth
-  history.
+  history, money-flow (Sankey) diagram, balance history per account, age of
+  money and spending by payee.
+- **Import from YNAB:** reads a YNAB export (zip or CSV) with transfers,
+  splits and budget assignments, with a dry run first.
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
   a password (AES-256); one-click "Move to another PC".
 - **Look:** light, dark or the same as Windows, switchable in every page
-  header.
+  header; eleven accent colours; icons and colours per category; a Home page
+  whose cards you can reorder or hide.
 
 ## Architecture
 
@@ -114,8 +128,8 @@ Double-click **`build.bat`**. It runs the backend tests, builds the screens,
 packages the backend, builds `PFI.exe`, smoke-tests the packaged app and
 creates:
 
-- `dist\PFI-Setup-0.5.1.exe`: installer for direct download;
-- `dist\PFI-0.5.1.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.6.0.exe`: installer for direct download;
+- `dist\PFI-0.6.0.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:

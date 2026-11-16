@@ -39,25 +39,43 @@ full-trust desktop model."
 (removable in Settings). First start takes a few seconds while the private
 database is created."
 
-## What's new in 0.5.1 (paste into "What's new in this version")
+## What's new in 0.6 (paste into "What's new in this version")
 
 **English**
 
-Version 0.5.1
-• Test a backup: Settings › Backups › Test opens a backup in a temporary folder and compares every account balance, the number of transactions, the receipts and a random sample of transactions with your current data. Nothing is restored.
-• After two weeks of use, PFI asks once whether you would like to rate it in the Microsoft Store.
+Version 0.6
+• Envelope budgeting: give all your money a job, move money between categories, set targets and see what is still Ready to Assign. Monthly limits still work as before.
+• Weekly, monthly, yearly or custom period budgets, alone or across several categories.
+• Quick add (Ctrl+N) with payee memory and sums such as 12.50+3; edit category, payee and amount directly in the list.
+• Search with filters such as payee:migros amount:>50 is:unreviewed.
+• A review queue for imported and automatic transactions.
+• Lent & borrowed: track money between you and friends, with partial repayments.
+• Loan payoff schedules, money-flow diagram, balance history, age of money and spending by payee.
+• Import from YNAB, category icons, accent colours and a customisable Home page.
 
 **Français**
 
-Version 0.5.1
-• Tester une sauvegarde : Paramètres › Sauvegardes › Tester ouvre une sauvegarde dans un dossier temporaire et compare chaque solde, le nombre de transactions, les justificatifs et un échantillon de transactions avec vos données actuelles. Rien n'est restauré.
-• Après deux semaines d'utilisation, PFI vous demande une seule fois si vous souhaitez le noter dans le Microsoft Store.
+Version 0.6
+• Budget par enveloppes : attribuez chaque montant à une catégorie, déplacez de l'argent entre catégories, fixez des objectifs et voyez ce qui reste à attribuer. Les limites mensuelles fonctionnent comme avant.
+• Budgets hebdomadaires, mensuels, annuels ou sur une période libre, pour une ou plusieurs catégories.
+• Ajout rapide (Ctrl+N) qui retient les bénéficiaires et accepte des sommes comme 12.50+3 ; modifiez catégorie, bénéficiaire et montant directement dans la liste.
+• Recherche avec filtres, par exemple payee:migros amount:>50 is:unreviewed.
+• Une file de vérification pour les transactions importées ou automatiques.
+• Prêts entre proches : suivez l'argent prêté ou emprunté, avec remboursements partiels.
+• Échéanciers de prêts, diagramme des flux, historique des soldes, âge de l'argent et dépenses par bénéficiaire.
+• Import depuis YNAB, icônes de catégories, couleurs d'accent et page d'accueil personnalisable.
 
 **العربية**
 
-الإصدار 0.5.1
-• اختبار نسخة احتياطية: الإعدادات › النسخ الاحتياطية › اختبار يفتح النسخة في مجلد مؤقت ويقارن كل رصيد وعدد المعاملات والإيصالات وعيّنة من المعاملات ببياناتك الحالية، دون استعادة أي شيء.
-• بعد أسبوعين من الاستخدام، يسألك PFI مرة واحدة إن كنت ترغب في تقييمه في متجر Microsoft.
+الإصدار 0.6
+• ميزانية الأظرف: خصّص كل مبلغ لفئة، وانقل المال بين الفئات، وحدّد أهدافًا، واعرف ما بقي جاهزًا للتخصيص. الحدود الشهرية تعمل كما كانت.
+• ميزانيات أسبوعية أو شهرية أو سنوية أو لفترة مخصّصة، لفئة واحدة أو عدة فئات.
+• إضافة سريعة (Ctrl+N) تتذكّر الجهات وتقبل عمليات جمع مثل 12.50+3، وتعديل الفئة والجهة والمبلغ مباشرة في القائمة.
+• بحث بمرشّحات مثل payee:migros amount:>50 is:unreviewed.
+• قائمة مراجعة للمعاملات المستوردة والتلقائية.
+• المُقرَض والمُقترَض: تتبّع المال بينك وبين أصدقائك مع التسديدات الجزئية.
+• جداول سداد القروض، ومخطط تدفّق المال، وتاريخ الأرصدة، وعمر المال، والإنفاق حسب الجهة.
+• الاستيراد من YNAB، وأيقونات الفئات، وألوان التمييز، وصفحة رئيسية قابلة للتخصيص.
 
 ## 3. Store listing: English
 

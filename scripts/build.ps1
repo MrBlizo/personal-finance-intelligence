@@ -22,7 +22,7 @@ param(
     [switch]$SkipInstaller,
     [switch]$SkipMsix,
     [switch]$DebugBuild,
-    [string]$Version = "0.5.1"
+    [string]$Version = "0.6.0"
 )
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
