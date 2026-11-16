@@ -1,0 +1,908 @@
+{
+ "bool": {
+  "accounts": [
+   "is_archived",
+   "is_demo"
+  ],
+  "asset_prices": [],
+  "budget_assignments": [],
+  "budget_targets": [],
+  "budgets": [],
+  "categories": [],
+  "category_rules": [
+   "is_regex"
+  ],
+  "debt_terms": [],
+  "exchange_rates": [],
+  "holdings": [],
+  "investment_trades": [],
+  "iou_payments": [],
+  "ious": [],
+  "period_budget_categories": [],
+  "period_budgets": [],
+  "reconciliations": [],
+  "recurring_items": [
+   "is_active",
+   "auto_post"
+  ],
+  "savings_goals": [],
+  "tags": [],
+  "transaction_splits": [],
+  "transaction_tags": [],
+  "transactions": [
+   "cleared",
+   "reviewed"
+  ]
+ },
+ "columns": {
+  "accounts": [
+   "id",
+   "name",
+   "type",
+   "currency",
+   "institution",
+   "opening_balance",
+   "opening_date",
+   "is_archived",
+   "is_demo",
+   "notes",
+   "created_at",
+   "uid",
+   "updated_at"
+  ],
+  "asset_prices": [
+   "id",
+   "holding_id",
+   "price_date",
+   "price",
+   "source",
+   "uid",
+   "updated_at"
+  ],
+  "budget_assignments": [
+   "id",
+   "category_id",
+   "month",
+   "amount",
+   "uid",
+   "updated_at"
+  ],
+  "budget_targets": [
+   "category_id",
+   "kind",
+   "amount",
+   "due_date",
+   "uid",
+   "updated_at"
+  ],
+  "budgets": [
+   "id",
+   "category_id",
+   "monthly_amount",
+   "notes",
+   "uid",
+   "updated_at"
+  ],
+  "categories": [
+   "id",
+   "name",
+   "kind",
+   "parent_id",
+   "color",
+   "icon",
+   "uid",
+   "updated_at"
+  ],
+  "category_rules": [
+   "id",
+   "pattern",
+   "match_field",
+   "is_regex",
+   "category_id",
+   "priority",
+   "uid",
+   "updated_at"
+  ],
+  "debt_terms": [
+   "account_id",
+   "apr",
+   "min_payment",
+   "uid",
+   "updated_at"
+  ],
+  "exchange_rates": [
+   "id",
+   "rate_date",
+   "from_currency",
+   "to_currency",
+   "rate",
+   "source",
+   "uid",
+   "updated_at"
+  ],
+  "holdings": [
+   "id",
+   "account_id",
+   "symbol",
+   "name",
+   "asset_class",
+   "currency",
+   "notes",
+   "price_source",
+   "price_symbol",
+   "uid",
+   "updated_at"
+  ],
+  "investment_trades": [
+   "id",
+   "holding_id",
+   "trade_date",
+   "trade_type",
+   "quantity",
+   "price",
+   "fees",
+   "cash_amount",
+   "notes",
+   "uid",
+   "updated_at"
+  ],
+  "iou_payments": [
+   "id",
+   "iou_id",
+   "paid_on",
+   "amount",
+   "note",
+   "uid",
+   "updated_at"
+  ],
+  "ious": [
+   "id",
+   "person",
+   "direction",
+   "amount",
+   "currency",
+   "iou_date",
+   "due_date",
+   "note",
+   "settled_on",
+   "uid",
+   "updated_at"
+  ],
+  "period_budget_categories": [
+   "period_budget_id",
+   "category_id",
+   "uid",
+   "updated_at"
+  ],
+  "period_budgets": [
+   "id",
+   "name",
+   "amount",
+   "period",
+   "start_date",
+   "end_date",
+   "tag_id",
+   "notes",
+   "uid",
+   "updated_at"
+  ],
+  "reconciliations": [
+   "id",
+   "account_id",
+   "statement_date",
+   "statement_balance",
+   "transactions",
+   "created_at",
+   "uid",
+   "updated_at"
+  ],
+  "recurring_items": [
+   "id",
+   "name",
+   "account_id",
+   "category_id",
+   "amount",
+   "frequency",
+   "start_date",
+   "end_date",
+   "is_active",
+   "auto_post",
+   "remind_days",
+   "last_posted",
+   "uid",
+   "updated_at"
+  ],
+  "savings_goals": [
+   "id",
+   "name",
+   "target_amount",
+   "currency",
+   "target_date",
+   "account_id",
+   "saved_amount",
+   "priority",
+   "notes",
+   "created_at",
+   "uid",
+   "updated_at"
+  ],
+  "tags": [
+   "id",
+   "name",
+   "created_at",
+   "uid",
+   "updated_at"
+  ],
+  "transaction_splits": [
+   "id",
+   "transaction_id",
+   "category_id",
+   "amount",
+   "note",
+   "uid",
+   "updated_at"
+  ],
+  "transaction_tags": [
+   "transaction_id",
+   "tag_id",
+   "uid",
+   "updated_at"
+  ],
+  "transactions": [
+   "id",
+   "account_id",
+   "txn_date",
+   "amount",
+   "kind",
+   "description",
+   "merchant",
+   "category_id",
+   "transfer_group",
+   "import_batch_id",
+   "trade_id",
+   "fingerprint",
+   "recurring_id",
+   "category_source",
+   "notes",
+   "cleared",
+   "reconciliation_id",
+   "reviewed",
+   "created_at",
+   "updated_at",
+   "uid"
+  ]
+ },
+ "date": {
+  "accounts": [
+   "opening_date"
+  ],
+  "asset_prices": [
+   "price_date"
+  ],
+  "budget_assignments": [
+   "month"
+  ],
+  "budget_targets": [
+   "due_date"
+  ],
+  "budgets": [],
+  "categories": [],
+  "category_rules": [],
+  "debt_terms": [],
+  "exchange_rates": [
+   "rate_date"
+  ],
+  "holdings": [],
+  "investment_trades": [
+   "trade_date"
+  ],
+  "iou_payments": [
+   "paid_on"
+  ],
+  "ious": [
+   "iou_date",
+   "due_date",
+   "settled_on"
+  ],
+  "period_budget_categories": [],
+  "period_budgets": [
+   "start_date",
+   "end_date"
+  ],
+  "reconciliations": [
+   "statement_date"
+  ],
+  "recurring_items": [
+   "start_date",
+   "end_date",
+   "last_posted"
+  ],
+  "savings_goals": [
+   "target_date"
+  ],
+  "tags": [],
+  "transaction_splits": [],
+  "transaction_tags": [],
+  "transactions": [
+   "txn_date"
+  ]
+ },
+ "datetime": {
+  "accounts": [
+   "created_at",
+   "updated_at"
+  ],
+  "asset_prices": [
+   "updated_at"
+  ],
+  "budget_assignments": [
+   "updated_at"
+  ],
+  "budget_targets": [
+   "updated_at"
+  ],
+  "budgets": [
+   "updated_at"
+  ],
+  "categories": [
+   "updated_at"
+  ],
+  "category_rules": [
+   "updated_at"
+  ],
+  "debt_terms": [
+   "updated_at"
+  ],
+  "exchange_rates": [
+   "updated_at"
+  ],
+  "holdings": [
+   "updated_at"
+  ],
+  "investment_trades": [
+   "updated_at"
+  ],
+  "iou_payments": [
+   "updated_at"
+  ],
+  "ious": [
+   "updated_at"
+  ],
+  "period_budget_categories": [
+   "updated_at"
+  ],
+  "period_budgets": [
+   "updated_at"
+  ],
+  "reconciliations": [
+   "created_at",
+   "updated_at"
+  ],
+  "recurring_items": [
+   "updated_at"
+  ],
+  "savings_goals": [
+   "created_at",
+   "updated_at"
+  ],
+  "tags": [
+   "created_at",
+   "updated_at"
+  ],
+  "transaction_splits": [
+   "updated_at"
+  ],
+  "transaction_tags": [
+   "updated_at"
+  ],
+  "transactions": [
+   "created_at",
+   "updated_at"
+  ]
+ },
+ "defaults": {
+  "accounts": {
+   "is_archived": 0,
+   "is_demo": 0,
+   "opening_balance": 0
+  },
+  "asset_prices": {
+   "source": "manual"
+  },
+  "budget_assignments": {
+   "amount": 0
+  },
+  "budget_targets": {},
+  "budgets": {},
+  "categories": {},
+  "category_rules": {
+   "is_regex": 0,
+   "match_field": "any",
+   "priority": 0
+  },
+  "debt_terms": {
+   "apr": 0,
+   "min_payment": 0
+  },
+  "exchange_rates": {
+   "source": "manual"
+  },
+  "holdings": {
+   "price_source": "manual"
+  },
+  "investment_trades": {
+   "fees": 0,
+   "price": 0,
+   "quantity": 0
+  },
+  "iou_payments": {},
+  "ious": {},
+  "period_budget_categories": {},
+  "period_budgets": {},
+  "reconciliations": {
+   "transactions": 0
+  },
+  "recurring_items": {
+   "auto_post": 0,
+   "is_active": 1,
+   "remind_days": 3
+  },
+  "savings_goals": {
+   "priority": 0,
+   "saved_amount": 0
+  },
+  "tags": {},
+  "transaction_splits": {},
+  "transaction_tags": {},
+  "transactions": {
+   "cleared": 0,
+   "description": "",
+   "reviewed": 1
+  }
+ },
+ "fks": {
+  "accounts": {},
+  "asset_prices": {
+   "holding_id": [
+    "holdings",
+    "id"
+   ]
+  },
+  "budget_assignments": {
+   "category_id": [
+    "categories",
+    "id"
+   ]
+  },
+  "budget_targets": {
+   "category_id": [
+    "categories",
+    "id"
+   ]
+  },
+  "budgets": {
+   "category_id": [
+    "categories",
+    "id"
+   ]
+  },
+  "categories": {
+   "parent_id": [
+    "categories",
+    "id"
+   ]
+  },
+  "category_rules": {
+   "category_id": [
+    "categories",
+    "id"
+   ]
+  },
+  "debt_terms": {
+   "account_id": [
+    "accounts",
+    "id"
+   ]
+  },
+  "exchange_rates": {},
+  "holdings": {
+   "account_id": [
+    "accounts",
+    "id"
+   ]
+  },
+  "investment_trades": {
+   "holding_id": [
+    "holdings",
+    "id"
+   ]
+  },
+  "iou_payments": {
+   "iou_id": [
+    "ious",
+    "id"
+   ]
+  },
+  "ious": {},
+  "period_budget_categories": {
+   "category_id": [
+    "categories",
+    "id"
+   ],
+   "period_budget_id": [
+    "period_budgets",
+    "id"
+   ]
+  },
+  "period_budgets": {
+   "tag_id": [
+    "tags",
+    "id"
+   ]
+  },
+  "reconciliations": {
+   "account_id": [
+    "accounts",
+    "id"
+   ]
+  },
+  "recurring_items": {
+   "account_id": [
+    "accounts",
+    "id"
+   ],
+   "category_id": [
+    "categories",
+    "id"
+   ]
+  },
+  "savings_goals": {
+   "account_id": [
+    "accounts",
+    "id"
+   ]
+  },
+  "tags": {},
+  "transaction_splits": {
+   "category_id": [
+    "categories",
+    "id"
+   ],
+   "transaction_id": [
+    "transactions",
+    "id"
+   ]
+  },
+  "transaction_tags": {
+   "tag_id": [
+    "tags",
+    "id"
+   ],
+   "transaction_id": [
+    "transactions",
+    "id"
+   ]
+  },
+  "transactions": {
+   "account_id": [
+    "accounts",
+    "id"
+   ],
+   "category_id": [
+    "categories",
+    "id"
+   ],
+   "import_batch_id": null,
+   "reconciliation_id": [
+    "reconciliations",
+    "id"
+   ],
+   "recurring_id": [
+    "recurring_items",
+    "id"
+   ],
+   "trade_id": [
+    "investment_trades",
+    "id"
+   ]
+  }
+ },
+ "format": 1,
+ "has_id": {
+  "accounts": true,
+  "asset_prices": true,
+  "budget_assignments": true,
+  "budget_targets": false,
+  "budgets": true,
+  "categories": true,
+  "category_rules": true,
+  "debt_terms": false,
+  "exchange_rates": true,
+  "holdings": true,
+  "investment_trades": true,
+  "iou_payments": true,
+  "ious": true,
+  "period_budget_categories": false,
+  "period_budgets": true,
+  "reconciliations": true,
+  "recurring_items": true,
+  "savings_goals": true,
+  "tags": true,
+  "transaction_splits": true,
+  "transaction_tags": false,
+  "transactions": true
+ },
+ "money": {
+  "accounts": {
+   "opening_balance": 2
+  },
+  "asset_prices": {
+   "price": 6
+  },
+  "budget_assignments": {
+   "amount": 2
+  },
+  "budget_targets": {
+   "amount": 2
+  },
+  "budgets": {
+   "monthly_amount": 2
+  },
+  "categories": {},
+  "category_rules": {},
+  "debt_terms": {
+   "apr": 4,
+   "min_payment": 2
+  },
+  "exchange_rates": {
+   "rate": 8
+  },
+  "holdings": {},
+  "investment_trades": {
+   "cash_amount": 2,
+   "fees": 2,
+   "price": 6,
+   "quantity": 8
+  },
+  "iou_payments": {
+   "amount": 2
+  },
+  "ious": {
+   "amount": 2
+  },
+  "period_budget_categories": {},
+  "period_budgets": {
+   "amount": 2
+  },
+  "reconciliations": {
+   "statement_balance": 2
+  },
+  "recurring_items": {
+   "amount": 2
+  },
+  "savings_goals": {
+   "saved_amount": 2,
+   "target_amount": 2
+  },
+  "tags": {},
+  "transaction_splits": {
+   "amount": 2
+  },
+  "transaction_tags": {},
+  "transactions": {
+   "amount": 2
+  }
+ },
+ "required": {
+  "accounts": [
+   "name",
+   "type",
+   "currency",
+   "opening_date"
+  ],
+  "asset_prices": [
+   "holding_id",
+   "price_date",
+   "price"
+  ],
+  "budget_assignments": [
+   "category_id",
+   "month"
+  ],
+  "budget_targets": [
+   "kind",
+   "amount"
+  ],
+  "budgets": [
+   "category_id",
+   "monthly_amount"
+  ],
+  "categories": [
+   "name",
+   "kind"
+  ],
+  "category_rules": [
+   "pattern",
+   "category_id"
+  ],
+  "debt_terms": [],
+  "exchange_rates": [
+   "rate_date",
+   "from_currency",
+   "to_currency",
+   "rate"
+  ],
+  "holdings": [
+   "account_id",
+   "symbol",
+   "name",
+   "asset_class",
+   "currency"
+  ],
+  "investment_trades": [
+   "holding_id",
+   "trade_date",
+   "trade_type"
+  ],
+  "iou_payments": [
+   "iou_id",
+   "paid_on",
+   "amount"
+  ],
+  "ious": [
+   "person",
+   "direction",
+   "amount",
+   "currency",
+   "iou_date"
+  ],
+  "period_budget_categories": [],
+  "period_budgets": [
+   "name",
+   "amount",
+   "period",
+   "start_date"
+  ],
+  "reconciliations": [
+   "account_id",
+   "statement_date",
+   "statement_balance"
+  ],
+  "recurring_items": [
+   "name",
+   "account_id",
+   "amount",
+   "frequency",
+   "start_date"
+  ],
+  "savings_goals": [
+   "name",
+   "target_amount",
+   "currency"
+  ],
+  "tags": [
+   "name"
+  ],
+  "transaction_splits": [
+   "transaction_id",
+   "amount"
+  ],
+  "transaction_tags": [],
+  "transactions": [
+   "account_id",
+   "txn_date",
+   "amount",
+   "kind"
+  ]
+ },
+ "schema": 7,
+ "tables": [
+  "accounts",
+  "categories",
+  "exchange_rates",
+  "ious",
+  "tags",
+  "budget_assignments",
+  "budget_targets",
+  "budgets",
+  "category_rules",
+  "debt_terms",
+  "holdings",
+  "iou_payments",
+  "period_budgets",
+  "reconciliations",
+  "recurring_items",
+  "savings_goals",
+  "asset_prices",
+  "investment_trades",
+  "period_budget_categories",
+  "transactions",
+  "transaction_splits",
+  "transaction_tags"
+ ],
+ "unique": {
+  "accounts": [
+   [
+    "name"
+   ]
+  ],
+  "asset_prices": [
+   [
+    "holding_id",
+    "price_date"
+   ]
+  ],
+  "budget_assignments": [
+   [
+    "category_id",
+    "month"
+   ]
+  ],
+  "budget_targets": [
+   [
+    "category_id"
+   ]
+  ],
+  "budgets": [
+   [
+    "category_id"
+   ]
+  ],
+  "categories": [
+   [
+    "name",
+    "kind"
+   ]
+  ],
+  "category_rules": [],
+  "debt_terms": [
+   [
+    "account_id"
+   ]
+  ],
+  "exchange_rates": [
+   [
+    "rate_date",
+    "from_currency",
+    "to_currency"
+   ]
+  ],
+  "holdings": [
+   [
+    "account_id",
+    "symbol"
+   ]
+  ],
+  "investment_trades": [],
+  "iou_payments": [],
+  "ious": [],
+  "period_budget_categories": [
+   [
+    "period_budget_id",
+    "category_id"
+   ]
+  ],
+  "period_budgets": [],
+  "reconciliations": [],
+  "recurring_items": [],
+  "savings_goals": [],
+  "tags": [
+   [
+    "name"
+   ]
+  ],
+  "transaction_splits": [],
+  "transaction_tags": [
+   [
+    "transaction_id",
+    "tag_id"
+   ]
+  ],
+  "transactions": [
+   [
+    "account_id",
+    "fingerprint"
+   ]
+  ]
+ }
+}
