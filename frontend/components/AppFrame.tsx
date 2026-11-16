@@ -12,6 +12,7 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
+import { QuickAddHotkey } from "./QuickAdd";
 import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
 
@@ -23,6 +24,7 @@ export const NAV = [
   { href: "/budgets/", label: "Budgets", glyph: "" },
   { href: "/goals/", label: "Goals", glyph: "" },
   { href: "/debts/", label: "Debt payoff", glyph: "\uE8C7" },
+  { href: "/ious/", label: "Lent & borrowed", glyph: "\uE716" },
   { href: "/recurring/", label: "Bills & recurring", glyph: "" },
   { href: "/investments/", label: "Investments", glyph: "" },
   { href: "/forecast/", label: "Forecast", glyph: "" },
@@ -79,14 +81,23 @@ export default function AppFrame({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [lang, setLang] = useState<Lang | null>(null);
   const [theme, setTheme] = useState<ThemePref>("system");
+  const [accent, setAccent] = useState("");
   const changeTheme = (p: ThemePref) => {
     setTheme(p);
     put("/api/settings", { theme: p }).catch(() => {});
   };
+  const changeAccent = (hex: string) => {
+    setAccent(hex);
+    put("/api/settings", { accent_color: hex }).catch(() => {});
+  };
   useEffect(() => {
     if (inShell()) document.documentElement.dataset.shell = "1";
     get<Settings>("/api/settings")
-      .then((s) => { setTheme(s.theme || "system"); setLang((s.language as Lang) || "en"); })
+      .then((s) => {
+        setTheme(s.theme || "system");
+        setAccent(s.accent_color || "");
+        setLang((s.language as Lang) || "en");
+      })
       .catch(() => setLang("en"));
     return onShellNavigate((p) => router.push(p));
   }, [router]);
@@ -104,13 +115,15 @@ export default function AppFrame({ children }: { children: ReactNode }) {
   return (
     <PrefsCtx.Provider value={{ lang, setLang }}>
       <I18nProvider lang={lang}>
-        <ThemeRoot dir={lang === "ar" ? "rtl" : "ltr"} pref={theme} onChange={changeTheme}>
+        <ThemeRoot dir={lang === "ar" ? "rtl" : "ltr"} pref={theme} onChange={changeTheme}
+          accent={accent} onAccent={changeAccent}>
           <div className="frame">
             <Sidebar path={path} />
             <main className="main">{children}</main>
           </div>
           <DownloadToasts />
           <RatePrompt />
+          <QuickAddHotkey />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>

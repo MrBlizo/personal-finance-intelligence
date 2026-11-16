@@ -70,6 +70,7 @@ def post_due(db: Session, today: date | None = None) -> list[int]:
                     amount=item.amount, kind=kind, description=item.name,
                     category_id=item.category_id, fingerprint=fp,
                     recurring_id=item.id, category_source="recurring",
+                    reviewed=False,
                     notes="Posted automatically from a recurring item.")
                 db.add(t)
                 db.flush()

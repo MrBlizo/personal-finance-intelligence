@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Badge, Button, Input, Tab, TabList, Tooltip } from "@fluentui/react-components";
-import { Edit20Regular } from "@fluentui/react-icons";
+import { CalendarLtr20Regular, Edit20Regular } from "@fluentui/react-icons";
+import { LoanScheduleDialog } from "@/components/LoanSchedule";
 import Plot from "@/components/Plot";
 import {
   Banner, Empty, FormModal, Kpi, PageHead, Section, Spinner, useLoad,
@@ -41,6 +42,7 @@ export default function Debts() {
   const [extra, setExtra] = useState("100");
   const [shown, setShown] = useState<StrategyId>("avalanche");
   const [edit, setEdit] = useState<DebtInfo["debts"][number] | null>(null);
+  const [schedule, setSchedule] = useState<DebtInfo["debts"][number] | null>(null);
   const extraNum = Math.max(Number(extra.replace(",", ".")) || 0, 0);
   const plan = useLoad(() => post<DebtPlan>("/api/debts/plan", { extra: extraNum.toFixed(2) }),
     [extraNum, debts.data]);
@@ -102,9 +104,13 @@ export default function Debts() {
                       <td className="num">{d.has_terms ? money(d.min_payment, d.currency) : "—"}</td>
                       <td>{d.owed > 0 && row ? <>{monthLabel(row.payoff_date, lang)}
                         <span className="cell-sub">{t("interest {v}", { v: money(row.interest, cur) })}</span></> : ""}</td>
-                      <td className="actions"><Tooltip content={t("Interest and minimum payment")} relationship="label">
-                        <Button appearance="subtle" size="small" icon={<Edit20Regular />} onClick={() => setEdit(d)} />
-                      </Tooltip></td>
+                      <td className="actions">
+                        {d.owed > 0 && <Tooltip content={t("Repayment schedule")} relationship="label">
+                          <Button appearance="subtle" size="small" icon={<CalendarLtr20Regular />}
+                            onClick={() => setSchedule(d)} /></Tooltip>}
+                        <Tooltip content={t("Interest and minimum payment")} relationship="label">
+                          <Button appearance="subtle" size="small" icon={<Edit20Regular />} onClick={() => setEdit(d)} />
+                        </Tooltip></td>
                     </tr>);
                 })}</tbody>
               </table>
@@ -142,6 +148,8 @@ export default function Debts() {
             </Section>)}
         </>)}
 
+      {schedule && <LoanScheduleDialog accountId={schedule.account_id} name={schedule.name}
+        onClose={() => setSchedule(null)} />}
       {edit && (
         <FormModal title={t("{name}: interest and minimum payment", { name: edit.name })} onClose={() => setEdit(null)}
           initial={{ apr: edit.has_terms ? edit.apr : "", min_payment: edit.has_terms ? edit.min_payment : "" }}

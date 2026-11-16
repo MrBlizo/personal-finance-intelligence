@@ -55,6 +55,9 @@
                 <NavigationViewItem Content="Debt payoff" Tag="/debts/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE8C7;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="Lent &amp; borrowed" Tag="/ious/">
+                    <NavigationViewItem.Icon><FontIcon Glyph="&#xE716;" /></NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Bills &amp; recurring" Tag="/recurring/">
                     <NavigationViewItem.Icon><FontIcon Glyph="&#xE8EE;" /></NavigationViewItem.Icon>
                 </NavigationViewItem>

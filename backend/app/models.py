@@ -30,6 +30,30 @@ PRICE_SOURCES = ("manual", "stooq", "twelvedata", "alphavantage",
                  "coingecko")
 CATEGORY_SOURCES = ("user", "rule", "model", "recurring", "system")
 MATCH_FIELDS = ("description", "merchant", "any")
+BUDGET_MODES = ("limits", "envelope")
+TARGET_KINDS = ("monthly", "weekly", "yearly", "by_date")
+BUDGET_PERIODS = ("weekly", "monthly", "custom")
+IOU_DIRECTIONS = ("lent", "borrowed")
+
+
+def new_uid() -> str:
+    """Return a random 32-character hex identifier for a synced row."""
+    return uuid.uuid4().hex
+
+
+class SyncMixin:
+    """Columns that let two copies of the database be merged later.
+
+    ``uid`` identifies a row across devices (integer ids differ per
+    device) and ``updated_at`` orders concurrent edits. SQLite triggers
+    (see ``migrations.ensure_sync_triggers``) fill both for rows written
+    outside the ORM and record deleted rows in ``sync_tombstones``.
+    """
+
+    uid: Mapped[str | None] = mapped_column(String(32), default=new_uid)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(),
+        onupdate=func.now())
 
 
 class ExactDecimal(TypeDecorator):
@@ -88,7 +112,7 @@ class SchemaVersion(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class ExchangeRate(Base):
+class ExchangeRate(SyncMixin, Base):
     """One unit of ``from_currency`` equals ``rate`` units of
     ``to_currency`` on ``rate_date``."""
 
@@ -105,7 +129,7 @@ class ExchangeRate(Base):
     source: Mapped[str] = mapped_column(String(50), default="manual")
 
 
-class Account(Base):
+class Account(SyncMixin, Base):
     __tablename__ = "accounts"
     __table_args__ = (CheckConstraint(_in("type", ACCOUNT_TYPES),
                                       name="ck_account_type"),)
@@ -123,7 +147,7 @@ class Account(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class Category(Base):
+class Category(SyncMixin, Base):
     __tablename__ = "categories"
     __table_args__ = (
         UniqueConstraint("name", "kind"),
@@ -135,6 +159,8 @@ class Category(Base):
     parent_id: Mapped[int | None] = mapped_column(
         ForeignKey("categories.id", ondelete="SET NULL"))
     color: Mapped[str | None] = mapped_column(String(9))
+    #: An icon name from the app's icon set, e.g. "cart".
+    icon: Mapped[str | None] = mapped_column(String(40))
     parent: Mapped["Category | None"] = relationship(remote_side=[id])
 
 
@@ -167,7 +193,7 @@ class ImportPreset(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class Holding(Base):
+class Holding(SyncMixin, Base):
     __tablename__ = "holdings"
     __table_args__ = (
         UniqueConstraint("account_id", "symbol"),
@@ -187,7 +213,7 @@ class Holding(Base):
     account: Mapped[Account] = relationship()
 
 
-class InvestmentTrade(Base):
+class InvestmentTrade(SyncMixin, Base):
     __tablename__ = "investment_trades"
     __table_args__ = (
         CheckConstraint(_in("trade_type", TRADE_TYPES), name="ck_trade"),
@@ -205,7 +231,7 @@ class InvestmentTrade(Base):
     notes: Mapped[str | None] = mapped_column(Text)
 
 
-class AssetPrice(Base):
+class AssetPrice(SyncMixin, Base):
     __tablename__ = "asset_prices"
     __table_args__ = (UniqueConstraint("holding_id", "price_date"),
                       CheckConstraint("price >= 0", name="ck_price"))
@@ -217,7 +243,7 @@ class AssetPrice(Base):
     source: Mapped[str] = mapped_column(String(50), default="manual")
 
 
-class Transaction(Base):
+class Transaction(SyncMixin, Base):
     __tablename__ = "transactions"
     __table_args__ = (
         UniqueConstraint("account_id", "fingerprint"),
@@ -253,6 +279,10 @@ class Transaction(Base):
                                           server_default="0")
     reconciliation_id: Mapped[int | None] = mapped_column(
         ForeignKey("reconciliations.id", ondelete="SET NULL"), index=True)
+    #: False for imported or automatically posted transactions until the
+    #: user approves them in the review queue.
+    reviewed: Mapped[bool] = mapped_column(Boolean, default=True,
+                                           server_default="1")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
@@ -267,7 +297,7 @@ class Transaction(Base):
         return self.reconciliation_id is not None
 
 
-class CategoryRule(Base):
+class CategoryRule(SyncMixin, Base):
     __tablename__ = "category_rules"
     __table_args__ = (CheckConstraint(_in("match_field", MATCH_FIELDS),
                                       name="ck_rule_field"),)
@@ -280,7 +310,7 @@ class CategoryRule(Base):
     priority: Mapped[int] = mapped_column(Integer, default=0)
 
 
-class RecurringItem(Base):
+class RecurringItem(SyncMixin, Base):
     __tablename__ = "recurring_items"
     __table_args__ = (
         CheckConstraint(_in("frequency", FREQUENCIES), name="ck_freq"),
@@ -302,7 +332,7 @@ class RecurringItem(Base):
     last_posted: Mapped[date | None] = mapped_column(Date)
 
 
-class Budget(Base):
+class Budget(SyncMixin, Base):
     """Monthly spending limit for an expense category, in base currency."""
 
     __tablename__ = "budgets"
@@ -316,7 +346,7 @@ class Budget(Base):
     category: Mapped[Category] = relationship()
 
 
-class SavingsGoal(Base):
+class SavingsGoal(SyncMixin, Base):
     __tablename__ = "savings_goals"
     __table_args__ = (CheckConstraint("target_amount > 0",
                                       name="ck_goal_pos"),)
@@ -334,7 +364,7 @@ class SavingsGoal(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class TransactionSplit(Base):
+class TransactionSplit(SyncMixin, Base):
     """One part of a transaction split across several categories.
 
     The parts of a transaction always add up to its amount; analytics use
@@ -352,7 +382,7 @@ class TransactionSplit(Base):
     note: Mapped[str | None] = mapped_column(String(200))
 
 
-class Tag(Base):
+class Tag(SyncMixin, Base):
     """A free label that cuts across categories, e.g. "Holiday 2026"."""
 
     __tablename__ = "tags"
@@ -362,7 +392,7 @@ class Tag(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class TransactionTag(Base):
+class TransactionTag(SyncMixin, Base):
     __tablename__ = "transaction_tags"
     transaction_id: Mapped[int] = mapped_column(
         ForeignKey("transactions.id", ondelete="CASCADE"), primary_key=True)
@@ -371,7 +401,7 @@ class TransactionTag(Base):
         index=True)
 
 
-class Attachment(Base):
+class Attachment(SyncMixin, Base):
     """A receipt or document stored in ``<data_dir>/attachments``."""
 
     __tablename__ = "attachments"
@@ -386,7 +416,7 @@ class Attachment(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class Reconciliation(Base):
+class Reconciliation(SyncMixin, Base):
     """A bank statement whose closing balance matched the account."""
 
     __tablename__ = "reconciliations"
@@ -400,7 +430,7 @@ class Reconciliation(Base):
         DateTime(timezone=True), server_default=func.now())
 
 
-class DebtTerms(Base):
+class DebtTerms(SyncMixin, Base):
     """Interest rate and minimum payment of a loan or credit-card account."""
 
     __tablename__ = "debt_terms"
@@ -413,3 +443,120 @@ class DebtTerms(Base):
     #: Annual interest rate in percent, e.g. 4.5.
     apr: Mapped[Decimal] = mapped_column(ExactDecimal(4), default=0)
     min_payment: Mapped[Decimal] = mapped_column(Money, default=0)
+
+
+class BudgetAssignment(SyncMixin, Base):
+    """Money given to a category for one month (envelope budgeting).
+
+    ``month`` is the first day of the month. The amount may be negative
+    when money was moved out of a category.
+    """
+
+    __tablename__ = "budget_assignments"
+    __table_args__ = (UniqueConstraint("category_id", "month"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), index=True)
+    month: Mapped[date] = mapped_column(Date, index=True)
+    amount: Mapped[Decimal] = mapped_column(Money, default=0)
+
+
+class BudgetTarget(SyncMixin, Base):
+    """How much a category needs: per week, month or year, or by a date."""
+
+    __tablename__ = "budget_targets"
+    __table_args__ = (
+        CheckConstraint(_in("kind", TARGET_KINDS), name="ck_target_kind"),
+        CheckConstraint("amount > 0", name="ck_target_pos"),
+    )
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(10))
+    amount: Mapped[Decimal] = mapped_column(Money)
+    #: Only for ``by_date``: the day the full amount is needed.
+    due_date: Mapped[date | None] = mapped_column(Date)
+
+
+class PeriodBudget(SyncMixin, Base):
+    """A spending limit for a week, a month or a custom date range.
+
+    Spending counts the chosen categories (all expense categories when none
+    are chosen), optionally only transactions carrying ``tag_id``.
+    """
+
+    __tablename__ = "period_budgets"
+    __table_args__ = (
+        CheckConstraint(_in("period", BUDGET_PERIODS), name="ck_pb_period"),
+        CheckConstraint("amount > 0", name="ck_pb_pos"),
+        CheckConstraint("period <> 'custom' OR end_date IS NOT NULL",
+                        name="ck_pb_custom_end"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    amount: Mapped[Decimal] = mapped_column(Money)
+    period: Mapped[str] = mapped_column(String(10))
+    #: The first day of the first period (weekly budgets restart on its
+    #: weekday, monthly ones on its day of the month).
+    start_date: Mapped[date] = mapped_column(Date)
+    end_date: Mapped[date | None] = mapped_column(Date)
+    tag_id: Mapped[int | None] = mapped_column(
+        ForeignKey("tags.id", ondelete="SET NULL"))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+
+class PeriodBudgetCategory(SyncMixin, Base):
+    __tablename__ = "period_budget_categories"
+    period_budget_id: Mapped[int] = mapped_column(
+        ForeignKey("period_budgets.id", ondelete="CASCADE"),
+        primary_key=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True)
+
+
+class Iou(SyncMixin, Base):
+    """Money lent to or borrowed from a person, outside the accounts."""
+
+    __tablename__ = "ious"
+    __table_args__ = (
+        CheckConstraint(_in("direction", IOU_DIRECTIONS), name="ck_iou_dir"),
+        CheckConstraint("amount > 0", name="ck_iou_pos"),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    person: Mapped[str] = mapped_column(String(120), index=True)
+    direction: Mapped[str] = mapped_column(String(10))
+    amount: Mapped[Decimal] = mapped_column(Money)
+    currency: Mapped[str] = mapped_column(String(3))
+    iou_date: Mapped[date] = mapped_column(Date)
+    due_date: Mapped[date | None] = mapped_column(Date)
+    note: Mapped[str | None] = mapped_column(Text)
+    #: Set when the full amount has been paid back.
+    settled_on: Mapped[date | None] = mapped_column(Date)
+
+
+class IouPayment(SyncMixin, Base):
+    """A partial or full repayment of an IOU."""
+
+    __tablename__ = "iou_payments"
+    __table_args__ = (CheckConstraint("amount > 0", name="ck_iou_pay_pos"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    iou_id: Mapped[int] = mapped_column(
+        ForeignKey("ious.id", ondelete="CASCADE"), index=True)
+    paid_on: Mapped[date] = mapped_column(Date)
+    amount: Mapped[Decimal] = mapped_column(Money)
+    note: Mapped[str | None] = mapped_column(String(200))
+
+
+class SyncTombstone(Base):
+    """A deleted synced row, so other devices can delete it too."""
+
+    __tablename__ = "sync_tombstones"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    table_name: Mapped[str] = mapped_column(String(64))
+    uid: Mapped[str] = mapped_column(String(32), index=True)
+    deleted_at: Mapped[str] = mapped_column(String(32))
+
+
+#: Tables whose rows carry ``uid``/``updated_at`` and are merged by sync.
+SYNCED_TABLES: tuple[str, ...] = tuple(
+    m.__tablename__ for m in Base.__subclasses__()
+    if issubclass(m, SyncMixin))

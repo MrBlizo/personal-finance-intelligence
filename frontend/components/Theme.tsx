@@ -1,7 +1,8 @@
 "use client";
-// Fluent UI v9 themes tuned to the Windows 11 (WinUI 3) palette: the
-// system accent blue, Segoe UI Variable, WinUI corner radii, and the
-// light-on-dark accent buttons WinUI uses in dark mode.
+// Fluent UI v9 themes built from one accent colour: Windows 11 blue by
+// default or the colour chosen in Settings. Every brand shade is derived
+// from it, with rounder corners and the lighter accent WinUI uses in dark
+// mode.
 import {
   BrandVariants, FluentProvider, Theme, createDarkTheme, createLightTheme,
   Button, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, Tooltip,
@@ -9,67 +10,120 @@ import {
 import {
   DarkTheme20Regular, WeatherMoon20Regular, WeatherSunny20Regular,
 } from "@fluentui/react-icons";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { notifyTheme } from "@/lib/shell";
 
-const brand: BrandVariants = {
-  10: "#001126", 20: "#001B3D", 30: "#002654", 40: "#00306A",
-  50: "#003A80", 60: "#004596", 70: "#0050A7", 80: "#005FB8",
-  90: "#0A6CC5", 100: "#2B7DD0", 110: "#4A8FD9", 120: "#66A2E1",
-  130: "#82B5E9", 140: "#9EC8F0", 150: "#BBDBF6", 160: "#D9EDFB",
+/** The Windows 11 default accent, used when no colour is chosen. */
+export const DEFAULT_ACCENT = "#005FB8";
+/** Accent colours offered in Settings (Material-style tones). */
+export const ACCENTS = [
+  { id: "", label: "Windows blue", hex: DEFAULT_ACCENT },
+  { id: "#6750A4", label: "Violet", hex: "#6750A4" },
+  { id: "#3949AB", label: "Indigo", hex: "#3949AB" },
+  { id: "#00796B", label: "Teal", hex: "#00796B" },
+  { id: "#2E7D32", label: "Green", hex: "#2E7D32" },
+  { id: "#827717", label: "Olive", hex: "#827717" },
+  { id: "#E65100", label: "Orange", hex: "#E65100" },
+  { id: "#C62828", label: "Red", hex: "#C62828" },
+  { id: "#AD1457", label: "Pink", hex: "#AD1457" },
+  { id: "#5D4037", label: "Brown", hex: "#5D4037" },
+  { id: "#455A64", label: "Slate", hex: "#455A64" },
+];
+
+type Rgb = [number, number, number];
+const toRgb = (hex: string): Rgb => {
+  const h = hex.replace("#", "");
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as Rgb;
 };
+const toHex = (c: Rgb) => "#" + c.map((v) =>
+  Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("");
+const mix = (a: Rgb, b: Rgb, w: number): Rgb =>
+  [0, 1, 2].map((i) => a[i] * (1 - w) + b[i] * w) as Rgb;
+
+/** Sixteen Fluent brand shades with ``accent`` at step 80. */
+export function brandFrom(accent: string): BrandVariants {
+  const base = toRgb(accent);
+  const out: Record<number, string> = {};
+  for (let step = 10; step <= 160; step += 10) {
+    const k = (step - 80) / 80;
+    out[step] = toHex(k < 0 ? mix(base, [0, 0, 0], -k * 0.85)
+      : mix(base, [255, 255, 255], k * 0.9));
+  }
+  return out as unknown as BrandVariants;
+}
+
+/** The lighter accent used on dark backgrounds (like WinUI's dark mode). */
+export const darkAccent = (accent: string) =>
+  toHex(mix(toRgb(accent), [255, 255, 255], 0.45));
+
 const font = "'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, "
   + "'Noto Sans Arabic', sans-serif";
 const shared: Partial<Theme> = {
   fontFamilyBase: font,
   fontFamilyNumeric: font,
-  borderRadiusMedium: "4px",
-  borderRadiusLarge: "8px",
-  borderRadiusXLarge: "8px",
+  borderRadiusMedium: "8px",
+  borderRadiusLarge: "12px",
+  borderRadiusXLarge: "20px",
 };
 
-export const lightTheme: Theme = {
-  ...createLightTheme(brand), ...shared,
-  colorNeutralForeground1: "rgba(0,0,0,0.896)",
-  colorNeutralForeground2: "rgba(0,0,0,0.606)",
-  colorNeutralForeground3: "rgba(0,0,0,0.45)",
-  colorBrandForeground1: "#003E92",
-  colorBrandForegroundLink: "#003E92",
-  colorNeutralBackground1: "#FFFFFF",
-  colorNeutralBackground2: "#F9F9F9",
-  colorNeutralBackground3: "#F3F3F3",
-  colorNeutralStroke1: "rgba(0,0,0,0.0803)",
-  colorNeutralStroke2: "rgba(0,0,0,0.0578)",
-  colorNeutralStrokeAccessible: "rgba(0,0,0,0.4458)",
-};
+export function makeLight(accent: string): Theme {
+  const brand = brandFrom(accent);
+  return {
+    ...createLightTheme(brand), ...shared,
+    colorNeutralForeground1: "rgba(0,0,0,0.896)",
+    colorNeutralForeground2: "rgba(0,0,0,0.606)",
+    colorNeutralForeground3: "rgba(0,0,0,0.45)",
+    colorBrandForeground1: brand[60],
+    colorBrandForegroundLink: brand[60],
+    colorNeutralBackground1: "#FFFFFF",
+    colorNeutralBackground2: "#F9F9F9",
+    colorNeutralBackground3: "#F3F3F3",
+    colorNeutralStroke1: "rgba(0,0,0,0.0803)",
+    colorNeutralStroke2: "rgba(0,0,0,0.0578)",
+    colorNeutralStrokeAccessible: "rgba(0,0,0,0.4458)",
+  };
+}
 
-export const darkTheme: Theme = {
-  ...createDarkTheme(brand), ...shared,
-  colorBrandBackground: "#60CDFF",
-  colorBrandBackgroundHover: "#5AB8E6",
-  colorBrandBackgroundPressed: "#52A5CF",
-  colorBrandBackgroundSelected: "#60CDFF",
-  colorNeutralForegroundOnBrand: "#000000",
-  colorBrandForeground1: "#99EBFF",
-  colorBrandForeground2: "#99EBFF",
-  colorBrandForegroundLink: "#99EBFF",
-  colorBrandForegroundLinkHover: "#B5F0FF",
-  colorCompoundBrandStroke: "#60CDFF",
-  colorCompoundBrandBackground: "#60CDFF",
-  colorNeutralForeground1: "#FFFFFF",
-  colorNeutralForeground2: "rgba(255,255,255,0.786)",
-  colorNeutralForeground3: "rgba(255,255,255,0.544)",
-  colorNeutralBackground1: "#2C2C2C",
-  colorNeutralBackground2: "#272727",
-  colorNeutralBackground3: "#202020",
-  colorNeutralStroke1: "rgba(255,255,255,0.0837)",
-  colorNeutralStroke2: "rgba(255,255,255,0.0605)",
-};
+export function makeDark(accent: string): Theme {
+  const brand = brandFrom(accent);
+  const light = darkAccent(accent);
+  const lighter = toHex(mix(toRgb(light), [255, 255, 255], 0.4));
+  return {
+    ...createDarkTheme(brand), ...shared,
+    colorBrandBackground: light,
+    colorBrandBackgroundHover: toHex(mix(toRgb(light), [0, 0, 0], 0.08)),
+    colorBrandBackgroundPressed: toHex(mix(toRgb(light), [0, 0, 0], 0.15)),
+    colorBrandBackgroundSelected: light,
+    colorNeutralForegroundOnBrand: "#000000",
+    colorBrandForeground1: lighter,
+    colorBrandForeground2: lighter,
+    colorBrandForegroundLink: lighter,
+    colorBrandForegroundLinkHover: lighter,
+    colorCompoundBrandStroke: light,
+    colorCompoundBrandBackground: light,
+    colorNeutralForeground1: "#FFFFFF",
+    colorNeutralForeground2: "rgba(255,255,255,0.786)",
+    colorNeutralForeground3: "rgba(255,255,255,0.544)",
+    colorNeutralBackground1: "#2C2C2C",
+    colorNeutralBackground2: "#272727",
+    colorNeutralBackground3: "#202020",
+    colorNeutralStroke1: "rgba(255,255,255,0.0837)",
+    colorNeutralStroke2: "rgba(255,255,255,0.0605)",
+  };
+}
+
+export const lightTheme: Theme = makeLight(DEFAULT_ACCENT);
+export const darkTheme: Theme = makeDark(DEFAULT_ACCENT);
 
 export type ThemePref = "system" | "light" | "dark";
-type ThemeState = { pref: ThemePref; dark: boolean; setPref: (p: ThemePref) => void };
-const ThemeCtx = createContext<ThemeState>({ pref: "system", dark: false, setPref: () => {} });
+type ThemeState = {
+  pref: ThemePref; dark: boolean; setPref: (p: ThemePref) => void;
+  accent: string; setAccent: (hex: string) => void;
+};
+const ThemeCtx = createContext<ThemeState>({
+  pref: "system", dark: false, setPref: () => {}, accent: "", setAccent: () => {},
+});
 /** The chosen theme ("system", "light" or "dark") and whether dark is shown. */
 export const useTheme = () => useContext(ThemeCtx);
 
@@ -85,20 +139,24 @@ function useSystemDark() {
   return dark;
 }
 
-export function ThemeRoot({ dir, pref, onChange, children }: {
+export function ThemeRoot({ dir, pref, onChange, accent, onAccent, children }: {
   dir: "ltr" | "rtl"; pref: ThemePref; onChange: (p: ThemePref) => void;
-  children: ReactNode;
+  accent: string; onAccent: (hex: string) => void; children: ReactNode;
 }) {
   const system = useSystemDark();
   const dark = pref === "system" ? system : pref === "dark";
+  const hex = accent || DEFAULT_ACCENT;
+  const theme = useMemo(() => (dark ? makeDark(hex) : makeLight(hex)), [dark, hex]);
   useEffect(() => {
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-  }, [dark]);
+    const root = document.documentElement;
+    root.dataset.theme = dark ? "dark" : "light";
+    root.style.setProperty("--accent", dark ? darkAccent(hex) : hex);
+    root.style.setProperty("--accent-text", String(theme.colorBrandForeground1));
+  }, [dark, hex, theme]);
   useEffect(() => { notifyTheme(pref); }, [pref]);
   return (
-    <ThemeCtx.Provider value={{ pref, dark, setPref: onChange }}>
-      <FluentProvider theme={dark ? darkTheme : lightTheme} dir={dir}
-        className="fluent-root">
+    <ThemeCtx.Provider value={{ pref, dark, setPref: onChange, accent, setAccent: onAccent }}>
+      <FluentProvider theme={theme} dir={dir} className="fluent-root">
         {children}
       </FluentProvider>
     </ThemeCtx.Provider>

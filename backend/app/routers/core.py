@@ -51,7 +51,7 @@ def put_settings(body: s.SettingsIn, db: Session = Depends(get_db)):
     for key, value in body.model_dump(exclude_none=True).items():
         if isinstance(value, bool):
             value = "1" if value else "0"
-        elif isinstance(value, dict):
+        elif isinstance(value, (dict, list)):
             value = json.dumps(value)
         _put(db, key, str(value))
     db.commit()

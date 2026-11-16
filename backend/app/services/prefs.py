@@ -9,6 +9,10 @@ from ..seed import get_setting
 LANGUAGES = ("en", "fr", "ar")
 LOCK_MODES = ("off", "hello")
 THEMES = ("system", "light", "dark")
+BUDGET_MODES = ("limits", "envelope")
+#: The cards of the home page, in their default order.
+HOME_CARDS = ("review", "cash_flow", "spending", "budgets", "net_worth",
+              "upcoming", "insights", "accounts", "goals")
 
 DEFAULTS: dict[str, str] = {
     "fx_auto_update": "1",
@@ -23,6 +27,9 @@ DEFAULTS: dict[str, str] = {
     "stooq_api_key": "",
     "twelvedata_api_key": "",
     "alphavantage_api_key": "",
+    "budget_mode": "limits",
+    "accent_color": "",
+    "home_layout": "",
 }
 #: Personal API keys of price providers; never returned to the UI.
 API_KEYS = ("stooq_api_key", "twelvedata_api_key", "alphavantage_api_key")
@@ -56,6 +63,26 @@ def get_targets(db: Session) -> dict[str, float]:
             if k in ASSET_CLASSES and float(v) > 0}
 
 
+def get_home_layout(db: Session) -> list[dict]:
+    """Return the home cards in the user's order, with a ``hidden`` flag.
+
+    Cards added in a later version, and so missing from a saved layout,
+    are appended in their default position at the end.
+    """
+    try:
+        saved = json.loads(get(db, "home_layout") or "[]")
+    except json.JSONDecodeError:
+        saved = []
+    out, seen = [], set()
+    for entry in saved if isinstance(saved, list) else []:
+        card = entry.get("id") if isinstance(entry, dict) else None
+        if card in HOME_CARDS and card not in seen:
+            seen.add(card)
+            out.append({"id": card, "hidden": bool(entry.get("hidden"))})
+    out += [{"id": c, "hidden": False} for c in HOME_CARDS if c not in seen]
+    return out
+
+
 def put(db: Session, key: str, value: str) -> None:
     """Store a preference; the caller commits."""
     row = db.get(Setting, key)
@@ -80,6 +107,9 @@ def snapshot(db: Session) -> dict:
         "auto_categorize_threshold": get_float(db,
                                                "auto_categorize_threshold"),
         "allocation_targets": get_targets(db),
+        "budget_mode": get(db, "budget_mode"),
+        "accent_color": get(db, "accent_color") or None,
+        "home_layout": get_home_layout(db),
         # Keys themselves are never sent back to the UI: only whether one is
         # saved and its last four characters.
         **{f"{k}_set": bool(get(db, k)) for k in API_KEYS},
