@@ -156,7 +156,7 @@ def monthly_data(db: Session, fx: FxConverter, base: str, month: date,
 def _money(v: float | None, cur: str = "") -> str:
     if v is None:
         return "–"
-    s = f"{abs(v):,.2f}".replace(",", "'")
+    s = f"{abs(v):,.2f}"
     return f"{'−' if v < 0 else ''}{s}{' ' + cur if cur else ''}"
 
 

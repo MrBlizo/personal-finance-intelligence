@@ -1,9 +1,9 @@
-// Formatting helpers (Swiss conventions: 1'234.50).
+// Formatting helpers (US conventions: 1,234.50).
 
 const nf = new Map<number, Intl.NumberFormat>();
 function fmt(decimals: number) {
   if (!nf.has(decimals)) {
-    nf.set(decimals, new Intl.NumberFormat("de-CH", {
+    nf.set(decimals, new Intl.NumberFormat("en-US", {
       minimumFractionDigits: decimals, maximumFractionDigits: decimals,
     }));
   }

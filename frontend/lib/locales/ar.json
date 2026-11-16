@@ -1118,5 +1118,8 @@
   "Sign out": "تسجيل الخروج",
   "Signed in": "تم تسجيل الدخول",
   "Waiting for Google…": "في انتظار Google…",
-  "Where to keep the sync files": "أين تُحفظ ملفات المزامنة"
+  "Where to keep the sync files": "أين تُحفظ ملفات المزامنة",
+  "Add an account": "إضافة حساب",
+  "Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.": "أضف حسابًا واستورد كشفًا بنكيًا. هل تستخدم PFI على جهاز آخر؟ فعّل المزامنة بنفس التخزين السحابي وعبارة المرور.",
+  "Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.": "ما زالت بيانات تجريبية من إصدار سابق من PFI موجودة. احذفها للاحتفاظ ببياناتك فقط."
 }

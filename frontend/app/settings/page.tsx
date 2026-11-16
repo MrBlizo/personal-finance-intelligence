@@ -372,17 +372,14 @@ export default function SettingsPage() {
                 <Button icon={<ArrowDownload20Regular />} as="a" href={downloadUrl("/api/export/workbook.xlsx")}>
                   {t("Excel workbook")}</Button>
               </SettingRow>
-              <SettingRow icon={""} title={t("Demo data")}
-                description={t("Synthetic accounts and about 14 months of random transactions to explore every screen. Demo items are labelled and can be removed at any time.")}>
-                <Button onClick={() => run(async () => {
-                  const r = await post<{ transactions: number }>("/api/demo"); refs.reload(); rates.reload(); rules.reload();
-                  return t("Demo data created ({n} transactions).", { n: r.transactions });
-                })}>{t("Load")}</Button>
-                <Button onClick={() => setConfirm({ danger: true,
-                  text: t("Remove all demo accounts, transactions, goals, budgets and demo rates?"),
-                  run: async () => { await del("/api/demo"); refs.reload(); rates.reload();
-                    setMsg({ kind: "success", text: t("Demo data removed.") }); } })}>{t("Remove")}</Button>
-              </SettingRow>
+{refs.data?.accounts.some((a) => a.is_demo) && (
+                <SettingRow icon={""} title={t("Demo data")}
+                  description={t("Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.")}>
+                  <Button onClick={() => setConfirm({ danger: true,
+                    text: t("Remove all demo accounts, transactions, goals, budgets and demo rates?"),
+                    run: async () => { await del("/api/demo"); refs.reload(); rates.reload();
+                      setMsg({ kind: "success", text: t("Demo data removed.") }); } })}>{t("Remove")}</Button>
+                </SettingRow>)}
             </div>
           </section>
 

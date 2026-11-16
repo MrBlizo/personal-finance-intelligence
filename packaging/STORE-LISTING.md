@@ -34,10 +34,10 @@ Intelligence is a desktop (WinUI 3) app. It runs a local analysis service on
 a local SQLite database on their own PC. This component needs the
 full-trust desktop model."
 
-**Notes for certification:** "No account needed. Open the app, Home ›
-'Load demo data' fills it with synthetic data to test every screen
-(removable in Settings). First start takes a few seconds while the private
-database is created."
+**Notes for certification:** "No account needed. Open the app, add an
+account (Accounts › Add account) and a few transactions (Ctrl+N), or import
+any bank CSV file under Import. First start takes a few seconds while the
+private database is created."
 
 ## What's new in 0.7.1 (paste into "What's new in this version")
 

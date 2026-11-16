@@ -28,7 +28,7 @@ Sync on the PC and on the phone, with the same OneDrive and passphrase.
 
 ## Screenshots
 
-Shown with the built-in demo data (Settings → Load demo data).
+Shown with synthetic sample data (no real finances).
 
 | | |
 |---|---|
@@ -99,7 +99,7 @@ Shown with the built-in demo data (Settings → Load demo data).
   splits and budget assignments, with a dry run first.
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
-  a password (AES-256); one-click "Move to another PC".
+  a password (AES-256); move to a new PC through sync.
 - **Phone app and sync (0.7):** the PFI app for Android keeps the same data
   as the PC through a folder in your OneDrive, encrypted with your
   passphrase (no PFI server). See [mobile/README.md](mobile/README.md) and
