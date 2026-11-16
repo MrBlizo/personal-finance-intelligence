@@ -495,3 +495,37 @@ td.editing .fui-Input, td.editing .fui-Select { width: 100%; min-width: 90px; }
 .env-row:hover .env-input, .env-row .env-input:focus-within {
   background: var(--card-solid) !important; border-color: var(--card-stroke) !important; }
 .env-row .env-input input { font-variant-numeric: tabular-nums; }
+
+/* 0.7.1 home: greeting, net-worth hero with quick actions, KPI tiles */
+.home-top { display: grid; gap: 16px; margin-bottom: 16px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+@media (max-width: 1100px) { .home-top { grid-template-columns: 1fr; } }
+:root { --hero-a: 72%; --hero-b: 42%; }
+:root[data-theme="dark"] { --hero-a: 46%; --hero-b: 24%; }
+.home-hero { border-radius: 28px; padding: 28px 32px 24px; color: #fff;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(255,255,255,.16), transparent 55%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) var(--hero-a), #000),
+      color-mix(in srgb, var(--accent) var(--hero-b), #000));
+  box-shadow: 0 12px 32px -16px color-mix(in srgb, var(--accent) 60%, transparent);
+  display: flex; flex-direction: column; }
+.home-hero-label { font-size: 13px; font-weight: 600; opacity: .85;
+  letter-spacing: .4px; text-transform: uppercase; }
+.home-hero-value { font-family: var(--font-display); font-size: clamp(34px, 3.4vw, 48px);
+  line-height: 1.15; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums;
+  letter-spacing: -.5px; white-space: nowrap; }
+.home-hero-sub { font-size: 13px; opacity: .85; margin-top: 4px; }
+.quick-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 24px; flex-wrap: wrap; }
+.qa { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 64px;
+  background: none; border: 0; padding: 0; color: inherit; cursor: pointer;
+  text-decoration: none; font: inherit; }
+.qa-circle { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.18); transition: background .15s, transform .15s; }
+.qa:hover .qa-circle { background: rgba(255,255,255,.3); transform: translateY(-1px); }
+.qa:focus-visible { outline: none; }
+.qa:focus-visible .qa-circle { outline: 2px solid #fff; outline-offset: 2px; }
+.qa-label { font-size: 12px; font-weight: 600; }
+.home-kpis { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.home-kpis .kpi { display: flex; flex-direction: column; justify-content: center; }
+.home-cards { display: block; columns: 2 420px; column-gap: 16px; }
+.home-cards > div { break-inside: avoid; margin-bottom: 16px; }

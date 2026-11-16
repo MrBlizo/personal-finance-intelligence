@@ -1106,5 +1106,9 @@
   "You've met this month's target.": "Vous avez atteint l'objectif de ce mois.",
   "{a} overspent. Cover it from a category that has money left.": "{a} de dépassement. Couvrez-le avec une catégorie qui a encore de l'argent.",
   "{a} still needed for targets": "Encore {a} nécessaires pour les objectifs",
-  "{c} (general)": "{c} (général)"
+  "{c} (general)": "{c} (général)",
+  "Bills": "Factures",
+  "Good morning": "Bonjour",
+  "Good afternoon": "Bon après-midi",
+  "Good evening": "Bonsoir"
 }

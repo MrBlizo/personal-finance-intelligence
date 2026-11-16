@@ -1106,5 +1106,9 @@
   "You've met this month's target.": "حققت هدف هذا الشهر.",
   "{a} overspent. Cover it from a category that has money left.": "تجاوز بمقدار {a}. غطِّه من فئة بقي فيها مال.",
   "{a} still needed for targets": "ما زال {a} مطلوبًا للأهداف",
-  "{c} (general)": "{c} (عام)"
+  "{c} (general)": "{c} (عام)",
+  "Bills": "الفواتير",
+  "Good morning": "صباح الخير",
+  "Good afternoon": "مساء الخير",
+  "Good evening": "مساء الخير"
 }
