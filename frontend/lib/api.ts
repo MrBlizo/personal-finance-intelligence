@@ -25,7 +25,13 @@ export interface Settings {
   twelvedata_api_key_hint: string | null;
   alphavantage_api_key_set: boolean;
   alphavantage_api_key_hint: string | null;
+  budget_mode: "limits" | "envelope";
+  accent_color: string | null;
+  home_layout: HomeCard[];
 }
+export type HomeCardId = "net_worth" | "this_month" | "budgets" | "upcoming"
+  | "cash_flow" | "spending" | "accounts" | "goals" | "review";
+export interface HomeCard { id: HomeCardId; hidden: boolean }
 export interface Backup {
   name: string; kind: string; size: number; created: string;
   folder: string; encrypted: boolean; legacy: boolean; warning: string | null;
@@ -96,6 +102,7 @@ export interface Account {
 export interface Category {
   id: Id; name: string; kind: "income" | "expense";
   parent_id: Id | null; color: string | null; full_name: string;
+  icon: string | null;
 }
 export interface Txn {
   id: Id; account_id: Id; account_name: string; currency: string;
@@ -105,8 +112,79 @@ export interface Txn {
   category_name: string | null; transfer_group: string | null;
   import_batch_id: Id | null; trade_id: Id | null; notes: string | null;
   splits: SplitPart[]; tags: string[]; attachments: number;
-  cleared: boolean; reconciled: boolean;
+  cleared: boolean; reconciled: boolean; reviewed: boolean;
 }
+// --- 0.6 -----------------------------------------------------------------
+export interface EnvelopeTarget {
+  kind: "monthly" | "weekly" | "yearly" | "by_date"; amount: number;
+  due_date: string | null;
+}
+export interface EnvelopeRow {
+  category_id: Id | null; name: string; parent_id: Id | null;
+  icon: string | null; color: string | null;
+  carry_in: number; assigned: number; activity: number; available: number;
+  target: EnvelopeTarget | null; need: number; shortfall: number;
+  status: "ok" | "funded" | "underfunded" | "overspent";
+}
+export interface EnvelopeMonth {
+  month: string; currency: string; ready_to_assign: number;
+  assigned_in_future: number; total_assigned: number; total_activity: number;
+  total_available: number; overspent: number; underfunded: number;
+  groups: { id: Id | null; name: string | null; items: EnvelopeRow[] }[];
+  missing_fx: string[];
+}
+export interface QuickAssign {
+  changes: { category_id: Id; name: string; old: number; new: number }[];
+  applied: boolean; total: number;
+}
+export interface PeriodBudget {
+  id: Id; name: string; amount: number; period: "weekly" | "monthly" | "custom";
+  start_date: string; end_date: string | null; tag_id: Id | null;
+  tag: string | null; category_ids: Id[]; categories: string[];
+  notes: string | null; currency: string;
+  current: {
+    start: string; end: string; spent: number; remaining: number;
+    pct: number | null; days_left: number; per_day: number;
+    upcoming: boolean; ended: boolean;
+  };
+  history: { start: string; end: string; spent: number }[];
+}
+export interface Iou {
+  id: Id; person: string; direction: "lent" | "borrowed"; amount: number;
+  currency: string; iou_date: string; due_date: string | null;
+  note: string | null; settled_on: string | null; repaid: number;
+  open: number; overdue: boolean;
+  payments: { id: Id; paid_on: string; amount: number; note: string | null }[];
+}
+export interface IouSummary {
+  currency: string; items: Iou[];
+  people: { person: string; balance: number }[];
+  owed_to_me: number; owed_by_me: number; missing_fx: string[];
+}
+export interface LoanSchedule {
+  account_id: Id; name: string; currency: string; owed: number; apr: number;
+  payment: number; finish_by?: string; payment_to_finish?: number;
+  schedule: {
+    rows: { date: string; payment: number; interest: number;
+      principal: number; balance: number }[];
+    months: number | null; total_interest: number | null;
+    payoff_date: string | null; never: boolean;
+  };
+}
+export interface PayeeHint {
+  payee: string; count: number; last_date: string;
+  category_id: Id | null; kind: string | null; last_amount: number | null;
+}
+export interface PayeeTotal {
+  payee: string; total: number; count: number; average: number; last_date: string;
+}
+export interface YnabReport {
+  accounts_created: string[]; categories_created: string[];
+  transactions: number; transfers: number; splits: number; duplicates: number;
+  assignments: number; skipped: string[]; checked_month: string | null;
+  differences: { category: string; ynab: number; pfi: number; difference: number }[];
+}
+
 export interface FxRate {
   id: Id; rate_date: string; from_currency: string; to_currency: string;
   rate: number; source: string;

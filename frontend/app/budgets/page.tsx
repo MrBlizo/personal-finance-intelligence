@@ -1,17 +1,48 @@
 "use client";
-import { useState } from "react";
-import { Button, Input, Tooltip } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
+import { Button, Input, Tab, TabList, Tooltip } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular } from "@fluentui/react-icons";
+import { Envelopes } from "@/components/Envelopes";
+import { PeriodBudgets } from "@/components/PeriodBudgets";
 import { catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
   Banner, Confirm, Empty, FormModal, Kpi, PageHead, Progress, Spinner,
   StatusBadge, useLoad,
 } from "@/components/ui";
-import { BudgetItem, BudgetStatus, del, get, post, put } from "@/lib/api";
+import { BudgetItem, BudgetStatus, Settings, del, get, post, put } from "@/lib/api";
 import { money, pct } from "@/lib/format";
-import { useT } from "@/lib/i18n";
+import { useI18n, useT } from "@/lib/i18n";
 
-export default function Budgets() {
+export default function BudgetsPage() {
+  const t = useT();
+  const { lang } = useI18n();
+  const [mode, setMode] = useState<"limits" | "envelope" | null>(null);
+  useEffect(() => {
+    get<Settings>("/api/settings").then((s) => setMode(s.budget_mode || "limits"))
+      .catch(() => setMode("limits"));
+  }, []);
+  const choose = (m: "limits" | "envelope") => {
+    setMode(m);
+    put("/api/settings", { budget_mode: m }).catch(() => {});
+  };
+  return (
+    <>
+      <PageHead title={t("Budgets")} sub={mode === "envelope"
+        ? t("Give every franc a job: assign money to categories and spend from them.")
+        : t("Monthly limits per expense category")}>
+        <TabList selectedValue={mode ?? "limits"} onTabSelect={(_, d) =>
+          choose(d.value as "limits" | "envelope")}>
+          <Tab value="limits">{t("Monthly limits")}</Tab>
+          <Tab value="envelope">{t("Envelopes")}</Tab>
+        </TabList>
+      </PageHead>
+      {mode === null ? <Spinner /> : mode === "envelope" ? <Envelopes lang={lang} /> : <Budgets />}
+      <div style={{ marginTop: 16 }}><PeriodBudgets /></div>
+    </>
+  );
+}
+
+function Budgets() {
   const t = useT();
   const now = new Date();
   const [month, setMonth] = useState(
@@ -26,12 +57,14 @@ export default function Budgets() {
 
   return (
     <>
-      <PageHead title={t("Budgets")} sub={t("Monthly limits per expense category, in {cur}", { cur })}>
+      <div className="row" style={{ marginBottom: 12 }}>
         <Input type="month" value={month} onChange={(_, d) => setMonth(d.value)}
           aria-label={t("Month")} />
+        <span className="caption">{t("Monthly limits per expense category, in {cur}", { cur })}</span>
+        <span className="grow" />
         <Button appearance="primary" icon={<Add20Regular />} onClick={() => setEdit("new")}>
           {t("Add budget")}</Button>
-      </PageHead>
+      </div>
       {status.error && <Banner kind="error">{status.error}</Banner>}
       {status.loading && !s && <Spinner />}
       {s && (
