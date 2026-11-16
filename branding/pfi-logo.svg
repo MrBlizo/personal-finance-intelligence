@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="pfi-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2F7CF6"/>
+      <stop offset="1" stop-color="#4A3FD8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#pfi-bg)"/>
+  <rect x="128" y="300" width="56" height="96" rx="20" fill="#fff" opacity=".55"/>
+  <rect x="208" y="236" width="56" height="160" rx="20" fill="#fff" opacity=".8"/>
+  <path d="M288 396V136c0-11 9-20 20-20h40c60 0 100 40 100 96s-40 96-100 96h-12" fill="none" stroke="#fff" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
