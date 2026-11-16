@@ -131,6 +131,16 @@ export default function SettingsPage() {
                 <option value="dark">{t("Dark")}</option>
               </Select>
             </SettingRow>
+            <SettingRow icon={"\uE790"} title={t("Accent colour")}
+              description={t("Colours buttons, highlights and charts. Windows blue matches the rest of Windows.")}>
+              <div className="swatches">
+                {ACCENTS.map((a) => (
+                  <Tooltip key={a.id || "default"} content={t(a.label)} relationship="label">
+                    <button type="button" className={`swatch ${theme.accent === a.id ? "selected" : ""}`}
+                      style={{ background: a.hex }} onClick={() => theme.setAccent(a.id)} />
+                  </Tooltip>))}
+              </div>
+            </SettingRow>
             <SettingRow icon={""} title={t("Reporting currency")}
               description={t("Currencies in use: {list}", { list: s.currencies_in_use.join(", ") || "—" })}>
               <Select value={s.base_currency} onChange={(_, d) => run(async () => {

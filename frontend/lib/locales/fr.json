@@ -1050,5 +1050,7 @@
  "{n} payments": "{n} paiements",
  "{n} transactions ({tr} transfers, {sp} split)": "{n} transactions ({tr} virements, {sp} réparties)",
  "{n} transactions approved.": "{n} transactions approuvées.",
- "“{v}” is not an amount.": "« {v} » n'est pas un montant."
+ "“{v}” is not an amount.": "« {v} » n'est pas un montant.",
+ "Accent colour": "Couleur d'accent",
+ "Colours buttons, highlights and charts. Windows blue matches the rest of Windows.": "Colore les boutons, les surlignages et les graphiques. Le bleu Windows s'accorde avec le reste de Windows."
 }

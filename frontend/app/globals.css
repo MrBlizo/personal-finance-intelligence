@@ -409,3 +409,5 @@ td.editing .fui-Input, td.editing .fui-Select { width: 100%; min-width: 90px; }
   font: inherit; color: inherit; cursor: pointer; border-radius: 10px;
   text-align: start; max-width: 100%; }
 .cell-button:hover { background: var(--tint-strong); }
+.fui-Button, .fui-ToggleButton, .fui-MenuButton { white-space: nowrap; }
+.fui-DialogBody > .fui-DialogActions { flex-wrap: wrap; grid-column: 1 / -1 !important; justify-self: stretch !important; justify-content: flex-end; }

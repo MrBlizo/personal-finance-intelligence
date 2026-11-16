@@ -1050,5 +1050,7 @@
  "{n} payments": "{n} دفعات",
  "{n} transactions ({tr} transfers, {sp} split)": "{n} معاملات ({tr} تحويلات، {sp} مقسّمة)",
  "{n} transactions approved.": "تم اعتماد {n} معاملات.",
- "“{v}” is not an amount.": "«{v}» ليس مبلغًا."
+ "“{v}” is not an amount.": "«{v}» ليس مبلغًا.",
+ "Accent colour": "لون التمييز",
+ "Colours buttons, highlights and charts. Windows blue matches the rest of Windows.": "يلوّن الأزرار والتمييزات والرسوم البيانية. الأزرق الافتراضي يطابق باقي ويندوز."
 }

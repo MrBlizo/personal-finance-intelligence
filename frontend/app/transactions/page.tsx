@@ -163,7 +163,7 @@ export default function Transactions() {
       {err && <Banner kind="error" onClose={() => setErr(null)}>{err}</Banner>}
       {list.error && <Banner kind="error">{list.error}</Banner>}
       <div className="filters">
-        <Input contentBefore={<Search20Regular />} style={{ minWidth: 300 }}
+        <Input contentBefore={<Search20Regular />} style={{ minWidth: 360 }}
           placeholder={t("Search, or try payee:coop amount:>20")} value={f.q}
           onChange={(_, d) => setFilter("q", d.value)} contentAfter={<SearchHelp />} />
         <Select value={f.account_id} onChange={(_, d) => setFilter("account_id", d.value)}>
