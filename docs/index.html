@@ -20,12 +20,12 @@
   "@type": "SoftwareApplication",
   "name": "Personal Finance Intelligence",
   "alternateName": "PFI",
-  "operatingSystem": "Windows 10, Windows 11",
+  "operatingSystem": "Windows 10, Windows 11, Android",
   "applicationCategory": "FinanceApplication",
-  "description": "Offline budget planner and expense tracker for Windows: bank statement import, budgets, debt payoff planner, investments and cash-flow forecast. No account, data stays on your PC.",
+  "description": "Offline budget planner and expense tracker for Windows with an Android app: bank statement import, envelope budgets, debt payoff planner, investments and cash-flow forecast. No account and no PFI server; optional encrypted sync through your own OneDrive.",
   "url": "https://mrblizo.github.io/personal-finance-intelligence/",
   "downloadUrl": "https://apps.microsoft.com/detail/9MZKW4H9F0J5",
-  "softwareVersion": "0.6.0",
+  "softwareVersion": "0.7.0",
   "license": "https://opensource.org/licenses/MIT",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "author": { "@type": "Person", "name": "Ibrahim (MrBlizo)", "url": "https://github.com/MrBlizo" },
@@ -40,7 +40,8 @@
   "mainEntity": [
     { "@type": "Question", "name": "Is PFI free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PFI is free on the Microsoft Store and open source under the MIT license. There are no ads, no subscription and no in-app purchases." } },
     { "@type": "Question", "name": "Does PFI connect to my bank?", "acceptedAnswer": { "@type": "Answer", "text": "No. You download your statement from your bank's website and import the file (CSV, OFX/QFX, QIF or CAMT.053). PFI never asks for your bank login." } },
-    { "@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": { "@type": "Answer", "text": "In a single SQLite file in your Windows user folder. Nothing is sent to a server; backups go to a folder you choose and can be protected with a password." } },
+    { "@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": { "@type": "Answer", "text": "In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a PFI server; backups go to a folder you choose and can be protected with a password." } },
+    { "@type": "Question", "name": "Is there a phone app?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The free PFI app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through a folder in your own OneDrive and is encrypted with your passphrase before it leaves the device." } },
     { "@type": "Question", "name": "Which Windows versions are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs." } }
   ]
 }
@@ -58,14 +59,15 @@
 
   <div class="hero">
     <h1>The offline budget app for Windows</h1>
-    <p class="lead">Budgets, bank statement import, debt payoff plans and investments in one native Windows app.
-      No account, no cloud: your money data stays in one file on your PC.</p>
+    <p class="lead">Budgets, bank statement import, debt payoff plans and investments in one native Windows app,
+      now with an Android app that stays in sync. No account and no PFI server: your money data stays on your devices.</p>
     <div class="cta">
       <a class="badge" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct">
         <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" width="182" height="52"></a>
       <a class="btn" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest">Download the installer</a>
+      <a class="btn" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest">Android app (APK)</a>
     </div>
-    <p class="facts">Free · open source (MIT) · Windows 10 and 11 · English, Français, العربية</p>
+    <p class="facts">Free · open source (MIT) · Windows 10 and 11 · Android · English, Français, العربية</p>
     <div class="shot"><img src="img/1-home.webp" width="1512" height="800"
       alt="PFI dashboard with net worth, income versus expenses and where the money goes"></div>
   </div>
@@ -78,10 +80,12 @@
     <div class="grid">
       <div class="card"><h3>Import any bank statement</h3><p>CSV, OFX/QFX, QIF and CAMT.053. PFI remembers each bank's format and shows possible duplicates side by side before anything is saved.</p></div>
       <div class="card"><h3>Categories that learn</h3><p>PFI learns from the transactions you categorise yourself, and your own rules always come first.</p></div>
-      <div class="card"><h3>Budgets and goals</h3><p>Monthly limits per category with a month-end projection, and savings goals linked to real accounts.</p></div>
-      <div class="card"><span class="new">New in 0.5</span><h3>Debt payoff planner</h3><p>Compare highest interest first, smallest balance first and minimum payments only, with payoff dates and total interest.</p></div>
-      <div class="card"><span class="new">New in 0.5</span><h3>Spending calendar</h3><p>Every day of the year as a heatmap, plus your year in review: savings rate, no-spend days, biggest expense.</p></div>
-      <div class="card"><span class="new">New in 0.5</span><h3>Bulk edit and reconcile</h3><p>Change many transactions at once and tick off your bank statement until the difference is zero.</p></div>
+      <div class="card"><span class="new">New in 0.7</span><h3>Phone app and sync</h3><p>The PFI app for Android keeps the same data as your PC, through a folder in your own OneDrive, encrypted with your passphrase.</p></div>
+      <div class="card"><span class="new">New in 0.6</span><h3>Envelope budgeting</h3><p>Give all your money a job: assign, move and carry over, with targets. Or keep simple monthly limits with a month-end projection.</p></div>
+      <div class="card"><span class="new">New in 0.6</span><h3>Fast entry and search</h3><p>Quick add with Ctrl+N, edit directly in the list, filters such as payee:migros amount:&gt;50, and a review queue for imports.</p></div>
+      <div class="card"><h3>Debt payoff planner</h3><p>Compare highest interest first, smallest balance first and minimum payments only, with payoff dates and total interest.</p></div>
+      <div class="card"><h3>Spending calendar</h3><p>Every day of the year as a heatmap, plus your year in review: savings rate, no-spend days, biggest expense.</p></div>
+      <div class="card"><h3>Bulk edit and reconcile</h3><p>Change many transactions at once and tick off your bank statement until the difference is zero.</p></div>
       <div class="card"><h3>Investments</h3><p>Holdings with prices from online sources, money-weighted and time-weighted returns, dividends and target allocation.</p></div>
       <div class="card"><h3>Forecast and insights</h3><p>Cash-flow forecast with probability ranges from your own history; unusual expenses and subscriptions flagged.</p></div>
       <div class="card"><h3>Any currency</h3><p>Accounts in any currency, converted to the one you report in (CHF, EUR, MAD, USD…) with daily exchange rates.</p></div>
@@ -107,7 +111,8 @@
       <h2>Private by design</h2>
       <ul class="ticks">
         <li>No account and no sign-up: open the app and start.</li>
-        <li>Your data is one SQLite file on your PC, never on a server.</li>
+        <li>Your data is one SQLite file on your PC (and your phone, if you use the app), never on a PFI server.</li>
+        <li>Optional sync through your own OneDrive, encrypted with your passphrase before it leaves the device.</li>
         <li>No ads, no tracking, no analytics.</li>
         <li>Backups to a folder you choose (OneDrive, USB drive), optionally encrypted with a password.</li>
         <li>Optional Windows Hello lock.</li>
@@ -136,7 +141,8 @@
     <h2>Questions</h2>
     <details><summary>Is PFI free?</summary><p>Yes. PFI is free on the Microsoft Store and open source under the MIT license. There are no ads, no subscription and no in-app purchases.</p></details>
     <details><summary>Does PFI connect to my bank?</summary><p>No. You download your statement from your bank's website and import the file (CSV, OFX/QFX, QIF or CAMT.053). PFI never asks for your bank login. <a href="guides/import-camt053.html">How to import a CAMT.053 file</a>.</p></details>
-    <details><summary>Where is my data stored?</summary><p>In a single SQLite file in your Windows user folder. Nothing is sent to a server; backups go to a folder you choose and can be protected with a password.</p></details>
+    <details><summary>Where is my data stored?</summary><p>In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a PFI server; backups go to a folder you choose and can be protected with a password.</p></details>
+    <details><summary>Is there a phone app?</summary><p>Yes. The free PFI app for Android keeps the same accounts, transactions and budgets as the PC. Download <code>PFI-0.7.0.apk</code> from the <a href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest">latest release</a>, then set up sync in Settings › Sync on both devices with the same OneDrive and passphrase.</p></details>
     <details><summary>Can I move to a new PC?</summary><p>Yes. Settings › Move to another PC creates one file with everything; open it on the new PC with "Restore from a backup".</p></details>
     <details><summary>Which Windows versions are supported?</summary><p>Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs.</p></details>
     <details><summary>Which languages?</summary><p>English, French and Arabic (right-to-left layout included).</p></details>
