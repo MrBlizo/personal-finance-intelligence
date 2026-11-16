@@ -1110,5 +1110,13 @@
   "Bills": "Factures",
   "Good morning": "Bonjour",
   "Good afternoon": "Bon après-midi",
-  "Good evening": "Bonsoir"
+  "Good evening": "Bonsoir",
+  "Keep PFI on this PC and the PFI phone app in step through your OneDrive, Dropbox or Google Drive. Everything is encrypted with your passphrase; there is no PFI server.": "Gardez PFI sur ce PC et l'app mobile PFI synchronisés via votre OneDrive, Dropbox ou Google Drive. Tout est chiffré avec votre phrase secrète ; il n'y a pas de serveur PFI.",
+  "OneDrive or Dropbox folder": "Dossier OneDrive ou Dropbox",
+  "PFI keeps its encrypted sync files in a hidden app folder of your Google Drive and cannot see your other files. Sign in here, then choose Google Drive in the phone app with the same Google account.": "PFI garde ses fichiers de synchronisation chiffrés dans un dossier d'application caché de votre Google Drive et ne voit pas vos autres fichiers. Connectez-vous ici, puis choisissez Google Drive dans l'app mobile avec le même compte Google.",
+  "Sign in with Google": "Se connecter avec Google",
+  "Sign out": "Se déconnecter",
+  "Signed in": "Connecté",
+  "Waiting for Google…": "En attente de Google…",
+  "Where to keep the sync files": "Où garder les fichiers de synchronisation"
 }

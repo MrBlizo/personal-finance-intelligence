@@ -181,6 +181,11 @@ New-Item -ItemType Directory -Force -Path $Stage | Out-Null
 Run "robocopy `"$($exe.DirectoryName)`" `"$Stage`" /E /XF *.pdb *.lib *.exp *.ilk pfi.ini onnxruntime.dll DirectML.dll /XD AppX /NFL /NDL /NJH /NJS" $Root "Copying PFI.exe" -Robocopy
 Run "robocopy `"$be\dist\pfi-api`" `"$Stage\backend`" /E /NFL /NDL /NJH /NJS" $Root "Copying backend" -Robocopy
 Run "robocopy `"$fe\out`" `"$Stage\web`" /E /NFL /NDL /NJH /NJS" $Root "Copying screens" -Robocopy
+# Google Drive sync: the "Desktop app" OAuth client from Google Cloud Console,
+# kept out of the repository (backend\google-oauth.json is git-ignored).
+$gcfg = Join-Path $be "google-oauth.json"
+if (Test-Path $gcfg) { Copy-Item $gcfg (Join-Path $Stage "backend") -Force }
+else { Add-Content $Log -Encoding UTF8 -Value "No backend\google-oauth.json: Google Drive sync is off in this build." }
 if ($crt) {
     Get-ChildItem $crt.FullName -Filter *.dll | ForEach-Object {
         if (-not (Test-Path (Join-Path $Stage $_.Name))) { Copy-Item $_.FullName $Stage }
