@@ -156,9 +156,9 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState s) {
-    if (s == AppLifecycleState.resumed && syncEnabled) syncNow();
-    if (s == AppLifecycleState.paused && _debounce?.isActive == true) {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && syncEnabled) syncNow();
+    if (state == AppLifecycleState.paused && _debounce?.isActive == true) {
       _debounce!.cancel();
       syncNow();
     }

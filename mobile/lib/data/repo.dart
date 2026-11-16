@@ -81,9 +81,9 @@ class EnvelopeMonth {
   final int readyToAssign;
   final List<EnvelopeRow> rows;
   final Set<String> missingFx;
-  int get assigned => rows.fold(0, (s, r) => s + r.assigned);
-  int get activity => rows.fold(0, (s, r) => s + r.activity);
-  int get available => rows.fold(0, (s, r) => s + r.available);
+  int get assigned => rows.fold<int>(0, (s, r) => s + r.assigned);
+  int get activity => rows.fold<int>(0, (s, r) => s + r.activity);
+  int get available => rows.fold<int>(0, (s, r) => s + r.available);
 }
 
 /// Currency conversion with the exchange rates PFI on Windows downloads
@@ -401,7 +401,7 @@ class Repo {
     }
     final future = assigned.entries
         .where((e) => e.key.$2.isAfter(month))
-        .fold(0, (s, e) => s + e.value);
+        .fold<int>(0, (s, e) => s + e.value);
     var cashAt = 0;
     var running = 0;
     for (final fm in flow.keys.toList()..sort()) {
@@ -409,7 +409,7 @@ class Repo {
       if (!fm.isAfter(month)) cashAt = running;
     }
     final ready =
-        cashAt - available.values.fold(0, (s, v) => s + v) - future;
+        cashAt - available.values.fold<int>(0, (s, v) => s + v) - future;
     final rows = <EnvelopeRow>[];
     for (final k in keys) {
       final cat = cats[k];
