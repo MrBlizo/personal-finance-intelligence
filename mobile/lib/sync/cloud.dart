@@ -13,6 +13,7 @@ import 'dart:typed_data';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
 import '../config.dart';
@@ -34,7 +35,7 @@ extension CloudProviderInfo on CloudProvider {
       };
   bool get configured => switch (this) {
         CloudProvider.onedrive => oneDriveClientId.isNotEmpty,
-        CloudProvider.gdrive => googleClientId.isNotEmpty,
+        CloudProvider.gdrive => googleServerClientId.isNotEmpty,
         CloudProvider.dropbox => dropboxAppKey.isNotEmpty,
       };
 }
@@ -80,19 +81,41 @@ class CloudAuth {
       };
   String get _clientId => switch (provider) {
         CloudProvider.onedrive => oneDriveClientId,
-        CloudProvider.gdrive => googleClientId,
+        CloudProvider.gdrive => googleServerClientId,
         CloudProvider.dropbox => dropboxAppKey,
       };
-  String get _redirect =>
-      provider == CloudProvider.gdrive ? googleRedirect : oauthRedirect;
+  String get _redirect => oauthRedirect;
   static const _oneDriveScope = 'Files.ReadWrite offline_access';
   static const _googleScope = 'https://www.googleapis.com/auth/drive.appdata';
 
   Future<bool> get signedIn async =>
       (await _storage.read(key: _refreshKey)) != null;
 
-  /// Opens the provider's sign-in page in the browser.
+  static bool _googleReady = false;
+
+  static Future<GoogleSignIn> _google() async {
+    if (!_googleReady) {
+      await GoogleSignIn.instance.initialize(serverClientId: googleServerClientId);
+      _googleReady = true;
+    }
+    return GoogleSignIn.instance;
+  }
+
+  /// Opens the provider's sign-in page in the browser (Google: the account
+  /// picker of Google Play services).
   Future<void> signIn() async {
+    if (provider == CloudProvider.gdrive) {
+      final g = await _google();
+      try {
+        await g.authorizationClient.authorizeScopes(const [_googleScope]);
+      } on GoogleSignInException catch (e) {
+        throw SyncException(e.code == GoogleSignInExceptionCode.canceled
+            ? 'Sign-in was cancelled.'
+            : 'Google sign-in failed (${e.description ?? e.code.name}).');
+      }
+      await _storage.write(key: _refreshKey, value: 'google');
+      return;
+    }
     if (_clientId.isEmpty) {
       throw SyncException('${provider.title} is not available in this build '
           'of PFI yet.');
@@ -107,7 +130,6 @@ class CloudAuth {
       'code_challenge_method': 'S256',
       'state': state,
       if (provider == CloudProvider.onedrive) 'scope': _oneDriveScope,
-      if (provider == CloudProvider.gdrive) 'scope': _googleScope,
       if (provider == CloudProvider.dropbox) 'token_access_type': 'offline',
     });
     final result = await FlutterWebAuth2.authenticate(
@@ -132,6 +154,11 @@ class CloudAuth {
   Future<void> signOut() async {
     _access = null;
     await _storage.delete(key: _refreshKey);
+    if (provider == CloudProvider.gdrive) {
+      try {
+        await (await _google()).disconnect();
+      } catch (_) {}
+    }
   }
 
   Future<void> _exchange(Map<String, String> body) async {
@@ -158,6 +185,18 @@ class CloudAuth {
 
   Future<String> token() async {
     if (_access != null && DateTime.now().isBefore(_expires)) return _access!;
+    if (provider == CloudProvider.gdrive) {
+      final headers = await (await _google())
+          .authorizationClient
+          .authorizationHeaders(const [_googleScope]);
+      final value = headers?['Authorization'] ?? headers?['authorization'];
+      if (value == null) {
+        throw SyncException('Sign in to Google Drive again in Settings › Sync.');
+      }
+      _access = value.replaceFirst(RegExp(r'^Bearer\s+', caseSensitive: false), '');
+      _expires = DateTime.now().add(const Duration(minutes: 45));
+      return _access!;
+    }
     final refresh = await _storage.read(key: _refreshKey);
     if (refresh == null) {
       throw SyncException('Sign in to ${provider.title} in Settings › Sync.');

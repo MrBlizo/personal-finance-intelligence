@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy | Personal Finance Intelligence</title>
+<meta name="description" content="How PFI handles your data: everything stays on your devices; optional encrypted sync through your own OneDrive or Google Drive.">
+<link rel="canonical" href="https://mrblizo.github.io/personal-finance-intelligence/privacy/">
+<link rel="icon" href="../img/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="../"><img src="../img/icon.svg" alt="" width="32" height="32">Personal Finance Intelligence</a>
+    <nav class="links"><a href="../#features">Features</a><a href="../guides/">Guides</a>
+      <a href="../#download">Download</a></nav>
+  </header>
+  <article>
+    <p class="crumbs"><a href="../">Home</a> › Privacy</p>
+<h1>Privacy policy</h1>
+<p><em>Personal Finance Intelligence (PFI) · last updated 16 November 2026</em></p>
+<p>PFI is a desktop app (with an optional Android app) that keeps your
+financial data on your own devices.</p>
+<h2>What PFI stores</h2>
+<p>Everything you enter or import (accounts, transactions, budgets, goals,
+investments, settings) is stored in a private database file in your Windows
+user profile (<code>%LOCALAPPDATA%\PersonalFinanceIntelligence</code>, or the app's
+private storage when installed from the Microsoft Store). Imported bank
+files and receipts you attach are kept in the same folder. Backups are
+written to its <code>backups</code> subfolder, or to a folder you choose (for example
+in OneDrive); if you set a backup password they are encrypted (AES-256) and
+the password is kept on this PC, protected by Windows for your user
+account. When you choose a OneDrive folder, OneDrive (not PFI) uploads those
+backup files under Microsoft's terms. Nothing is sent to the developer or to any server operated by the
+developer. There is no account, no analytics, no advertising and no
+telemetry.</p>
+<h2>Sync between your PC and your phone (optional)</h2>
+<p>If you turn on sync (Settings › Sync), PFI writes your changes as files into
+a folder in your own cloud drive (OneDrive or Google Drive), and reads the
+files your other
+devices wrote there. Every file is encrypted on the device with AES-256-GCM,
+using a key derived from a passphrase only you know; the cloud provider
+stores the encrypted files under its own terms and cannot read them. The
+passphrase is not stored; the derived key is kept on each device (protected
+by Windows on the PC, by the Android keystore on the phone). Receipt files
+are not synced.</p>
+<p>On the phone, PFI asks you to sign in to OneDrive with your Microsoft
+account and the permission "Files.ReadWrite", which it uses only for the
+sync folder (<code>Apps/PFI Sync</code>). The sign-in is handled by Microsoft; PFI
+keeps only the sign-in tokens it receives, in the Android keystore. Stop
+syncing removes the key and the sign-in from that device.</p>
+<p>With Google Drive, PFI on the PC and on the phone asks you to sign in with
+your Google account and the permission "drive.appdata". It lets PFI see only
+its own hidden app folder in your Drive, not your other files; the sync files
+are kept there. On the PC the sign-in token is stored protected by Windows;
+on the phone the sign-in is handled by Google Play services.</p>
+<h2>The Android app</h2>
+<p>The phone app stores your data in a private database on the phone. It uses
+the network only for the sync described above. It has no account, no
+analytics, no advertising and no telemetry.</p>
+<h2>Network requests</h2>
+<p>PFI makes only these requests, and only for the purposes described:</p>
+<table>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>Service</th>
+<th>Data sent</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exchange rates</td>
+<td><a href="https://github.com/fawazahmed0/exchange-api">Exchange API</a> via cdn.jsdelivr.net or currency-api.pages.dev</td>
+<td>currency codes (e.g. <code>chf</code>) and a date</td>
+<td>once a day if enabled in Settings, or when you click "Update now"</td>
+</tr>
+<tr>
+<td>Stock, ETF &amp; fund prices</td>
+<td>query1.finance.yahoo.com</td>
+<td>the symbol you entered (e.g. <code>VWRL.L</code>) and a date range</td>
+<td>once a day for holdings with Yahoo Finance as price source, or on request</td>
+</tr>
+<tr>
+<td>Crypto prices</td>
+<td>api.coingecko.com</td>
+<td>the coin id (e.g. <code>bitcoin</code>) and a currency code</td>
+<td>once a day for holdings with CoinGecko as price source, or on request</td>
+</tr>
+</tbody>
+</table>
+<p>These services receive your IP address as part of any internet request;
+their own privacy policies apply. You can switch both automatic updates off
+in Settings and enter rates and prices manually.</p>
+<p>PFI needs no API keys for prices. (Versions before 0.7.1 offered Twelve Data,
+Alpha Vantage and stooq with your own key; keys saved by those versions stay
+in your local database only and are no longer sent anywhere.)</p>
+<h2>Windows features</h2>
+<ul>
+<li><strong>Windows Hello</strong> (optional app lock): verification is done by Windows; PFI
+  only receives "verified" or "not verified".</li>
+<li><strong>Store rating</strong> (asked once, after 14 days of use and 20 transactions):
+  "Rate PFI" opens the Microsoft Store's own rating window, run by Windows
+  under Microsoft's terms. PFI sends nothing itself and only learns whether
+  the window was closed or a rating was submitted; your answer is stored on
+  this PC.</li>
+<li><strong>Notifications</strong> (bill reminders): shown locally by Windows.</li>
+</ul>
+<h2>Your control</h2>
+<p>You can export everything (Excel, CSV, backups), and you can delete all data
+by uninstalling the app and deleting the data folder named above.</p>
+<h2>Contact</h2>
+<p>Questions: open an issue at
+<a href="https://github.com/MrBlizo/personal-finance-intelligence/issues">https://github.com/MrBlizo/personal-finance-intelligence/issues</a>.</p>
+  </article>
+</div>
+<footer>
+  <div class="wrap cols">
+    <div>Personal Finance Intelligence · made by <a href="https://github.com/MrBlizo">Ibrahim</a> · AGPL-3.0 license</div>
+    <div><a href="../">Home</a> · <a href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/PRIVACY.md">Source of this page</a></div>
+  </div>
+</footer>
+</body>
+</html>

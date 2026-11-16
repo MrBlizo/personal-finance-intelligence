@@ -76,7 +76,6 @@ jobs:
           flutter build apk --release
           --build-number=${{ github.run_number }}
           --dart-define=DROPBOX_APP_KEY=${{ vars.DROPBOX_APP_KEY }}
-          --dart-define=GOOGLE_CLIENT_ID=${{ vars.GOOGLE_CLIENT_ID }}
       - name: Sign with the PFI key
         working-directory: mobile
         env:

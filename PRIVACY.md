@@ -41,8 +41,8 @@ syncing removes the key and the sign-in from that device.
 With Google Drive, PFI on the PC and on the phone asks you to sign in with
 your Google account and the permission "drive.appdata". It lets PFI see only
 its own hidden app folder in your Drive, not your other files; the sync files
-are kept there. The refresh token is stored protected by Windows on the PC
-and in the Android keystore on the phone.
+are kept there. On the PC the sign-in token is stored protected by Windows;
+on the phone the sign-in is handled by Google Play services.
 
 ## The Android app
 
