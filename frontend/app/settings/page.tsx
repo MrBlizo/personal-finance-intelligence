@@ -111,269 +111,283 @@ export default function SettingsPage() {
       {msg && <Banner kind={msg.kind} onClose={() => setMsg(null)}>{msg.text}</Banner>}
       {!s && <Spinner />}
       {s && (
-        <div style={{ maxWidth: 1000 }}>
-          <div className="group-title">{t("General")}</div>
-          <div className="settings-group">
-            <SettingRow icon={""} title={t("Language")}
-              description={t("Language of the app and the monthly PDF report (Arabic reports are generated in English).")}>
-              <Select value={s.language} onChange={(_, d) => run(async () => {
-                await save({ language: d.value as Lang });
-                setLang(d.value as Lang);
-                return translate(d.value as Lang, "Language changed.");
-              })}>
-                {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
-              </Select>
-            </SettingRow>
-            <SettingRow icon={"\uE793"} title={t("Theme")}
-              description={t("Light, dark, or the same as Windows. Also in the top right corner of every page.")}>
-              <Select value={theme.pref} onChange={(_, d) => theme.setPref(d.value as ThemePref)}>
-                <option value="system">{t("Same as Windows")}</option>
-                <option value="light">{t("Light")}</option>
-                <option value="dark">{t("Dark")}</option>
-              </Select>
-            </SettingRow>
-            <SettingRow icon={"\uE790"} title={t("Accent colour")}
-              description={t("Colours buttons, highlights and charts. Windows blue matches the rest of Windows.")}>
-              <div className="swatches">
-                {ACCENTS.map((a) => (
-                  <Tooltip key={a.id || "default"} content={t(a.label)} relationship="label">
-                    <button type="button" className={`swatch ${theme.accent === a.id ? "selected" : ""}`}
-                      style={{ background: a.hex }} onClick={() => theme.setAccent(a.id)} />
-                  </Tooltip>))}
-              </div>
-            </SettingRow>
-            <SettingRow icon={""} title={t("Reporting currency")}
-              description={t("Currencies in use: {list}", { list: s.currencies_in_use.join(", ") || "—" })}>
-              <Select value={s.base_currency} onChange={(_, d) => run(async () => {
-                await save({ base_currency: d.value }); missing.reload();
-                return t("Reports are now shown in {cur}.", { cur: d.value });
-              })}>
-                {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
-              </Select>
-            </SettingRow>
-          </div>
+        <div className="settings-cols">
+          <section className="settings-block">
+            <div className="group-title">{t("General")}</div>
+            <div className="settings-group">
+              <SettingRow icon={""} title={t("Language")}
+                description={t("Language of the app and the monthly PDF report (Arabic reports are generated in English).")}>
+                <Select value={s.language} onChange={(_, d) => run(async () => {
+                  await save({ language: d.value as Lang });
+                  setLang(d.value as Lang);
+                  return translate(d.value as Lang, "Language changed.");
+                })}>
+                  {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+                </Select>
+              </SettingRow>
+              <SettingRow icon={"\uE793"} title={t("Theme")}
+                description={t("Light, dark, or the same as Windows. Also in the top right corner of every page.")}>
+                <Select value={theme.pref} onChange={(_, d) => theme.setPref(d.value as ThemePref)}>
+                  <option value="system">{t("Same as Windows")}</option>
+                  <option value="light">{t("Light")}</option>
+                  <option value="dark">{t("Dark")}</option>
+                </Select>
+              </SettingRow>
+              <SettingRow icon={"\uE790"} title={t("Accent colour")}
+                description={t("Colours buttons, highlights and charts. Windows blue matches the rest of Windows.")}>
+                <div className="swatches">
+                  {ACCENTS.map((a) => (
+                    <Tooltip key={a.id || "default"} content={t(a.label)} relationship="label">
+                      <button type="button" className={`swatch ${theme.accent === a.id ? "selected" : ""}`}
+                        style={{ background: a.hex }} onClick={() => theme.setAccent(a.id)} />
+                    </Tooltip>))}
+                </div>
+              </SettingRow>
+              <SettingRow icon={""} title={t("Reporting currency")}
+                description={t("Currencies in use: {list}", { list: s.currencies_in_use.join(", ") || "—" })}>
+                <Select value={s.base_currency} onChange={(_, d) => run(async () => {
+                  await save({ base_currency: d.value }); missing.reload();
+                  return t("Reports are now shown in {cur}.", { cur: d.value });
+                })}>
+                  {CURRENCIES.map((c) => <option key={c}>{c}</option>)}
+                </Select>
+              </SettingRow>
+            </div>
+          </section>
 
-          <div className="group-title">{t("Privacy & security")}</div>
-          <div className="settings-group">
-            <SettingRow icon={""} title={t("App lock with Windows Hello")}
-              description={!shell ? t("Only available in the desktop app.")
-                : hello === false ? t("Windows Hello is not set up on this PC. Set up a PIN, fingerprint or face in Windows Settings › Accounts › Sign-in options.")
-                : t("Ask for your face, fingerprint or Windows PIN when PFI opens and after it has been idle.")}>
-              {s.app_lock === "hello" && shell && (
-                <Button icon={<LockClosed20Regular />} onClick={() => requestLock()}>{t("Lock now")}</Button>)}
-              <Switch checked={s.app_lock === "hello"} disabled={!shell || hello === false}
-                onChange={(_, d) => run(async () => {
-                  const mode = d.checked ? "hello" : "off";
-                  const out = await save({ app_lock: mode });
-                  notifyLockSettings(mode, out.lock_after_minutes);
-                  return d.checked ? t("App lock is on.") : t("App lock is off.");
+          <section className="settings-block">
+            <div className="group-title">{t("Privacy & security")}</div>
+            <div className="settings-group">
+              <SettingRow icon={""} title={t("App lock with Windows Hello")}
+                description={!shell ? t("Only available in the desktop app.")
+                  : hello === false ? t("Windows Hello is not set up on this PC. Set up a PIN, fingerprint or face in Windows Settings › Accounts › Sign-in options.")
+                  : t("Ask for your face, fingerprint or Windows PIN when PFI opens and after it has been idle.")}>
+                {s.app_lock === "hello" && shell && (
+                  <Button icon={<LockClosed20Regular />} onClick={() => requestLock()}>{t("Lock now")}</Button>)}
+                <Switch checked={s.app_lock === "hello"} disabled={!shell || hello === false}
+                  onChange={(_, d) => run(async () => {
+                    const mode = d.checked ? "hello" : "off";
+                    const out = await save({ app_lock: mode });
+                    notifyLockSettings(mode, out.lock_after_minutes);
+                    return d.checked ? t("App lock is on.") : t("App lock is off.");
+                  })} />
+              </SettingRow>
+              {s.app_lock === "hello" && (
+                <SettingRow title={t("Lock after inactivity")}
+                  description={t("Also locks when the window is minimised for this long.")}>
+                  <Select value={String(s.lock_after_minutes)} onChange={(_, d) => run(async () => {
+                    const out = await save({ lock_after_minutes: Number(d.value) });
+                    notifyLockSettings(out.app_lock, out.lock_after_minutes);
+                    return t("Saved.");
+                  })}>
+                    {[1, 5, 15, 30, 60, 0].map((m) => (
+                      <option key={m} value={m}>{m === 0 ? t("Only when the app starts")
+                        : t("{n} minutes", { n: m })}</option>))}
+                  </Select>
+                </SettingRow>)}
+              <div className="caption" style={{ padding: "4px 16px" }}>
+                {t("The lock protects the app window. Your data stays on this PC; to encrypt the disk use BitLocker or Device encryption.")}</div>
+            </div>
+          </section>
+
+          <section className="settings-block">
+            <div className="group-title">{t("Smart categories")}</div>
+            <div className="settings-group">
+              <SettingRow icon={""} title={t("Categorise imports automatically")}
+                description={t("Uses what PFI learned from the transactions you categorised yourself. Rules always come first.")}>
+                <Switch checked={s.auto_categorize} onChange={(_, d) => run(async () => {
+                  await save({ auto_categorize: d.checked });
+                  return d.checked ? t("Automatic categorisation is on.") : t("Automatic categorisation is off.");
                 })} />
-            </SettingRow>
-            {s.app_lock === "hello" && (
-              <SettingRow title={t("Lock after inactivity")}
-                description={t("Also locks when the window is minimised for this long.")}>
-                <Select value={String(s.lock_after_minutes)} onChange={(_, d) => run(async () => {
-                  const out = await save({ lock_after_minutes: Number(d.value) });
-                  notifyLockSettings(out.app_lock, out.lock_after_minutes);
+              </SettingRow>
+              <SettingRow title={t("Minimum confidence")}
+                description={t("Suggestions below this are left for you to review.")}>
+                <Select value={String(s.auto_categorize_threshold)} onChange={(_, d) => run(async () => {
+                  await save({ auto_categorize_threshold: Number(d.value) }); learn.reload();
                   return t("Saved.");
                 })}>
-                  {[1, 5, 15, 30, 60, 0].map((m) => (
-                    <option key={m} value={m}>{m === 0 ? t("Only when the app starts")
-                      : t("{n} minutes", { n: m })}</option>))}
+                  {[0.6, 0.7, 0.8, 0.9, 0.95].map((x) => <option key={x} value={x}>{pct(x, 0)}</option>)}
                 </Select>
-              </SettingRow>)}
-            <div className="caption" style={{ padding: "4px 16px" }}>
-              {t("The lock protects the app window. Your data stays on this PC; to encrypt the disk use BitLocker or Device encryption.")}</div>
-          </div>
+              </SettingRow>
+              <SettingRow title={t("How well it works on your data")}
+                description={learn.data?.accuracy == null
+                  ? t("Needs at least {n} categorised transactions in 2+ categories ({have} so far).",
+                    { n: learn.data?.min_examples ?? 20, have: learn.data?.examples ?? 0 })
+                  : t("Trained on your older {a} transactions and tested on the newest {b}: {acc} correct (always guessing the most common category: {base}). At {thr} confidence it decides {cov} of them, {acc2} correctly.", {
+                    a: learn.data.n_train, b: learn.data.n_test, acc: pct(learn.data.accuracy, 0),
+                    base: pct(learn.data.baseline, 0), thr: pct(learn.data.threshold, 0),
+                    cov: pct(learn.data.coverage_at_threshold, 0),
+                    acc2: pct(learn.data.accuracy_at_threshold, 0) })}>
+                <Link href="/transactions/?uncategorized=1"><Button>{t("Review uncategorised")}</Button></Link>
+              </SettingRow>
+            </div>
+          </section>
 
-          <div className="group-title">{t("Smart categories")}</div>
-          <div className="settings-group">
-            <SettingRow icon={""} title={t("Categorise imports automatically")}
-              description={t("Uses what PFI learned from the transactions you categorised yourself. Rules always come first.")}>
-              <Switch checked={s.auto_categorize} onChange={(_, d) => run(async () => {
-                await save({ auto_categorize: d.checked });
-                return d.checked ? t("Automatic categorisation is on.") : t("Automatic categorisation is off.");
-              })} />
-            </SettingRow>
-            <SettingRow title={t("Minimum confidence")}
-              description={t("Suggestions below this are left for you to review.")}>
-              <Select value={String(s.auto_categorize_threshold)} onChange={(_, d) => run(async () => {
-                await save({ auto_categorize_threshold: Number(d.value) }); learn.reload();
-                return t("Saved.");
-              })}>
-                {[0.6, 0.7, 0.8, 0.9, 0.95].map((x) => <option key={x} value={x}>{pct(x, 0)}</option>)}
-              </Select>
-            </SettingRow>
-            <SettingRow title={t("How well it works on your data")}
-              description={learn.data?.accuracy == null
-                ? t("Needs at least {n} categorised transactions in 2+ categories ({have} so far).",
-                  { n: learn.data?.min_examples ?? 20, have: learn.data?.examples ?? 0 })
-                : t("Trained on your older {a} transactions and tested on the newest {b}: {acc} correct (always guessing the most common category: {base}). At {thr} confidence it decides {cov} of them, {acc2} correctly.", {
-                  a: learn.data.n_train, b: learn.data.n_test, acc: pct(learn.data.accuracy, 0),
-                  base: pct(learn.data.baseline, 0), thr: pct(learn.data.threshold, 0),
-                  cov: pct(learn.data.coverage_at_threshold, 0),
-                  acc2: pct(learn.data.accuracy_at_threshold, 0) })}>
-              <Link href="/transactions/?uncategorized=1"><Button>{t("Review uncategorised")}</Button></Link>
-            </SettingRow>
-          </div>
+          <section className="settings-block">
+            <div className="group-title">{t("Exchange rates & prices")}</div>
+            <div className="settings-group">
+              <SettingRow icon={""} title={t("Update exchange rates automatically")}
+                description={(s.fx_last_update ? t("Last update {d}.", { d: date(s.fx_last_update) }) + " " : "")
+                  + t("Free Exchange API, once a day; only currency codes are sent.")}>
+                <Button icon={<ArrowSync20Regular />} disabled={busy === "fx"} onClick={() => run(async () => {
+                  setBusy("fx");
+                  try {
+                    const r = await post<{ stored: number; currencies: string[]; missing: string[]; date: string | null }>(
+                      "/api/fx-rates/fetch");
+                    rates.reload(); missing.reload(); refs.reload();
+                    return r.currencies.length
+                      ? t("Downloaded rates of {d} for {list} ({n} new values incl. monthly history).",
+                        { d: r.date ?? "", list: r.currencies.join(", "), n: r.stored })
+                        + (r.missing.length ? " " + t("Not available: {list}.", { list: r.missing.join(", ") }) : "")
+                      : t("Only the reporting currency is in use; no rates needed.");
+                  } finally { setBusy(null); }
+                })}>{busy === "fx" ? t("Downloading…") : t("Update now")}</Button>
+                <Switch checked={s.fx_auto_update} onChange={(_, d) => run(async () => {
+                  await save({ fx_auto_update: d.checked });
+                  return d.checked ? t("Rates will be updated automatically once a day.")
+                    : t("Automatic rate updates are off.");
+                })} />
+              </SettingRow>
+              {!!missing.data?.missing.length && (
+                <Banner kind="warning">{t("Missing a rate to {cur} for: {list}.",
+                  { cur: s.base_currency, list: missing.data.missing.join(", ") })}</Banner>)}
+              <SettingRow title={t("Exchange-rate table")}
+                description={t("Each transaction uses the latest rate on or before its date; inverse and cross rates are derived automatically.")}>
+                <Button icon={<Add20Regular />} onClick={() => setRateModal(true)}>{t("Add rate")}</Button>
+                <Button appearance="subtle" onClick={() => setShowRates(!showRates)}>
+                  {showRates ? t("Hide") : t("Show ({n})", { n: rates.data?.length ?? 0 })}</Button>
+              </SettingRow>
+              {showRates && (
+                <div className="setting-body table-wrap" style={{ maxHeight: 320 }}>
+                  {rates.data?.length === 0 && <Empty>{t("No rates yet.")}</Empty>}
+                  {!!rates.data?.length && (
+                    <table><thead><tr><th>{t("Date")}</th><th>{t("Pair")}</th><th className="num">{t("Rate")}</th>
+                      <th>{t("Source")}</th><th /></tr></thead>
+                      <tbody>{rates.data.map((r) => (
+                        <tr key={r.id}><td>{date(r.rate_date)}</td>
+                          <td>1 {r.from_currency} = … {r.to_currency}</td>
+                          <td className="num">{num(r.rate, 6)}</td><td className="muted">{r.source}</td>
+                          <td className="actions"><Button appearance="subtle" size="small" icon={<Delete20Regular />}
+                            aria-label={t("Delete")} onClick={async () => {
+                              await del(`/api/fx-rates/${r.id}`); rates.reload(); missing.reload();
+                            }} /></td></tr>))}</tbody></table>)}
+                </div>)}
+              {KEY_PROVIDERS.map((k) => (
+                <ApiKeyRow key={k.id} provider={k} settings={s} run={run} save={save} />))}
+              <SettingRow icon={""} title={t("Update investment prices automatically")}
+                description={(s.price_last_update ? t("Last update {d}.", { d: date(s.price_last_update) }) + " " : "")
+                  + t("Once a day for holdings with an online price source; only the symbol and that provider's key are sent.")}>
+                <Switch checked={s.price_auto_update} onChange={(_, d) => run(async () => {
+                  await save({ price_auto_update: d.checked });
+                  return t("Saved.");
+                })} />
+              </SettingRow>
+            </div>
+          </section>
 
-          <div className="group-title">{t("Exchange rates & prices")}</div>
-          <div className="settings-group">
-            <SettingRow icon={""} title={t("Update exchange rates automatically")}
-              description={(s.fx_last_update ? t("Last update {d}.", { d: date(s.fx_last_update) }) + " " : "")
-                + t("Free Exchange API, once a day; only currency codes are sent.")}>
-              <Button icon={<ArrowSync20Regular />} disabled={busy === "fx"} onClick={() => run(async () => {
-                setBusy("fx");
-                try {
-                  const r = await post<{ stored: number; currencies: string[]; missing: string[]; date: string | null }>(
-                    "/api/fx-rates/fetch");
-                  rates.reload(); missing.reload(); refs.reload();
-                  return r.currencies.length
-                    ? t("Downloaded rates of {d} for {list} ({n} new values incl. monthly history).",
-                      { d: r.date ?? "", list: r.currencies.join(", "), n: r.stored })
-                      + (r.missing.length ? " " + t("Not available: {list}.", { list: r.missing.join(", ") }) : "")
-                    : t("Only the reporting currency is in use; no rates needed.");
-                } finally { setBusy(null); }
-              })}>{busy === "fx" ? t("Downloading…") : t("Update now")}</Button>
-              <Switch checked={s.fx_auto_update} onChange={(_, d) => run(async () => {
-                await save({ fx_auto_update: d.checked });
-                return d.checked ? t("Rates will be updated automatically once a day.")
-                  : t("Automatic rate updates are off.");
-              })} />
-            </SettingRow>
-            {!!missing.data?.missing.length && (
-              <Banner kind="warning">{t("Missing a rate to {cur} for: {list}.",
-                { cur: s.base_currency, list: missing.data.missing.join(", ") })}</Banner>)}
-            <SettingRow title={t("Exchange-rate table")}
-              description={t("Each transaction uses the latest rate on or before its date; inverse and cross rates are derived automatically.")}>
-              <Button icon={<Add20Regular />} onClick={() => setRateModal(true)}>{t("Add rate")}</Button>
-              <Button appearance="subtle" onClick={() => setShowRates(!showRates)}>
-                {showRates ? t("Hide") : t("Show ({n})", { n: rates.data?.length ?? 0 })}</Button>
-            </SettingRow>
-            {showRates && (
-              <div className="setting-body table-wrap" style={{ maxHeight: 320 }}>
-                {rates.data?.length === 0 && <Empty>{t("No rates yet.")}</Empty>}
-                {!!rates.data?.length && (
-                  <table><thead><tr><th>{t("Date")}</th><th>{t("Pair")}</th><th className="num">{t("Rate")}</th>
-                    <th>{t("Source")}</th><th /></tr></thead>
-                    <tbody>{rates.data.map((r) => (
-                      <tr key={r.id}><td>{date(r.rate_date)}</td>
-                        <td>1 {r.from_currency} = … {r.to_currency}</td>
-                        <td className="num">{num(r.rate, 6)}</td><td className="muted">{r.source}</td>
-                        <td className="actions"><Button appearance="subtle" size="small" icon={<Delete20Regular />}
-                          aria-label={t("Delete")} onClick={async () => {
-                            await del(`/api/fx-rates/${r.id}`); rates.reload(); missing.reload();
-                          }} /></td></tr>))}</tbody></table>)}
-              </div>)}
-            {KEY_PROVIDERS.map((k) => (
-              <ApiKeyRow key={k.id} provider={k} settings={s} run={run} save={save} />))}
-            <SettingRow icon={""} title={t("Update investment prices automatically")}
-              description={(s.price_last_update ? t("Last update {d}.", { d: date(s.price_last_update) }) + " " : "")
-                + t("Once a day for holdings with an online price source; only the symbol and that provider's key are sent.")}>
-              <Switch checked={s.price_auto_update} onChange={(_, d) => run(async () => {
-                await save({ price_auto_update: d.checked });
-                return t("Saved.");
-              })} />
-            </SettingRow>
-          </div>
-
-          <div className="group-title">{t("Categories & rules")}</div>
-          <div className="grid g2">
-            <section className="card section">
-              <div className="section-head">
-                <h2>{t("Categories")}</h2>
-                <Button size="small" icon={<Add20Regular />} onClick={() => setCatModal("new")}>{t("Add")}</Button>
-              </div>
-              <div className="table-wrap" style={{ maxHeight: 420 }}>
-                <table><tbody>{cats.map((c) => (
-                  <tr key={c.id}>
-                    <td><span className="cat-cell" style={{ paddingInlineStart: c.parent_id ? 20 : 0 }}>
-                      <CategoryIcon name={c.name} icon={c.icon} color={c.color} size={26} />
-                      <span>{catLabel(c.full_name, t)}</span></span></td>
-                    <td><Badge appearance="tint" color={c.kind === "income" ? "success" : "informative"}>
-                      {t(c.kind === "income" ? "Income" : "Expense")}</Badge></td>
-                    <td className="actions">
-                      <Button appearance="subtle" size="small" icon={<Edit20Regular />} aria-label={t("Edit")}
-                        onClick={() => setCatModal(c)} />
-                      <Button appearance="subtle" size="small" icon={<Delete20Regular />} aria-label={t("Delete")}
-                        onClick={() => setConfirm({ danger: true,
-                          text: t("Delete “{c}”? Its transactions become uncategorised.", { c: catLabel(c.full_name, t) }),
-                          run: async () => { await del(`/api/categories/${c.id}`); refs.reload(); } })} />
-                    </td>
-                  </tr>))}</tbody></table>
-              </div>
-            </section>
-            <section className="card section">
-              <div className="section-head">
-                <div><h2>{t("Categorisation rules")}</h2>
-                  <div className="caption">{t("Text that appears in a description or payee gets the category. Higher priority wins.")}</div></div>
-                <div className="commands">
-                  <Button size="small" onClick={() => run(async () => {
-                    const r = await post<{ updated: number }>("/api/rules/apply");
-                    return t("{n} uncategorised transactions were categorised.", { n: r.updated });
-                  })}>{t("Apply to uncategorised")}</Button>
-                  <Button size="small" icon={<Add20Regular />} onClick={() => setRuleModal("new")}>{t("Add")}</Button>
+          <section className="settings-block wide">
+            <div className="group-title">{t("Categories & rules")}</div>
+            <div className="grid g2">
+              <section className="card section">
+                <div className="section-head">
+                  <h2>{t("Categories")}</h2>
+                  <Button size="small" icon={<Add20Regular />} onClick={() => setCatModal("new")}>{t("Add")}</Button>
                 </div>
-              </div>
-              {rules.data?.length === 0 && <Empty>{t("No rules yet. Example: “migros” → Groceries.")}</Empty>}
-              {!!rules.data?.length && (
-                <div className="table-wrap"><table><thead><tr><th>{t("Pattern")}</th><th>{t("Category")}</th>
-                  <th className="num">{t("Priority")}</th><th /></tr></thead>
-                  <tbody>{rules.data.map((r) => (
-                    <tr key={r.id}><td><code>{r.pattern}</code>{" "}
-                      {r.is_regex && <Badge appearance="outline" size="small">regex</Badge>}</td>
-                      <td>{catName(r.category_id)}</td><td className="num">{r.priority}</td>
+                <div className="table-wrap" style={{ maxHeight: 420 }}>
+                  <table><tbody>{cats.map((c) => (
+                    <tr key={c.id}>
+                      <td><span className="cat-cell" style={{ paddingInlineStart: c.parent_id ? 20 : 0 }}>
+                        <CategoryIcon name={c.name} icon={c.icon} color={c.color} size={26} />
+                        <span>{catLabel(c.full_name, t)}</span></span></td>
+                      <td><Badge appearance="tint" color={c.kind === "income" ? "success" : "informative"}>
+                        {t(c.kind === "income" ? "Income" : "Expense")}</Badge></td>
                       <td className="actions">
                         <Button appearance="subtle" size="small" icon={<Edit20Regular />} aria-label={t("Edit")}
-                          onClick={() => setRuleModal(r)} />
+                          onClick={() => setCatModal(c)} />
                         <Button appearance="subtle" size="small" icon={<Delete20Regular />} aria-label={t("Delete")}
-                          onClick={async () => { await del(`/api/rules/${r.id}`); rules.reload(); }} /></td>
-                    </tr>))}</tbody></table></div>)}
-            </section>
-          </div>
+                          onClick={() => setConfirm({ danger: true,
+                            text: t("Delete “{c}”? Its transactions become uncategorised.", { c: catLabel(c.full_name, t) }),
+                            run: async () => { await del(`/api/categories/${c.id}`); refs.reload(); } })} />
+                      </td>
+                    </tr>))}</tbody></table>
+                </div>
+              </section>
+              <section className="card section">
+                <div className="section-head">
+                  <div><h2>{t("Categorisation rules")}</h2>
+                    <div className="caption">{t("Text that appears in a description or payee gets the category. Higher priority wins.")}</div></div>
+                  <div className="commands">
+                    <Button size="small" onClick={() => run(async () => {
+                      const r = await post<{ updated: number }>("/api/rules/apply");
+                      return t("{n} uncategorised transactions were categorised.", { n: r.updated });
+                    })}>{t("Apply to uncategorised")}</Button>
+                    <Button size="small" icon={<Add20Regular />} onClick={() => setRuleModal("new")}>{t("Add")}</Button>
+                  </div>
+                </div>
+                {rules.data?.length === 0 && <Empty>{t("No rules yet. Example: “migros” → Groceries.")}</Empty>}
+                {!!rules.data?.length && (
+                  <div className="table-wrap"><table><thead><tr><th>{t("Pattern")}</th><th>{t("Category")}</th>
+                    <th className="num">{t("Priority")}</th><th /></tr></thead>
+                    <tbody>{rules.data.map((r) => (
+                      <tr key={r.id}><td><code>{r.pattern}</code>{" "}
+                        {r.is_regex && <Badge appearance="outline" size="small">regex</Badge>}</td>
+                        <td>{catName(r.category_id)}</td><td className="num">{r.priority}</td>
+                        <td className="actions">
+                          <Button appearance="subtle" size="small" icon={<Edit20Regular />} aria-label={t("Edit")}
+                            onClick={() => setRuleModal(r)} />
+                          <Button appearance="subtle" size="small" icon={<Delete20Regular />} aria-label={t("Delete")}
+                            onClick={async () => { await del(`/api/rules/${r.id}`); rules.reload(); }} /></td>
+                      </tr>))}</tbody></table></div>)}
+              </section>
+            </div>
+          </section>
 
-          <div className="group-title">{t("Sync")}</div>
-          <div className="settings-group">
-            <SyncPanel onMessage={setMsg} onSynced={() => { refs.reload(); rules.reload(); }} />
-          </div>
+          <section className="settings-block">
+            <div className="group-title">{t("Sync")}</div>
+            <div className="settings-group">
+              <SyncPanel onMessage={setMsg} onSynced={() => { refs.reload(); rules.reload(); }} />
+            </div>
+          </section>
 
-          <div className="group-title">{t("Backup & data")}</div>
-          <div className="settings-group">
-            <BackupPanel onMessage={setMsg} onRestored={() => {
-              refs.reload(); rates.reload(); rules.reload(); presets.reload();
-            }} />
-            <OldDataRow onMessage={setMsg} />
-            <SettingRow icon={""} title={t("Import presets")}
-              description={t("Saved column settings per bank file format, applied automatically to files with the same columns.")}>
-              {presets.data?.length === 0 && <span className="caption">{t("None yet")}</span>}
-            </SettingRow>
-            {!!presets.data?.length && (
-              <div className="setting-body">
-                {presets.data.map((p) => (
-                  <div className="list-row" key={p.id}><span className="grow">{p.name}</span>
-                    <Button appearance="subtle" size="small" icon={<Delete20Regular />} aria-label={t("Delete")}
-                      onClick={async () => { await del(`/api/import/presets/${p.id}`); presets.reload(); }} /></div>))}
-              </div>)}
-            <SettingRow icon={""} title={t("Export everything")}
-              description={t("All transactions, accounts, holdings and monthly summaries as an Excel workbook.")}>
-              <Button icon={<ArrowDownload20Regular />} as="a" href={downloadUrl("/api/export/workbook.xlsx")}>
-                {t("Excel workbook")}</Button>
-            </SettingRow>
-            <SettingRow icon={""} title={t("Demo data")}
-              description={t("Synthetic accounts and about 14 months of random transactions to explore every screen. Demo items are labelled and can be removed at any time.")}>
-              <Button onClick={() => run(async () => {
-                const r = await post<{ transactions: number }>("/api/demo"); refs.reload(); rates.reload(); rules.reload();
-                return t("Demo data created ({n} transactions).", { n: r.transactions });
-              })}>{t("Load")}</Button>
-              <Button onClick={() => setConfirm({ danger: true,
-                text: t("Remove all demo accounts, transactions, goals, budgets and demo rates?"),
-                run: async () => { await del("/api/demo"); refs.reload(); rates.reload();
-                  setMsg({ kind: "success", text: t("Demo data removed.") }); } })}>{t("Remove")}</Button>
-            </SettingRow>
-          </div>
+          <section className="settings-block">
+            <div className="group-title">{t("Backup & data")}</div>
+            <div className="settings-group">
+              <BackupPanel onMessage={setMsg} onRestored={() => {
+                refs.reload(); rates.reload(); rules.reload(); presets.reload();
+              }} />
+              <OldDataRow onMessage={setMsg} />
+              <SettingRow icon={""} title={t("Import presets")}
+                description={t("Saved column settings per bank file format, applied automatically to files with the same columns.")}>
+                {presets.data?.length === 0 && <span className="caption">{t("None yet")}</span>}
+              </SettingRow>
+              {!!presets.data?.length && (
+                <div className="setting-body">
+                  {presets.data.map((p) => (
+                    <div className="list-row" key={p.id}><span className="grow">{p.name}</span>
+                      <Button appearance="subtle" size="small" icon={<Delete20Regular />} aria-label={t("Delete")}
+                        onClick={async () => { await del(`/api/import/presets/${p.id}`); presets.reload(); }} /></div>))}
+                </div>)}
+              <SettingRow icon={""} title={t("Export everything")}
+                description={t("All transactions, accounts, holdings and monthly summaries as an Excel workbook.")}>
+                <Button icon={<ArrowDownload20Regular />} as="a" href={downloadUrl("/api/export/workbook.xlsx")}>
+                  {t("Excel workbook")}</Button>
+              </SettingRow>
+              <SettingRow icon={""} title={t("Demo data")}
+                description={t("Synthetic accounts and about 14 months of random transactions to explore every screen. Demo items are labelled and can be removed at any time.")}>
+                <Button onClick={() => run(async () => {
+                  const r = await post<{ transactions: number }>("/api/demo"); refs.reload(); rates.reload(); rules.reload();
+                  return t("Demo data created ({n} transactions).", { n: r.transactions });
+                })}>{t("Load")}</Button>
+                <Button onClick={() => setConfirm({ danger: true,
+                  text: t("Remove all demo accounts, transactions, goals, budgets and demo rates?"),
+                  run: async () => { await del("/api/demo"); refs.reload(); rates.reload();
+                    setMsg({ kind: "success", text: t("Demo data removed.") }); } })}>{t("Remove")}</Button>
+              </SettingRow>
+            </div>
+          </section>
 
           {info.data && (
-            <>
+            <section className="settings-block">
               <div className="group-title">{t("About")}</div>
               <SettingRow icon={""} title={`Personal Finance Intelligence ${info.data.version}`}
                 description={<>{t("Database: {d}", { d: info.data.database })} · {t("Data folder:")}{" "}
@@ -386,7 +400,7 @@ export default function SettingsPage() {
                 <a className="link" href="https://mrblizo.github.io/personal-finance-intelligence/support/"
                   target="_blank" rel="noreferrer">{t("Support PFI")} ♥</a>
               </SettingRow>
-            </>)}
+            </section>)}
         </div>)}
 
       {rateModal && (

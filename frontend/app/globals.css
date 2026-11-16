@@ -529,3 +529,10 @@ td.editing .fui-Input, td.editing .fui-Select { width: 100%; min-width: 90px; }
 .home-kpis .kpi { display: flex; flex-direction: column; justify-content: center; }
 .home-cards { display: block; columns: 2 420px; column-gap: 16px; }
 .home-cards > div { break-inside: avoid; margin-bottom: 16px; }
+
+/* 0.7.1 settings: two columns on wide windows instead of empty space */
+.settings-cols { columns: 2 520px; column-gap: 24px; }
+.settings-block { break-inside: avoid; padding-bottom: 20px; }
+.setting-row .swatches { max-width: 260px; justify-content: flex-end; }
+.settings-block.wide { column-span: all; }
+.settings-cols > .settings-block:first-child > .group-title { margin-top: 0; }
