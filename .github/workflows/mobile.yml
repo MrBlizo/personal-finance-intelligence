@@ -70,7 +70,6 @@ jobs:
         working-directory: mobile
         run: >
           flutter build apk --release
-          --dart-define=ONEDRIVE_CLIENT_ID=${{ vars.ONEDRIVE_CLIENT_ID }}
           --dart-define=DROPBOX_APP_KEY=${{ vars.DROPBOX_APP_KEY }}
       - uses: actions/upload-artifact@v4
         with:
