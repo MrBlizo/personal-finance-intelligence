@@ -40,3 +40,17 @@ cd backend && python -m app.services.mobile_schema ../mobile/assets/db
 ```
 
 `backend/tests/test_mobile_schema.py` fails until the copy is regenerated.
+
+## Signing
+
+Release APKs are signed in GitHub Actions with the PFI key (repository
+secrets `PFI_KEYSTORE_BASE64` and `PFI_KEYSTORE_PASSWORD`, alias `pfi`).
+Android only installs an update over an app signed with the same key, so
+keep a backup of `pfi-upload.jks` and its password.
+
+Public fingerprints (for Google Cloud and app stores):
+
+* SHA-1: `E6:B2:69:D2:6E:14:C9:5C:BB:3C:AE:9E:01:B4:37:11:21:DE:5C:1A`
+* SHA-256: `B2:57:CD:10:2B:C4:63:17:D8:28:43:7E:FB:52:A2:A9:0A:30:44:4E:8A:9D:3C:27:C9:EF:08:B6:33:01:6F:37`
+
+Publishing a GitHub release attaches `PFI-<version>.apk` to it automatically.
