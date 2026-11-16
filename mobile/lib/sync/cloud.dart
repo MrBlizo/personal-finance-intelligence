@@ -190,7 +190,7 @@ class OneDriveStore implements SyncStore {
 
   Future<List<Map<String, dynamic>>> _children(List<String> path) async {
     final out = <Map<String, dynamic>>[];
-    Uri? url = _item(path, '/children', {r'$select': 'name,folder', r'$top': '1000'});
+    Uri? url = _item(path, '/children', {r'$select': 'name,folder', r'$top': '200'});
     try {
       while (url != null) {
         final j = jsonDecode((await _send('GET', url)).body) as Map<String, dynamic>;

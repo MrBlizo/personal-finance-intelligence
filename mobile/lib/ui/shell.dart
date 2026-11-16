@@ -169,6 +169,22 @@ class HomePage extends StatelessWidget {
                           color: env.readyToAssign < 0 ? scheme.error : null)),
                 ),
               ),
+              if (!app.syncEnabled) ...[
+                const SizedBox(height: 12),
+                Card(
+                  color: scheme.tertiaryContainer,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    leading: Icon(Icons.sync_rounded, color: scheme.onTertiaryContainer),
+                    title: Text(app.t('Connect to PFI on my PC'),
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text(app.t('Use the same OneDrive account and passphrase as on your PC.')),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SyncSetupPage())),
+                  ),
+                ),
+              ],
               SectionTitle(app.t('Recent'),
                   action: TextButton(onPressed: onSeeAll, child: Text(app.t('See all')))),
               if (recent.isEmpty)

@@ -99,6 +99,8 @@ const _fr = <String, String>{
       'Tout est enregistré sur ce téléphone. Les fichiers de synchronisation sont chiffrés avec votre phrase secrète avant d\'arriver dans votre stockage en ligne.',
   'Other devices': 'Autres appareils',
   'Waiting for your PC': 'En attente de votre PC',
+  'Use the same OneDrive account and passphrase as on your PC.':
+      'Utilisez le même compte OneDrive et la même phrase secrète que sur votre PC.',
 };
 
 const _ar = <String, String>{
@@ -201,6 +203,8 @@ const _ar = <String, String>{
       'كل شيء محفوظ على هذا الهاتف. تُشفَّر ملفات المزامنة بعبارة المرور قبل وصولها إلى تخزينك السحابي.',
   'Other devices': 'الأجهزة الأخرى',
   'Waiting for your PC': 'في انتظار حاسوبك',
+  'Use the same OneDrive account and passphrase as on your PC.':
+      'استخدم حساب OneDrive وعبارة المرور نفسيهما كما على حاسوبك.',
 };
 
 String translate(String lang, String text, [Map<String, Object?> args = const {}]) {

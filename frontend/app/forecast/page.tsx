@@ -45,7 +45,7 @@ export default function ForecastPage() {
               cls={f.prob_below_threshold > 0.2 ? "neg" : f.prob_below_threshold > 0.05 ? "" : "pos"} />
             <Kpi label={t("Scheduled net (recurring)")} value={money(f.scheduled_total, cur)}
               cls={signClass(f.scheduled_total)}
-              sub={t("Everyday spending Ø {v} / day", { v: money(f.discretionary_daily_mean) })} />
+              sub={t("Everyday spending: avg. {v} / day", { v: money(f.discretionary_daily_mean) })} />
           </div>
           <Section>
             <Plot figure={f.figure} height={400} />

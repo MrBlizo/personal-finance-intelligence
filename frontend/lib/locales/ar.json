@@ -1077,5 +1077,9 @@
   "Through {folder}. Last sync: {when}.": "عبر {folder}. آخر مزامنة: {when}.",
   "e.g. Home PC": "مثلًا: حاسوب المنزل",
   "not yet": "ليس بعد",
-  "{n} changes waiting": "{n} تغييرات في الانتظار"
+  "{n} changes waiting": "{n} تغييرات في الانتظار",
+  "The phone app looks for the folder Apps › PFI Sync at the top of your OneDrive. Choose OneDrive\\Apps\\PFI Sync here (Stop syncing, then Set up sync) so your phone can find it.": "يبحث تطبيق الهاتف عن المجلد Apps › PFI Sync في أعلى OneDrive. اختر هنا OneDrive\\Apps\\PFI Sync (أوقف المزامنة ثم أعد إعدادها) حتى يجده هاتفك.",
+  "No phone has synced yet. On the phone: PFI › Settings (gear) › Set up sync › OneDrive, sign in with the same Microsoft account as this PC's OneDrive, then enter the same passphrase.": "لم يُزامَن أي هاتف بعد. على الهاتف: PFI › الإعدادات (الترس) › إعداد المزامنة › OneDrive، وسجّل الدخول بحساب Microsoft نفسه المستخدم في OneDrive على هذا الحاسوب، ثم أدخل عبارة المرور نفسها.",
+  "Avg. {v} / month": "المتوسط {v} / شهر",
+  "Everyday spending: avg. {v} / day": "الإنفاق اليومي: المتوسط {v} / يوم"
 }

@@ -350,3 +350,52 @@ def test_sync_api(api, tmp_path, monkeypatch):
         "folder": str(folder), "passphrase": "wrong passphrase"})
     assert r.status_code == 422 and "does not match" in r.json()["detail"]
     assert api.post("/api/sync/disable").json()["enabled"] is False
+
+
+def test_emptied_folder_gets_everything_again(pair):
+    """The folder is cleared and set up again: the PC sends all again."""
+    import shutil
+    a, b, folder = pair
+    a.setup(folder)
+    acc = _add_account(a, "Cash")
+    _add_txn(a, acc, "-5", "Bread")
+    assert a.run().sent > 0
+    shutil.rmtree(folder)            # the user empties the cloud folder
+    a.setup(folder)                  # ...and sets up sync again
+    assert a.run().sent > 0, "everything must be sent to the new folder"
+    b.setup(folder)
+    b.run()
+    assert [t.description for t in b.txns()] == ["Bread"]
+
+
+def test_own_files_removed_are_sent_again(pair):
+    import shutil
+    a, b, folder = pair
+    a.setup(folder)
+    acc = _add_account(a, "Cash")
+    _add_txn(a, acc, "-5", "Milk")
+    a.run()
+    shutil.rmtree(folder / "changes")   # only the change files disappear
+    assert a.run().sent > 0
+    b.setup(folder)
+    b.run()
+    assert [t.description for t in b.txns()] == ["Milk"]
+
+
+def test_folder_reset_on_another_device_is_reported(pair, tmp_path):
+    import shutil
+    a, b, folder = pair
+    a.setup(folder)
+    a.run()
+    shutil.rmtree(folder)
+    b.setup(folder, "another passphrase")   # b creates a new folder
+    with pytest.raises(sync.SyncError, match="set up again"):
+        a.run()
+
+
+def test_phone_can_find():
+    assert sync.phone_can_find(r"C:\Users\me\OneDrive\Apps\PFI Sync")
+    assert sync.phone_can_find("/home/me/Dropbox/Apps/PFI Sync")
+    assert not sync.phone_can_find(r"C:\Users\me\Documents\PFI Sync")
+    assert not sync.phone_can_find(r"C:\Users\me\OneDrive\PFI Sync")
+    assert not sync.phone_can_find(None)

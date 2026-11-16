@@ -1077,5 +1077,9 @@
   "Through {folder}. Last sync: {when}.": "Via {folder}. Dernière synchronisation : {when}.",
   "e.g. Home PC": "p. ex. PC de la maison",
   "not yet": "pas encore",
-  "{n} changes waiting": "{n} modifications en attente"
+  "{n} changes waiting": "{n} modifications en attente",
+  "The phone app looks for the folder Apps › PFI Sync at the top of your OneDrive. Choose OneDrive\\Apps\\PFI Sync here (Stop syncing, then Set up sync) so your phone can find it.": "L'application mobile cherche le dossier Apps › PFI Sync à la racine de votre OneDrive. Choisissez ici OneDrive\\Apps\\PFI Sync (Arrêter la synchronisation, puis Configurer la synchronisation) pour que votre téléphone le trouve.",
+  "No phone has synced yet. On the phone: PFI › Settings (gear) › Set up sync › OneDrive, sign in with the same Microsoft account as this PC's OneDrive, then enter the same passphrase.": "Aucun téléphone ne s'est encore synchronisé. Sur le téléphone : PFI › Paramètres (roue dentée) › Configurer la synchronisation › OneDrive, connectez-vous avec le même compte Microsoft que le OneDrive de ce PC, puis saisissez la même phrase secrète.",
+  "Avg. {v} / month": "Moy. {v} / mois",
+  "Everyday spending: avg. {v} / day": "Dépenses courantes : moy. {v} / jour"
 }

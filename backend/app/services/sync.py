@@ -402,6 +402,50 @@ def suggest_folders() -> list[dict]:
     return list(unique.values())
 
 
+def folder_identity(manifest: dict) -> str:
+    """Return what identifies one sync folder: its key-derivation salt.
+
+    Parameters
+    ----------
+    manifest : dict
+        The folder's manifest.
+    """
+    return str(manifest.get("kdf", {}).get("salt", ""))
+
+
+def _forget_folder(conn: Connection) -> None:
+    """Forget what was sent to and received from the previous folder."""
+    for table in ("sync_seen", "sync_aliases", "sync_pending"):
+        conn.execute(text(f"DELETE FROM {table}"))
+    conn.execute(text(
+        "DELETE FROM sync_state WHERE key LIKE 'applied:%' "
+        "OR key LIKE 'device:%' OR key IN ('next_seq', 'device_id')"))
+
+
+def _resend_all(conn: Connection) -> None:
+    """Send everything again (this device's files left the folder)."""
+    conn.execute(text("DELETE FROM sync_seen"))
+    _set(conn, "next_seq", "1")
+
+
+def phone_can_find(folder: str | None) -> bool:
+    """Return whether the phone app looks in this folder.
+
+    The phone reaches the cloud drive through its web API and always uses
+    ``Apps/PFI Sync`` at the top of the drive.
+
+    Parameters
+    ----------
+    folder : str or None
+        The sync folder on this PC.
+    """
+    if not folder:
+        return False
+    parts = [x.lower() for x in re.split(r"[\\/]+", folder) if x]
+    return len(parts) >= 3 and parts[-2:] == ["apps", "pfi sync"] and any(
+        "onedrive" in x or "dropbox" in x for x in parts[:-2])
+
+
 # --- setup ------------------------------------------------------------
 def setup(db: Session, data_dir: Path, folder: str, passphrase: str,
           device_name: str | None = None) -> SyncStatus:
@@ -475,12 +519,11 @@ def setup(db: Session, data_dir: Path, folder: str, passphrase: str,
             "folder you can write to, inside your OneDrive, Dropbox or "
             "Google Drive folder.") from exc
     conn = db.connection()
-    if _get(conn, "folder") != str(root):
-        for table in ("sync_seen", "sync_aliases", "sync_pending"):
-            conn.execute(text(f"DELETE FROM {table}"))
-        conn.execute(text(
-            "DELETE FROM sync_state WHERE key LIKE 'applied:%' "
-            "OR key LIKE 'device:%' OR key IN ('next_seq', 'device_id')"))
+    folder_id = folder_identity(manifest)
+    if (_get(conn, "folder") != str(root)
+            or _get(conn, "folder_id") != folder_id):
+        _forget_folder(conn)
+    _set(conn, "folder_id", folder_id)
     if not _get(conn, "device_id"):
         _set(conn, "device_id", secrets.token_hex(8))
     _set(conn, "device_name", (device_name or socket.gethostname())[:60])
@@ -809,11 +852,24 @@ def _run(db: Session, data_dir: Path) -> SyncResult:
         raise SyncError("Sync is not set up on this device. Choose a sync "
                         "folder and passphrase in Settings first.")
     store = FolderStore(Path(folder))
-    if store.read_manifest() is None:
+    manifest = store.read_manifest()
+    if manifest is None:
         raise SyncError(
             f"{folder} no longer contains {MANIFEST}. If your cloud drive "
             "is still downloading the folder, try again later; otherwise "
             "set up sync again.")
+    known = _get(conn, "folder_id")
+    if known is not None and known != folder_identity(manifest):
+        raise SyncError(
+            "The sync folder was set up again (with a new passphrase) on "
+            "another device. Set up sync again on this PC with that "
+            "passphrase.")
+    if known is None:
+        _set(conn, "folder_id", folder_identity(manifest))
+    if int(_get(conn, "next_seq", "1")) > 1 and not store.numbers(me):
+        log.info("This device's sync files are no longer in the folder; "
+                 "sending everything again.")
+        _resend_all(conn)
     # 1. receive
     records: list[dict] = []
     for row in conn.execute(text("SELECT id, payload FROM sync_pending")):

@@ -51,6 +51,10 @@ String _randomHex(int bytes) {
 
 class _Missing implements Exception {}
 
+/// What identifies one sync folder: its key-derivation salt.
+String folderIdentity(Map<String, dynamic> manifest) =>
+    ((manifest['kdf'] as Map?)?['salt'] ?? '').toString();
+
 class SyncResult {
   SyncResult(this.sent, this.received, this.pending, this.problems);
   final int sent;
@@ -141,13 +145,12 @@ class SyncEngine {
       }
     }
     final where = store.label;
-    if (getState('folder') != where) {
-      db.execute('DELETE FROM sync_seen');
-      db.execute('DELETE FROM sync_aliases');
-      db.execute('DELETE FROM sync_pending');
-      db.execute("DELETE FROM sync_state WHERE key LIKE 'applied:%' "
-          "OR key LIKE 'device:%' OR key IN ('next_seq', 'device_id')");
+    final current = await store.readManifest();
+    final folderId = folderIdentity(current ?? const {});
+    if (getState('folder') != where || getState('folder_id') != folderId) {
+      _forgetFolder();
     }
+    setState('folder_id', folderId);
     deviceId();
     if (deviceName != null && deviceName.trim().isNotEmpty) {
       setState('device_name', deviceName.trim());
@@ -155,6 +158,14 @@ class SyncEngine {
     setState('folder', where);
     setState('enabled', '1');
     return key;
+  }
+
+  void _forgetFolder() {
+    db.execute('DELETE FROM sync_seen');
+    db.execute('DELETE FROM sync_aliases');
+    db.execute('DELETE FROM sync_pending');
+    db.execute("DELETE FROM sync_state WHERE key LIKE 'applied:%' "
+        "OR key LIKE 'device:%' OR key IN ('next_seq', 'device_id')");
   }
 
   // --- export --------------------------------------------------------
@@ -392,9 +403,23 @@ class SyncEngine {
     if (getState('enabled') != '1' || me == null) {
       throw SyncException('Sync is not set up on this device.');
     }
-    if (await store.readManifest() == null) {
+    final manifest = await store.readManifest();
+    if (manifest == null) {
       throw SyncException('The sync folder no longer contains '
           '$manifestName. Set up sync again.');
+    }
+    final known = getState('folder_id');
+    if (known != null && known != folderIdentity(manifest)) {
+      throw SyncException('The sync folder was set up again (with a new '
+          'passphrase) on another device. Set up sync again on this phone '
+          'with that passphrase.');
+    }
+    if (known == null) setState('folder_id', folderIdentity(manifest));
+    if (int.parse(getState('next_seq') ?? '1') > 1 &&
+        (await store.numbers(me)).isEmpty) {
+      // This device's files left the folder: send everything again.
+      db.execute('DELETE FROM sync_seen');
+      setState('next_seq', '1');
     }
     // 1. receive
     final records = <Map<String, dynamic>>[

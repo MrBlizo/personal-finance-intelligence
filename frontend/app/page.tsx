@@ -242,9 +242,9 @@ export default function Home() {
             <Kpi label={t("Net worth")} value={money(s.net_worth, cur)}
               sub={`${t("Liquid")} ${money(s.liquid, undefined, 0)} · ${t("Invested")} ${money(s.investments, undefined, 0)}`} />
             <Kpi label={t("Income")} value={money(s.income, cur)}
-              sub={t("Ø {v} / month", { v: money(s.avg_monthly_income, undefined, 0) })} />
+              sub={t("Avg. {v} / month", { v: money(s.avg_monthly_income, undefined, 0) })} />
             <Kpi label={t("Expenses")} value={money(s.expenses, cur)}
-              sub={t("Ø {v} / month", { v: money(s.avg_monthly_expenses, undefined, 0) })} />
+              sub={t("Avg. {v} / month", { v: money(s.avg_monthly_expenses, undefined, 0) })} />
             <Kpi label={t("Net saved")} value={money(s.net, cur)} cls={signClass(s.net)}
               sub={t("{n} transactions", { n: s.transactions })} />
             <Kpi label={t("Savings rate")} value={pct(s.savings_rate)}
