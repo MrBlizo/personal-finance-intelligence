@@ -91,6 +91,10 @@ Shown with the built-in demo data (Settings → Load demo data).
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
   a password (AES-256); one-click "Move to another PC".
+- **Phone app and sync (0.7):** the PFI app for Android keeps the same data
+  as the PC through a folder in your OneDrive, encrypted with your
+  passphrase (no PFI server). See [mobile/README.md](mobile/README.md) and
+  [design/sync-protocol.md](design/sync-protocol.md).
 - **Look:** light, dark or the same as Windows, switchable in every page
   header; eleven accent colours; icons and colours per category; a Home page
   whose cards you can reorder or hide.
@@ -128,8 +132,8 @@ Double-click **`build.bat`**. It runs the backend tests, builds the screens,
 packages the backend, builds `PFI.exe`, smoke-tests the packaged app and
 creates:
 
-- `dist\PFI-Setup-0.6.0.exe`: installer for direct download;
-- `dist\PFI-0.6.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-0.7.0.exe`: installer for direct download;
+- `dist\PFI-0.7.0.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:
