@@ -8,7 +8,7 @@ import {
 } from "@fluentui/react-icons";
 import { Banner, Confirm, Empty, Modal, SettingRow, useLoad } from "@/components/ui";
 import { ApiError, Backup, BackupList, api, downloadUrl, get, post, put } from "@/lib/api";
-import { bytes } from "@/lib/format";
+import { bytes, dateTime } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { inShell, pickFolder } from "@/lib/shell";
 
@@ -76,7 +76,7 @@ export function useBackupTest(onError: (m: string) => void) {
       else onError((e as Error).message);
     } finally { setBusy(null); }
   };
-  const when = (iso: string) => new Date(iso).toLocaleString("de-CH");
+  const when = (iso: string) => dateTime(iso);
   const differing = result?.accounts.filter((a) => !a.same) ?? [];
   const dialog: ReactNode = (<>
     {ask && <Modal title={t("Backup password")} onClose={() => { setAsk(null); setPw(""); }} actions={<>
@@ -232,7 +232,7 @@ export function BackupPanel({ onMessage, onRestored }: {
       {!!data?.backups.length && (
         <table><thead><tr><th>{t("Created")}</th><th>{t("Kind")}</th><th className="num">{t("Size")}</th><th /></tr></thead>
           <tbody>{data.backups.map((b) => (
-            <tr key={`${b.folder}/${b.name}`}><td>{new Date(b.created).toLocaleString("de-CH")}</td>
+            <tr key={`${b.folder}/${b.name}`}><td>{dateTime(b.created)}</td>
               <td><Badge appearance="tint">{t(b.kind)}</Badge>
                 {b.encrypted && <Tooltip content={t("Protected with a password")} relationship="label">
                   <LockClosed16Regular style={{ marginInlineStart: 6, verticalAlign: "middle" }} /></Tooltip>}
@@ -251,7 +251,7 @@ export function BackupPanel({ onMessage, onRestored }: {
           </tbody></table>)}
     </div>
     {confirm && <Confirm danger text={t("Restore the backup from {d}? Your current data is backed up first, then replaced.",
-      { d: new Date(confirm.created).toLocaleString("de-CH") })}
+      { d: dateTime(confirm.created) })}
       onYes={() => restore(confirm.name)} onClose={() => setConfirm(null)} />}
     {dialog}
     {tester.dialog}

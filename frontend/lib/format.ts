@@ -34,11 +34,29 @@ export function pct(v: number | null | undefined, decimals = 1): string {
   return isolate(`${(v * 100).toFixed(decimals)} %`);
 }
 
+// Dates follow the app language: 11/16/2026 in English, 16/11/2026 in
+// French and Arabic (Latin digits, as used in Morocco).
+const LOCALES: Record<string, string> = { en: "en-US", fr: "fr-FR", ar: "ar-MA" };
+
+export function locale(): string {
+  const lang = typeof document !== "undefined"
+    ? document.documentElement.lang : "en";
+  return LOCALES[lang] ?? "en-US";
+}
+
 export function date(v: string | null | undefined): string {
   if (!v) return "—";
   const d = new Date(v.length === 10 ? v + "T00:00:00" : v);
-  return isolate(d.toLocaleDateString("de-CH", {
+  return isolate(d.toLocaleDateString(locale(), {
     day: "2-digit", month: "2-digit", year: "numeric",
+  }));
+}
+
+export function dateTime(v: string | null | undefined): string {
+  if (!v) return "—";
+  return isolate(new Date(v).toLocaleString(locale(), {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
   }));
 }
 

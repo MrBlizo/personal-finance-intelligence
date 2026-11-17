@@ -9,7 +9,7 @@ import {
   Banner, Empty, FormModal, Kpi, PageHead, Section, Spinner, useLoad,
 } from "@/components/ui";
 import { DebtInfo, DebtPlan, PlotFigure, get, post, put } from "@/lib/api";
-import { money, num } from "@/lib/format";
+import { locale, money, num } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
 
 const STRATEGIES = [
@@ -22,7 +22,7 @@ const COLOURS: Record<StrategyId, string> = { avalanche: "#0072B2", snowball: "#
 
 function monthLabel(iso: string | null, lang: string) {
   if (!iso) return "—";
-  return new Date(iso + "T00:00:00").toLocaleDateString(lang === "ar" ? "ar" : lang, { month: "long", year: "numeric" });
+  return new Date(iso + "T00:00:00").toLocaleDateString(locale(), { month: "long", year: "numeric" });
 }
 
 function duration(months: number | null, t: ReturnType<typeof useT>) {

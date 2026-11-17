@@ -6,7 +6,7 @@ import Plot from "@/components/Plot";
 import { catLabel } from "@/components/refs";
 import { Banner, Empty, Kpi, PageHead, Progress, Section, Spinner, useLoad } from "@/components/ui";
 import { CalendarData, PlotFigure, get } from "@/lib/api";
-import { date, money, pct } from "@/lib/format";
+import { date, locale, money, pct } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
 
 const iso = (d: Date) =>
@@ -32,8 +32,8 @@ function Heatmap({ data, lang }: { data: CalendarData; lang: string }) {
     if (d.getFullYear() > data.year) break;
   }
   const todayIso = iso(new Date());
-  const fmtMonth = (m: number) => new Date(data.year, m, 1).toLocaleDateString(lang, { month: "short" });
-  const fmtDay = (i: number) => new Date(2024, 0, 1 + i).toLocaleDateString(lang, { weekday: "short" });
+  const fmtMonth = (m: number) => new Date(data.year, m, 1).toLocaleDateString(locale(), { month: "short" });
+  const fmtDay = (i: number) => new Date(2024, 0, 1 + i).toLocaleDateString(locale(), { weekday: "short" });
   return (
     <div className="heat-wrap">
       <div className="heat" style={{ gridTemplateColumns: `auto repeat(${weeks.length}, minmax(0, 1fr))` }}>
@@ -77,9 +77,9 @@ export default function CalendarPage() {
   const years = d ? Array.from({ length: thisYear - Math.min(d.first_year, year) + 1 },
     (_, i) => thisYear - i) : [year];
   const monthName = (m: number | null) => m === null ? "—"
-    : new Date(year, m - 1, 1).toLocaleDateString(lang, { month: "long" });
+    : new Date(year, m - 1, 1).toLocaleDateString(locale(), { month: "long" });
   const weekday = (w: number | null) => w === null ? "—"
-    : new Date(2024, 0, 1 + w).toLocaleDateString(lang, { weekday: "long" });
+    : new Date(2024, 0, 1 + w).toLocaleDateString(locale(), { weekday: "long" });
   const figure = useMemo<PlotFigure | null>(() => r ? {
     data: [
       { type: "bar", name: t("Spending"), marker: { color: "#D55E00" },
