@@ -3,7 +3,7 @@
 **The offline budget app for Windows, with an Android app that stays in
 sync:** budgets, bank statement import, debt payoff plans and investments,
 with no account and no PFI server.
-[Website and guides](https://mrblizo.github.io/personal-finance-intelligence/)
+[Website and guides](https://pfi-budget.netlify.app/)
 
 A Windows desktop app to track income, expenses, investments and savings
 goals, forecast cash flow and analyse spending. Everything runs and stays on

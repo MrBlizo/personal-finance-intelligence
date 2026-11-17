@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/</loc><lastmod>2026-11-16</lastmod></url>
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/guides/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/guides/snowball-vs-avalanche.html</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/guides/import-camt053.html</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/guides/budget-app-without-account.html</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/support/</loc><lastmod>2026-11-13</lastmod></url>
-  <url><loc>https://mrblizo.github.io/personal-finance-intelligence/privacy/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/guides/</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/guides/snowball-vs-avalanche.html</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/guides/import-camt053.html</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/guides/budget-app-without-account.html</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/support/</loc><lastmod>2026-11-13</lastmod></url>
+  <url><loc>https://pfi-budget.netlify.app/privacy/</loc><lastmod>2026-11-16</lastmod></url>
 </urlset>

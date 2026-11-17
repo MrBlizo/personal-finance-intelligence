@@ -5,10 +5,10 @@ PackageLocale: en-US
 Publisher: Ibrahim
 PublisherUrl: https://github.com/MrBlizo
 PublisherSupportUrl: https://github.com/MrBlizo/personal-finance-intelligence/issues
-PrivacyUrl: https://mrblizo.github.io/personal-finance-intelligence/privacy/
+PrivacyUrl: https://pfi-budget.netlify.app/privacy/
 Author: Ibrahim (MrBlizo)
 PackageName: Personal Finance Intelligence
-PackageUrl: https://mrblizo.github.io/personal-finance-intelligence/
+PackageUrl: https://pfi-budget.netlify.app/
 License: AGPL-3.0
 LicenseUrl: https://github.com/MrBlizo/personal-finance-intelligence/blob/main/LICENSE
 Copyright: Copyright (c) 2026 Ibrahim (MrBlizo)
