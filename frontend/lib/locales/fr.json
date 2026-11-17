@@ -1125,5 +1125,7 @@
   "Average-cost method · prices from Yahoo Finance, CoinGecko or entered manually": "Méthode du coût moyen · cours de Yahoo Finance, CoinGecko ou saisis à la main",
   "Give a holding a price source (Yahoo Finance or CoinGecko) to download prices.": "Choisissez une source de cours (Yahoo Finance ou CoinGecko) pour un placement afin de télécharger ses cours.",
   "Symbol as shown on finance.yahoo.com, e.g. AAPL, VT, VWRL.L, SAP.DE or NESN.SW. Leave empty to use the symbol above. No key needed.": "Symbole tel qu'affiché sur finance.yahoo.com, p. ex. AAPL, VT, VWRL.L, SAP.DE ou NESN.SW. Laissez vide pour utiliser le symbole ci-dessus. Aucune clé nécessaire.",
-  "Yahoo Finance (stocks, ETFs, funds)": "Yahoo Finance (actions, ETF, fonds)"
+  "Yahoo Finance (stocks, ETFs, funds)": "Yahoo Finance (actions, ETF, fonds)",
+  "Recognised a {p} statement: the columns and signs are filled in. Check them and click Import.": "Relevé {p} reconnu : les colonnes et les signes sont remplis. Vérifiez-les et cliquez sur Importer.",
+  "The first {n} lines of this file are a summary, so they are skipped.": "Les {n} premières lignes de ce fichier sont un résumé ; elles sont ignorées."
 }

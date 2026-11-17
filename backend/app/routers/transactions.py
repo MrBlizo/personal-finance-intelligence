@@ -298,6 +298,8 @@ async def import_preview(file: UploadFile = File(...), skip_rows: int = 0,
                          db: Session = Depends(get_db)):
     raw = await _read_upload(file)
     try:
+        if skip_rows == 0:
+            skip_rows = importer.detect_skip(raw)
         df, delimiter, encoding, fmt = importer.read_statement(raw, skip_rows)
     except importer.ImportError_ as exc:
         raise HTTPException(422, str(exc)) from exc
@@ -314,9 +316,11 @@ async def import_preview(file: UploadFile = File(...), skip_rows: int = 0,
             "rows": rows, "format": fmt,
             "guess": (importer.guess_mapping(df) if fmt == "csv"
                       else importer.structured_mapping()),
+            "skip_rows": skip_rows,
             "preset": ({"id": preset.id, "name": preset.name,
                         "mapping": json.loads(preset.mapping_json)}
-                       if preset else None)}
+                       if preset else importer.builtin_preset(df)
+                       if fmt == "csv" else None)}
 
 
 def _mapping(mapping: str) -> s.ImportMapping:
