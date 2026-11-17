@@ -358,7 +358,7 @@ export default function SettingsPage() {
               </SettingRow>
               <SettingRow icon={""} title={t("Support PFI")}
                 description={t("PFI is free and stays free. If it helps you, you can support its development. A donation unlocks nothing; every feature is for everyone.")}>
-                <a className="link" href="https://pfi-budget.netlify.app/support/"
+                <a className="link" href="https://mrblizo.github.io/personal-finance-intelligence/support/"
                   target="_blank" rel="noreferrer">{t("Support PFI")} ♥</a>
               </SettingRow>
             </section>)}
