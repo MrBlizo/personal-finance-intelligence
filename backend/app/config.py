@@ -61,7 +61,9 @@ class Settings(BaseSettings):
     background_tasks: bool = True
     google_client_id: str = ""
     google_client_secret: str = ""
-    bank_redirect_url: str = "https://pfi-budget.netlify.app/bank-callback/"
+    bank_redirect_url: str = (
+        "https://mrblizo.github.io/personal-finance-intelligence/"
+        "bank-callback/")
 
     @property
     def sqlite_path(self) -> Path:
