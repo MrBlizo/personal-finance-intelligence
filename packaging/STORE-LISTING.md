@@ -39,31 +39,31 @@ account (Accounts › Add account) and a few transactions (Ctrl+N), or import
 any bank CSV file under Import. First start takes a few seconds while the
 private database is created."
 
-## What's new in 0.7.1 (paste into "What's new in this version")
+## What's new in 0.8.0 (paste into "What's new in this version")
 
 **English**
 
-Version 0.7.1
-• New look: a home page with your net worth and quick actions, and a budget screen with groups, progress bars, filters and a side panel for each category.
-• The window is used edge to edge; Settings fill wide screens in two columns.
-• Sync through Google Drive, besides OneDrive. Phone sync is easier to set up and recovers when the sync folder was emptied.
-• New app icon. US dollar is the default currency for new users.
+Version 0.8.0
+• Bank sync: new transactions arrive by themselves. US and Canadian banks through SimpleFIN Bridge, European banks through Enable Banking, with access you set up yourself.
+• Bank import recognises Chase, Bank of America, Wells Fargo, Citi, Capital One, Amex, Discover and more, and skips summary lines automatically.
+• Dates follow the app language.
+• Phone app: goals, bills, investments and debts, a home-screen widget to add an expense in one tap, and it follows the currency chosen on the PC.
 
 **Français**
 
-Version 0.7.1
-• Nouveau look : un accueil avec votre patrimoine net et des actions rapides, et un écran budget avec groupes, barres de progression, filtres et un panneau latéral pour chaque catégorie.
-• La fenêtre est utilisée d'un bord à l'autre ; les Paramètres remplissent les grands écrans sur deux colonnes.
-• Synchronisation via Google Drive, en plus de OneDrive. La synchronisation avec le téléphone est plus simple à configurer et se rétablit si le dossier a été vidé.
-• Nouvelle icône. Le dollar américain est la devise par défaut des nouveaux utilisateurs.
+Version 0.8.0
+• Synchronisation bancaire : les nouvelles transactions arrivent toutes seules. Banques américaines et canadiennes via SimpleFIN Bridge, banques européennes via Enable Banking, avec un accès que vous configurez vous-même.
+• L'import reconnaît Chase, Bank of America, Wells Fargo, Citi, Capital One, Amex, Discover et d'autres, et ignore automatiquement les lignes de résumé.
+• Les dates suivent la langue de l'application.
+• Application mobile : objectifs, factures, placements et dettes, un widget d'écran d'accueil pour ajouter une dépense en un geste, et la devise choisie sur le PC.
 
 **العربية**
 
-الإصدار 0.7.1
-• مظهر جديد: صفحة رئيسية تعرض صافي ثروتك مع إجراءات سريعة، وشاشة ميزانية بمجموعات وأشرطة تقدّم ومرشحات ولوحة جانبية لكل فئة.
-• تُستخدم النافذة من الحافة إلى الحافة؛ وتملأ الإعدادات الشاشات العريضة في عمودين.
-• المزامنة عبر Google Drive إضافة إلى OneDrive. أصبح إعداد المزامنة مع الهاتف أسهل، وتستعيد عملها إذا أُفرغ مجلد المزامنة.
-• أيقونة جديدة. الدولار الأمريكي هو العملة الافتراضية للمستخدمين الجدد.
+الإصدار 0.8.0
+• مزامنة البنك: تصل المعاملات الجديدة تلقائيًا. البنوك الأمريكية والكندية عبر SimpleFIN Bridge، والبنوك الأوروبية عبر Enable Banking، بوصول تُعدّه بنفسك.
+• يتعرّف الاستيراد على Chase وBank of America وWells Fargo وCiti وCapital One وAmex وDiscover وغيرها، ويتجاوز أسطر الملخص تلقائيًا.
+• تتبع التواريخ لغة التطبيق.
+• تطبيق الهاتف: الأهداف والفواتير والاستثمارات والديون، وأداة على الشاشة الرئيسية لإضافة مصروف بلمسة واحدة، ويتبع العملة المختارة على الحاسوب.
 
 ## 3. Store listing: English
 
