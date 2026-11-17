@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.28.0.schema.json
+PackageIdentifier: MrBlizo.PersonalFinanceIntelligence
+PackageVersion: 0.7.1
+MinimumOSVersion: 10.0.19041.0
+InstallerType: inno
+Scope: user
+InstallModes:
+- interactive
+- silent
+- silentWithProgress
+UpgradeBehavior: install
+ProductCode: '{3AD51315-839A-4B92-A567-7DCF6605A5C1}_is1'
+ReleaseDate: 2026-11-17
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/MrBlizo/personal-finance-intelligence/releases/download/v0.7.1/PFI-Setup-0.7.1.exe
+  InstallerSha256: DBB096B6AAC19B16F1A37C04D9B2DC305EA4DD65D37D5B910230BEFBA4984BE5
+ManifestType: installer
+ManifestVersion: 1.28.0

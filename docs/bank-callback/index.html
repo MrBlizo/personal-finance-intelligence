@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Connecting your bank | PFI</title>
+<link rel="icon" href="../img/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body class="sub">
+<div class="wrap">
+  <article style="text-align:center; padding-top:12vh">
+    <h1 id="title">Returning to PFI…</h1>
+    <p id="text">Your bank approved the connection. PFI on your PC is taking over.</p>
+    <div id="manual" hidden>
+      <p>If PFI did not open, copy this code into PFI › Settings › Bank sync › Europe:</p>
+      <p><code id="code" style="font-size:18px; padding:8px 12px; user-select:all"></code></p>
+      <button class="btn" id="copy" type="button">Copy the code</button>
+    </div>
+  </article>
+</div>
+<script>
+// The bank sends the consent code here (an HTTPS page, as Enable Banking
+// requires). PFI put its local port in "state"; forward the code to it.
+(() => {
+  const q = new URLSearchParams(location.search);
+  const code = q.get("code"), state = q.get("state") || "", error = q.get("error");
+  const $ = (id) => document.getElementById(id);
+  if (error || !code) {
+    $("title").textContent = "The bank connection was not completed";
+    $("text").textContent = (q.get("error_description") || error || "No code was received.")
+      + " Close this tab and try again in PFI.";
+    return;
+  }
+  $("code").textContent = code;
+  $("copy").onclick = () => navigator.clipboard.writeText(code).then(() => { $("copy").textContent = "Copied"; });
+  const port = state.split(".")[0];
+  setTimeout(() => { $("manual").hidden = false; }, 4000);
+  if (/^\d{2,5}$/.test(port)) {
+    location.replace(`http://127.0.0.1:${port}/oauth/enablebanking?` +
+      new URLSearchParams({ code, state }).toString());
+  } else {
+    $("manual").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

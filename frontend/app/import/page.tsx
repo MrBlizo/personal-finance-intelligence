@@ -95,20 +95,24 @@ export default function Import() {
       const p = await api<ImportPreview>("/api/import/preview",
         { method: "POST", body: form(f), query: { skip_rows: skip } });
       setPrev(p);
+      const rows = p.skip_rows ?? skip;
+      if (rows !== skip) setSkip(rows);
       const g = p.guess;
       const s = (k: string) => (typeof g[k] === "string" ? (g[k] as string) : "");
       if (p.preset) {
         const pm = p.preset.mapping as Record<string, unknown>;
         const str = (k: string) => (pm[k] == null ? "" : String(pm[k]));
         setM({
-          account_id: str("account_id"), date_column: str("date_column"),
+          account_id: str("account_id") || m?.account_id
+            || String(accounts.find((a) => !a.is_archived)?.id ?? ""),
+          date_column: str("date_column"),
           description_column: str("description_column"), amount_column: str("amount_column"),
           debit_column: str("debit_column"), credit_column: str("credit_column"),
           merchant_column: str("merchant_column"), date_format: str("date_format"),
           dayfirst: pm.dayfirst !== false, decimal: pm.decimal === "," ? "," : ".",
-          invert_sign: pm.invert_sign === true, skip_rows: skip,
+          invert_sign: pm.invert_sign === true, skip_rows: rows,
         });
-        setPresetName(p.preset.name);
+        setPresetName(p.preset.builtin ? "" : p.preset.name);
       } else {
         setM({
           account_id: m?.account_id || String(accounts.find((a) => !a.is_archived)?.id ?? ""),
@@ -119,7 +123,7 @@ export default function Import() {
           merchant_column: s("merchant_column"), date_format: s("date_format"),
           dayfirst: g.dayfirst !== false,
           decimal: g.decimal === "," ? "," : ".", invert_sign: g.mostly_positive === true,
-          skip_rows: skip,
+          skip_rows: rows,
         });
         setPresetName(f.name.replace(/\.[^.]+$/, ""));
       }
@@ -218,8 +222,13 @@ export default function Import() {
             <Banner kind="success">{t("This is a {f} statement, so the columns are filled in for you. Choose the account and click Import.",
               { f: FORMAT_NAMES[prev.format] })}</Banner>)}
           {prev.preset && (
-            <Banner kind="success">{t("Recognised this file format: settings from “{p}” were applied. Check them and click Import.",
+            <Banner kind="success">{t(prev.preset.builtin
+              ? "Recognised a {p} statement: the columns and signs are filled in. Check them and click Import."
+              : "Recognised this file format: settings from “{p}” were applied. Check them and click Import.",
               { p: prev.preset.name })}</Banner>)}
+          {prev.format === "csv" && (prev.skip_rows ?? 0) > 0 && (
+            <Banner kind="info">{t("The first {n} lines of this file are a summary, so they are skipped.",
+              { n: prev.skip_rows ?? 0 })}</Banner>)}
           {!prev.preset && prev.format === "csv" && prev.guess.mostly_positive === true && (
             <Banner kind="info">{t("Most amounts in this file are positive, so purchases are probably listed as positive numbers. “Invert signs” has been switched on for you; switch it off if the positive amounts are income.")}</Banner>)}
           {prev.already_imported && (

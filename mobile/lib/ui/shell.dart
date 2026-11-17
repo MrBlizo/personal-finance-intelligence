@@ -1,4 +1,4 @@
-// The main screens: Home, Transactions, Budget and Accounts.
+// The main screens: Home, Budget, Spending, Accounts and Plan.
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -9,6 +9,7 @@ import 'settings.dart';
 import 'widgets.dart';
 
 part 'budget.dart';
+part 'plan.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -27,6 +28,7 @@ class _HomeShellState extends State<HomeShell> {
       const BudgetPage(),
       const TransactionsPage(),
       const AccountsPage(),
+      const PlanPage(),
     ];
     return Scaffold(
       body: SafeArea(child: pages[tab]),
@@ -57,6 +59,10 @@ class _HomeShellState extends State<HomeShell> {
               icon: const Icon(Icons.account_balance_outlined),
               selectedIcon: const Icon(Icons.account_balance_rounded),
               label: app.t('Accounts')),
+          NavigationDestination(
+              icon: const Icon(Icons.flag_outlined),
+              selectedIcon: const Icon(Icons.flag_rounded),
+              label: app.t('Plan')),
         ],
       ),
     );
@@ -111,7 +117,7 @@ class _SyncIndicator extends StatelessWidget {
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.onTab});
 
-  /// Switches the bottom tab (1 Budget, 2 Spending, 3 Accounts).
+  /// Switches the bottom tab (1 Budget, 2 Spending, 3 Accounts, 4 Plan).
   final void Function(int) onTab;
 
   @override
@@ -176,6 +182,20 @@ class HomePage extends StatelessWidget {
                           color: env.readyToAssign < 0 ? scheme.error : null)),
                 ),
               ),
+              if (repo.upcoming(days: 7) case final soon when soon.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Card(
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    leading: const Icon(Icons.event_repeat_outlined, color: Colors.deepOrange),
+                    title: Text(app.t('{n} due this week', {'n': soon.length})),
+                    subtitle: Text(soon.take(3).map((e) => e.$1.name).join(', ')),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const BillsPage())),
+                  ),
+                ),
+              ],
               if (!app.syncEnabled) ...[
                 const SizedBox(height: 12),
                 Card(

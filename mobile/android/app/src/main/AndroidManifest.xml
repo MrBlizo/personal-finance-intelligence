@@ -21,7 +21,23 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Long-press the app icon: Add expense / Add income. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+        <!-- Home-screen widget with one-tap quick add. -->
+        <receiver
+            android:name=".QuickAddWidget"
+            android:exported="false"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/quick_add_widget_info" />
+        </receiver>
         <!-- Returns from the OneDrive / Dropbox sign-in page. -->
         <activity
             android:name="com.linusu.flutter_web_auth_2.CallbackActivity"

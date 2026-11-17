@@ -536,3 +536,7 @@ td.editing .fui-Input, td.editing .fui-Select { width: 100%; min-width: 90px; }
 .setting-row .swatches { max-width: 260px; justify-content: flex-end; }
 .settings-block.wide { column-span: all; }
 .settings-cols > .settings-block:first-child > .group-title { margin-top: 0; }
+
+.steps-list { margin: 0 0 12px; padding-left: 22px; }
+.steps-list li { margin: 6px 0; }
+.steps-list code { word-break: break-all; }

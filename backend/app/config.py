@@ -44,6 +44,9 @@ class Settings(BaseSettings):
         ``google-oauth.json``).
     google_client_secret : str
         The OAuth client secret that goes with ``google_client_id``.
+    bank_redirect_url : str
+        The HTTPS page that passes the Enable Banking consent code back to
+        PFI on this PC (register it in the Enable Banking application).
     """
 
     model_config = SettingsConfigDict(
@@ -58,6 +61,9 @@ class Settings(BaseSettings):
     background_tasks: bool = True
     google_client_id: str = ""
     google_client_secret: str = ""
+    bank_redirect_url: str = (
+        "https://mrblizo.github.io/personal-finance-intelligence/"
+        "bank-callback/")
 
     @property
     def sqlite_path(self) -> Path:

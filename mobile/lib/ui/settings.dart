@@ -1,5 +1,6 @@
 // Settings: look, language, currency and sync with PFI on the PC.
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 import '../config.dart';
 import '../state.dart';
@@ -26,7 +27,7 @@ class SettingsPage extends StatelessWidget {
                   color: scheme.primary),
               title: Text(app.t('Sync with PFI on your PC')),
               subtitle: Text(app.syncEnabled
-                  ? '${app.provider!.title} · ${app.t('Last sync: {w}', {'w': _when(last['at'])})}'
+                  ? '${app.provider!.title} · ${app.t('Last sync: {w}', {'w': _when(last['at'], app.lang)})}'
                   : app.t('Not set up')),
             ),
             if (app.syncMessage != null)
@@ -39,7 +40,7 @@ class SettingsPage extends StatelessWidget {
                 dense: true,
                 title: Text(app.t('Other devices')),
                 subtitle: Text(app.otherDevices
-                    .map((d) => '${d['name']} (${_when(d['seen'])})')
+                    .map((d) => '${d['name']} (${_when(d['seen'], app.lang)})')
                     .join(' · ')),
               ),
             Padding(
@@ -151,13 +152,11 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  static String _when(Object? v) {
+  static String _when(Object? v, String lang) {
     if (v == null) return '—';
     final d = DateTime.tryParse('${v.toString().replaceAll(' ', 'T')}Z');
     if (d == null) return '$v';
-    final l = d.toLocal();
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${l.day}.${two(l.month)}. ${two(l.hour)}:${two(l.minute)}';
+    return DateFormat.MMMd(lang).add_Hm().format(d.toLocal());
   }
 }
 

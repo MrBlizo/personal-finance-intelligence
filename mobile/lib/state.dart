@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'data/db.dart';
 import 'data/repo.dart';
 import 'l10n/strings.dart';
+import 'launch.dart';
 import 'sync/cloud.dart';
 import 'sync/crypto.dart';
 import 'sync/engine.dart';
@@ -63,6 +64,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   bool get onboarded => prefs.getBool('onboarded') ?? !app.isEmpty;
 
   Future<void> setPref(String key, String value) async {
+    if (key == 'lang') Future.microtask(() => updateWidget(this));
     await prefs.setString(key, value);
     notifyListeners();
   }
@@ -80,6 +82,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
   void changed({bool sync = true}) {
     revision++;
     notifyListeners();
+    updateWidget(this);
     if (sync && syncEnabled) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(seconds: 8), () => syncNow());
@@ -139,7 +142,10 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     try {
       final res = await engine.run(cloudStore(p, CloudAuth(p)), base64.decode(key));
       syncMessage = res.problems.isEmpty ? null : res.problems.first;
-      if (res.received > 0) revision++;
+      if (res.received > 0) {
+        revision++;
+        updateWidget(this);
+      }
       return res;
     } on SyncException catch (e) {
       syncMessage = e.message;

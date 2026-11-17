@@ -595,3 +595,26 @@ class SyncPending(Base):
 SYNCED_TABLES: tuple[str, ...] = tuple(
     m.__tablename__ for m in Base.__subclasses__()
     if issubclass(m, SyncMixin))
+
+
+class BankLink(Base):
+    """An account at a bank-data provider, optionally linked to a PFI one.
+
+    Stays on this PC (no ``SyncMixin``): the phone never fetches from
+    banks, and the provider access is a secret of this device.
+    """
+    __tablename__ = "bank_links"
+    __table_args__ = (UniqueConstraint("provider", "external_id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    provider: Mapped[str] = mapped_column(String(20))
+    external_id: Mapped[str] = mapped_column(String(200))
+    name: Mapped[str] = mapped_column(String(160), default="")
+    institution: Mapped[str] = mapped_column(String(160), default="")
+    currency: Mapped[str] = mapped_column(String(3), default="USD")
+    balance: Mapped[Decimal | None] = mapped_column(Money)
+    account_id: Mapped[int | None] = mapped_column(
+        ForeignKey("accounts.id", ondelete="SET NULL"))
+    start_date: Mapped[date | None] = mapped_column(Date)
+    last_synced_on: Mapped[date | None] = mapped_column(Date)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime)
+    last_error: Mapped[str | None] = mapped_column(Text)

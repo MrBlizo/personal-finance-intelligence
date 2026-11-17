@@ -12,6 +12,7 @@ import io
 import json
 import re
 import stat
+import warnings
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -23,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from ..models import Category, CategoryRule, ImportBatch, Transaction
 from ..schemas import ImportMapping
-from . import statements
+from . import bank_presets, statements
 
 ENCODINGS = ("utf-8-sig", "cp1252", "latin-1")
 DELIMITERS = ",;\t|"
@@ -83,10 +84,22 @@ def read_csv(raw: bytes, skip_rows: int = 0
         delimiter = csv.Sniffer().sniff(sample, DELIMITERS).delimiter
     except csv.Error:
         delimiter = max(DELIMITERS, key=sample.count)
+    first = next(csv.reader([lines[0]], delimiter=delimiter), [])
+    # Some banks (Wells Fargo) export without a header row.
+    headerless = bool(first) and _DATE_CELL.match(first[0].strip()) is not None
+    if headerless:
+        names = (bank_presets.HEADERLESS_5 if len(first) == 5 else
+                 [f"Column {i + 1}" for i in range(len(first))])
     try:
-        df = pd.read_csv(io.StringIO(body), sep=delimiter, dtype=str,
-                         keep_default_na=False, skipinitialspace=True,
-                         on_bad_lines="error")
+        # index_col=False copes with a trailing delimiter on every row
+        # (Chase); pandas warns about the extra empty field.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", pd.errors.ParserWarning)
+            df = pd.read_csv(io.StringIO(body), sep=delimiter, dtype=str,
+                             keep_default_na=False, skipinitialspace=True,
+                             on_bad_lines="error", index_col=False,
+                             header=None if headerless else "infer",
+                             names=names if headerless else None)
     except (pd.errors.ParserError, ValueError) as exc:
         raise ImportError_(
             f"Could not parse the CSV ({exc}). The file may contain bank "
@@ -94,6 +107,55 @@ def read_csv(raw: bytes, skip_rows: int = 0
             "the number of lines before the header.") from exc
     df.columns = [str(c).strip() for c in df.columns]
     return df, delimiter, encoding
+
+
+_DATE_CELL = re.compile(r"^\d{1,4}[./-]\d{1,2}[./-]\d{1,4}$")
+_HEAD_DATE = ("date", "datum", "valuta", "buchung", "booking")
+_HEAD_MONEY = ("amount", "betrag", "montant", "debit", "credit",
+               "withdrawal", "deposit", "belastung", "gutschrift")
+
+
+def detect_skip(raw: bytes) -> int:
+    """Find the header row of a CSV that starts with summary lines.
+
+    Parameters
+    ----------
+    raw : bytes
+        The uploaded file content.
+
+    Returns
+    -------
+    int
+        The number of lines before the first line that looks like column
+        names (a date column and an amount column), or 0.
+    """
+    text, _ = _decode(raw)
+    if statements.detect(text) is not None:
+        return 0
+    lines = text.splitlines()[:40]
+    for i, line in enumerate(lines):
+        if i == 0:
+            continue
+        delim = max(DELIMITERS, key=line.count)
+        cells = [c.strip().strip('"').lower()
+                 for c in next(csv.reader([line], delimiter=delim), [])]
+        if len(cells) < 3:
+            continue
+        if any(any(h in c for h in _HEAD_DATE) for c in cells) and \
+                any(any(h in c for h in _HEAD_MONEY) for c in cells):
+            first = lines[0]
+            delim0 = max(DELIMITERS, key=first.count)
+            head0 = [c.strip().lower()
+                     for c in next(csv.reader([first], delimiter=delim0), [])]
+            if any(any(h in c for h in _HEAD_DATE) for c in head0):
+                return 0
+            return i
+    return 0
+
+
+def builtin_preset(df: pd.DataFrame) -> dict | None:
+    """Return the built-in layout of a known US bank for this table."""
+    return bank_presets.match(list(df.columns))
 
 
 def read_statement(raw: bytes, skip_rows: int = 0
@@ -159,6 +221,7 @@ def guess_mapping(df: pd.DataFrame) -> dict[str, str | bool | None]:
     sample = " ".join(df.head(30).to_numpy().ravel().astype(str).tolist())
     guess["decimal"] = "," if re.search(r"\d,\d{2}(?!\d)", sample) and \
         not re.search(r"\d\.\d{2}(?!\d)", sample) else "."
+    guess["dayfirst"] = _dayfirst(df, guess["date_column"])
     guess["mostly_positive"] = False
     if guess["amount_column"]:
         values = []
@@ -173,6 +236,25 @@ def guess_mapping(df: pd.DataFrame) -> dict[str, str | bool | None]:
         guess["mostly_positive"] = bool(values) and (
             sum(v > 0 for v in values) / len(values) > 0.7)
     return guess
+
+
+def _dayfirst(df: pd.DataFrame, column) -> bool | None:
+    """Tell 31/12/2026 from 12/31/2026 using the dates in the file.
+
+    Returns None when every date reads both ways (all days below 13).
+    """
+    if not column:
+        return None
+    for cell in df[column].head(200):
+        m = re.match(r"^\s*(\d{1,2})[./-](\d{1,2})[./-]\d{2,4}", str(cell))
+        if not m:
+            continue
+        a, b = int(m.group(1)), int(m.group(2))
+        if a > 12 >= b:
+            return True
+        if b > 12 >= a:
+            return False
+    return None
 
 
 def parse_amount(text: str, decimal: str = ".") -> Decimal | None:
@@ -311,7 +393,8 @@ def parse_rows(df: pd.DataFrame, m: ImportMapping) -> ParsedRows:
                 if debit is None and credit is None:
                     amount = None
                 else:
-                    amount = (credit or Decimal(0)) - abs(debit or 0)
+                    # Some cards (Citi) list payments as negative credits.
+                    amount = abs(credit or 0) - abs(debit or 0)
             if amount is None or amount == 0:
                 raise ValueError("amount is empty or zero")
             if m.invert_sign:

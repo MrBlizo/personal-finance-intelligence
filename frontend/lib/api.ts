@@ -326,8 +326,10 @@ export interface ImportPreview {
   delimiter: string; encoding: string; columns: string[];
   rows: Record<string, string | null>[];
   guess: Record<string, string | boolean | null>;
-  preset: { id: Id; name: string; mapping: Record<string, unknown> } | null;
+  preset: { id: Id | null; name: string; builtin?: boolean;
+    mapping: Record<string, unknown> } | null;
   format: "csv" | "ofx" | "qif" | "camt";
+  skip_rows?: number;
 }
 export interface ImportResult {
   batch_id: Id; rows_total: number; rows_imported: number;

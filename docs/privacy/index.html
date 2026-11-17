@@ -9,17 +9,28 @@
 <link rel="icon" href="../img/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body class="sub">
+<div class="progress" aria-hidden="true"></div>
+<header class="bar" id="top">
+  <div class="wrap bar-in">
+    <a class="brand" href="../"><img src="../img/icon.svg" alt="" width="32" height="32">PFI</a>
+    <nav class="links" aria-label="Main">
+      <span class="pill" aria-hidden="true"></span>
+      <div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-product">Product<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-product" role="menu"><a class="mi" href="../#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" href="../#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" href="../#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" href="../#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-download">Download<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel" id="m-download" role="menu"><a class="mi" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" href="../#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-res">Resources<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-res" role="menu"><a class="mi" href="../guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" href="../#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" href="../privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" href="../support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support PFI</b><small>Help one developer</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Open source, AGPL-3.0</small></span></a></div></div>
+      <a class="mt" href="../#free">Free</a>
+    </nav>
+    <a class="btn primary small cta-dl" href="../#download">Download</a>
+    <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sheet"><span></span><span></span><span></span></button>
+  </div>
+  <div class="sheet" id="sheet"><div class="wrap"><p class="sh-h" style="--i:0">Product</p><a class="mi" style="--i:1" href="../#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" style="--i:2" href="../#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" style="--i:3" href="../#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" style="--i:4" href="../#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a><p class="sh-h" style="--i:4">Download</p><a class="mi" style="--i:5" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" style="--i:6" href="../#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" style="--i:7" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a><p class="sh-h" style="--i:8">Resources</p><a class="mi" style="--i:9" href="../guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" style="--i:10" href="../#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" style="--i:11" href="../privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" style="--i:12" href="../support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support PFI</b><small>Help one developer</small></span></a><a class="mi" style="--i:13" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Open source, AGPL-3.0</small></span></a>
+    <a class="btn primary" style="--i:14" href="../#download">Download PFI</a></div></div>
+</header>
+
 <div class="wrap">
-  <header class="top">
-    <a class="brand" href="../"><img src="../img/icon.svg" alt="" width="32" height="32">Personal Finance Intelligence</a>
-    <nav class="links"><a href="../#features">Features</a><a href="../guides/">Guides</a>
-      <a href="../#download">Download</a></nav>
-  </header>
   <article>
     <p class="crumbs"><a href="../">Home</a> › Privacy</p>
 <h1>Privacy policy</h1>
-<p><em>Personal Finance Intelligence (PFI) · last updated 16 November 2026</em></p>
+<p><em>Personal Finance Intelligence (PFI) · last updated 17 November 2026</em></p>
 <p>PFI is a desktop app (with an optional Android app) that keeps your
 financial data on your own devices.</p>
 <h2>What PFI stores</h2>
@@ -55,6 +66,25 @@ your Google account and the permission "drive.appdata". It lets PFI see only
 its own hidden app folder in your Drive, not your other files; the sync files
 are kept there. On the PC the sign-in token is stored protected by Windows;
 on the phone the sign-in is handled by Google Play services.</p>
+<h2>Bank sync (optional)</h2>
+<p>If you turn on Settings › Bank sync, PFI on the PC fetches new transactions
+from your bank through a service you sign up to yourself. PFI is not a
+customer of these services and has no server in between:</p>
+<ul>
+<li><strong>SimpleFIN Bridge</strong> (US and Canada): you link your banks on the SimpleFIN
+website and give PFI a one-time setup token. PFI keeps the resulting access
+URL protected by Windows on your PC and asks SimpleFIN for your accounts and
+transactions. Your bank password stays with SimpleFIN and your bank.</li>
+<li><strong>Enable Banking</strong> (Europe): you register your own application with Enable
+Banking and link your accounts there. PFI keeps the application's private
+key protected by Windows on your PC; you approve access on your bank's own
+pages. The bank sends a one-time code to the PFI website page
+<code>bank-callback/</code>, which only forwards it to PFI on your PC (the page has no
+server code and stores nothing).</li>
+</ul>
+<p>The transactions are stored in your local database like imported statements.
+Disconnecting in Settings deletes the saved access on the PC. The phone app
+does not contact banks.</p>
 <h2>The Android app</h2>
 <p>The phone app stores your data in a private database on the phone. It uses
 the network only for the sync described above. It has no account, no
@@ -82,6 +112,12 @@ analytics, no advertising and no telemetry.</p>
 <td>query1.finance.yahoo.com</td>
 <td>the symbol you entered (e.g. <code>VWRL.L</code>) and a date range</td>
 <td>once a day for holdings with Yahoo Finance as price source, or on request</td>
+</tr>
+<tr>
+<td>Bank sync (optional)</td>
+<td>SimpleFIN Bridge (bridge.simplefin.org) or api.enablebanking.com</td>
+<td>your saved access or signed request, and a date range</td>
+<td>every 6 hours while PFI runs, if you linked accounts</td>
 </tr>
 <tr>
 <td>Crypto prices</td>
@@ -122,5 +158,6 @@ by uninstalling the app and deleting the data folder named above.</p>
     <div><a href="../">Home</a> · <a href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/PRIVACY.md">Source of this page</a></div>
   </div>
 </footer>
+<script src="../site.js" defer></script>
 </body>
 </html>

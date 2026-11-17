@@ -280,6 +280,7 @@ class ImportPreview(BaseModel):
     guess: dict[str, str | bool | None]
     preset: dict | None = None
     format: str = "csv"
+    skip_rows: int = 0
 
 
 class ImportResult(BaseModel):

@@ -15,7 +15,7 @@ import {
   EnvelopeMonth, EnvelopeRow, Id, QuickAssign, del, get, post, put,
 } from "@/lib/api";
 import { evalAmount } from "@/lib/calc";
-import { money } from "@/lib/format";
+import { locale, money } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 
 const shift = (month: string, n: number) => {
@@ -25,8 +25,7 @@ const shift = (month: string, n: number) => {
 };
 const monthName = (month: string, lang: string) =>
   new Date(month + "-01T00:00:00").toLocaleDateString(
-    lang === "ar" ? "ar-MA" : lang === "fr" ? "fr-CH" : "en-GB",
-    { month: "long", year: "numeric" });
+    locale(), { month: "long", year: "numeric" });
 
 /** The editable "assigned" cell: type a number or a sum such as 120+30. */
 function AssignCell({ row, month, onSaved }: {

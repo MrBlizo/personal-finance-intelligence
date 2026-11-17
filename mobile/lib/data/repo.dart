@@ -136,6 +136,117 @@ class Fx {
   }
 }
 
+class Goal {
+  Goal(this.id, this.name, this.currency, this.target, this.saved,
+      this.targetDate, this.accountId, this.manualSaved, this.notes);
+  final int id;
+  final String name;
+  final String currency;
+  final int target;
+  final int saved;
+  final DateTime? targetDate;
+  final int? accountId;
+  final int manualSaved;
+  final String? notes;
+  double get progress => target <= 0 ? 0 : (saved / target).clamp(0.0, 1.0);
+  int get remaining => (target - saved).clamp(0, target);
+
+  /// Saving needed per month to reach the target on time (null: no date).
+  int? monthlyNeeded(DateTime today) {
+    if (targetDate == null) return null;
+    final months = targetDate!.difference(today).inDays / 30.4375;
+    return months <= 0 ? remaining : (remaining / months).round();
+  }
+}
+
+class Bill {
+  Bill(this.id, this.name, this.accountId, this.categoryId, this.amount,
+      this.frequency, this.start, this.end, this.active, this.lastPosted);
+  final int id;
+  final String name;
+  final int accountId;
+  final int? categoryId;
+  final int amount;
+  final String frequency;
+  final DateTime start;
+  final DateTime? end;
+  final bool active;
+  final DateTime? lastPosted;
+
+  /// The dates within [from, to], as in backend planning.occurrences.
+  List<DateTime> occurrences(DateTime from, DateTime to) {
+    final last = end != null && end!.isBefore(to) ? end! : to;
+    final out = <DateTime>[];
+    const days = {'weekly': 7, 'biweekly': 14};
+    const months = {'monthly': 1, 'quarterly': 3, 'yearly': 12};
+    for (var n = 0; n < 2000; n++) {
+      final DateTime d;
+      if (days.containsKey(frequency)) {
+        d = start.add(Duration(days: n * days[frequency]!));
+      } else {
+        final m = start.month - 1 + n * months[frequency]!;
+        final y = start.year + m ~/ 12;
+        final mm = m % 12 + 1;
+        final len = DateTime(y, mm + 1, 0).day;
+        d = DateTime(y, mm, start.day > len ? len : start.day);
+      }
+      if (d.isAfter(last)) break;
+      if (!d.isBefore(from)) out.add(d);
+    }
+    return out;
+  }
+
+  DateTime? nextDue(DateTime today) {
+    final from = lastPosted != null && !lastPosted!.isBefore(today)
+        ? lastPosted!.add(const Duration(days: 1))
+        : today;
+    final next = occurrences(from, from.add(const Duration(days: 400)));
+    return next.isEmpty ? null : next.first;
+  }
+}
+
+class Holding {
+  Holding(this.id, this.accountId, this.symbol, this.name, this.assetClass,
+      this.currency, this.quantity, this.cost, this.price, this.priceDate,
+      this.dividends);
+  final int id;
+  final int accountId;
+  final String symbol;
+  final String name;
+  final String assetClass;
+  final String currency;
+  /// Units held (a double: quantities have 8 decimals).
+  final double quantity;
+  /// Money paid for the units still held, in minor units.
+  final int cost;
+  /// Latest price per unit (null when no price is known).
+  final double? price;
+  final DateTime? priceDate;
+  final int dividends;
+  int? get value => price == null ? null : (quantity * price! * 100).round();
+  int? get gain => value == null ? null : value! - cost;
+}
+
+class Debt {
+  Debt(this.account, this.apr, this.minPayment);
+  final Account account;
+  /// Yearly interest in percent (e.g. 19.99).
+  final double apr;
+  final int minPayment;
+  int get owed => account.balance < 0 ? -account.balance : 0;
+
+  /// Months until paid off when paying [payment] each month (null: never).
+  int? monthsToPayOff(int payment) {
+    var left = owed.toDouble();
+    final r = apr / 100 / 12;
+    for (var m = 1; m <= 600; m++) {
+      left = left * (1 + r) - payment;
+      if (left <= 0) return m;
+    }
+    return null;
+  }
+}
+
 class Repo {
   Repo(this.app);
   final AppDatabase app;
@@ -271,6 +382,168 @@ class Repo {
           'WHERE id = ?',
           [...args, id]);
     }
+  }
+
+  // --- goals, bills, investments, debts (same rules as on the PC) ------
+  List<Goal> goals() {
+    final fx = Fx(db);
+    final today = isoDate(DateTime.now());
+    final bal = {for (final a in accounts(includeArchived: true)) a.id: a};
+    final out = <Goal>[];
+    for (final r in db.select(
+        'SELECT * FROM savings_goals ORDER BY priority, name COLLATE NOCASE')) {
+      final cur = r['currency'] as String;
+      final manual = r['saved_amount'] as int;
+      var saved = manual;
+      final acc = bal[r['account_id']];
+      if (acc != null) {
+        final rate = fx.rate(acc.currency, cur, today);
+        if (rate != null) saved = (acc.balance * rate).round();
+      }
+      final td = r['target_date'] as String?;
+      out.add(Goal(r['id'] as int, r['name'] as String, cur,
+          r['target_amount'] as int, saved,
+          td == null ? null : DateTime.parse(td), acc?.id, manual,
+          r['notes'] as String?));
+    }
+    return out;
+  }
+
+  void saveGoal({int? id, required String name, required int target,
+      required String currency, DateTime? targetDate, int? accountId,
+      int saved = 0, String? notes}) {
+    final args = [name.trim(), target, currency,
+      targetDate == null ? null : isoDate(targetDate), accountId, saved,
+      (notes?.trim().isEmpty ?? true) ? null : notes!.trim()];
+    if (id == null) {
+      db.execute(
+          'INSERT INTO savings_goals (name, target_amount, currency, '
+          'target_date, account_id, saved_amount, notes, priority, created_at) '
+          "VALUES (?, ?, ?, ?, ?, ?, ?, 0, strftime('%Y-%m-%d %H:%M:%f', 'now'))",
+          args);
+    } else {
+      db.execute(
+          'UPDATE savings_goals SET name = ?, target_amount = ?, currency = ?, '
+          'target_date = ?, account_id = ?, saved_amount = ?, notes = ? '
+          'WHERE id = ?', [...args, id]);
+    }
+  }
+
+  void deleteGoal(int id) =>
+      db.execute('DELETE FROM savings_goals WHERE id = ?', [id]);
+
+  List<Bill> bills({bool activeOnly = false}) {
+    DateTime? d(Object? v) => v == null ? null : DateTime.parse(v as String);
+    return [
+      for (final r in db.select(
+          'SELECT * FROM recurring_items '
+          '${activeOnly ? 'WHERE is_active = 1 ' : ''}'
+          'ORDER BY name COLLATE NOCASE'))
+        Bill(r['id'] as int, r['name'] as String, r['account_id'] as int,
+            r['category_id'] as int?, r['amount'] as int,
+            r['frequency'] as String, d(r['start_date'])!, d(r['end_date']),
+            (r['is_active'] as int) != 0, d(r['last_posted']))
+    ];
+  }
+
+  /// Bills and income due within [days] days, soonest first.
+  List<(Bill, DateTime)> upcoming({int days = 30}) {
+    final today = DateTime.now();
+    final from = DateTime(today.year, today.month, today.day);
+    final to = from.add(Duration(days: days));
+    final out = <(Bill, DateTime)>[];
+    for (final b in bills(activeOnly: true)) {
+      for (final d in b.occurrences(from, to)) {
+        if (b.lastPosted != null && !d.isAfter(b.lastPosted!)) continue;
+        out.add((b, d));
+      }
+    }
+    out.sort((a, b) => a.$2.compareTo(b.$2));
+    return out;
+  }
+
+  void saveBill({int? id, required String name, required int accountId,
+      int? categoryId, required int amount, required String frequency,
+      required DateTime start, int remindDays = 3}) {
+    final args = [name.trim(), accountId, categoryId, amount, frequency,
+      isoDate(start)];
+    if (id == null) {
+      db.execute(
+          'INSERT INTO recurring_items (name, account_id, category_id, amount, '
+          'frequency, start_date, is_active, auto_post, remind_days) '
+          'VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?)', [...args, remindDays]);
+    } else {
+      db.execute(
+          'UPDATE recurring_items SET name = ?, account_id = ?, '
+          'category_id = ?, amount = ?, frequency = ?, start_date = ? '
+          'WHERE id = ?', [...args, id]);
+    }
+  }
+
+  void deleteBill(int id) =>
+      db.execute('DELETE FROM recurring_items WHERE id = ?', [id]);
+
+  /// Records the bill due on [due] as a transaction and moves it on.
+  void payBill(Bill b, DateTime due) {
+    saveTransaction(
+        accountId: b.accountId, date: DateTime.now(), amount: b.amount,
+        kind: b.amount > 0 ? 'income' : 'expense', payee: b.name,
+        categoryId: b.categoryId);
+    db.execute('UPDATE recurring_items SET last_posted = ? WHERE id = ?',
+        [isoDate(due), b.id]);
+  }
+
+  List<Holding> holdings() {
+    final out = <Holding>[];
+    for (final h in db.select(
+        'SELECT * FROM holdings ORDER BY name COLLATE NOCASE')) {
+      final id = h['id'] as int;
+      var qty = 0.0, cost = 0.0, div = 0.0;
+      for (final t in db.select(
+          'SELECT trade_type, quantity, price, fees, cash_amount '
+          'FROM investment_trades WHERE holding_id = ? '
+          'ORDER BY trade_date, id', [id])) {
+        final q = (t['quantity'] as int) / 1e8;
+        final p = (t['price'] as int) / 1e6;
+        final fees = (t['fees'] as int) / 100;
+        switch (t['trade_type']) {
+          case 'buy':
+            qty += q;
+            cost += q * p + fees;
+          case 'sell':
+            if (qty > 0) cost -= cost * (q / qty).clamp(0.0, 1.0);
+            qty -= q;
+          case 'dividend':
+            div += ((t['cash_amount'] as int?) ?? 0) / 100;
+        }
+      }
+      final last = db.select(
+          'SELECT price, price_date FROM asset_prices WHERE holding_id = ? '
+          'ORDER BY price_date DESC LIMIT 1', [id]);
+      out.add(Holding(id, h['account_id'] as int, h['symbol'] as String,
+          h['name'] as String, h['asset_class'] as String,
+          h['currency'] as String, qty, (cost * 100).round(),
+          last.isEmpty ? null : (last.first['price'] as int) / 1e6,
+          last.isEmpty ? null
+              : DateTime.parse(last.first['price_date'] as String),
+          (div * 100).round()));
+    }
+    return out;
+  }
+
+  List<Debt> debts() {
+    final terms = {
+      for (final r in db.select('SELECT * FROM debt_terms'))
+        r['account_id'] as int: r
+    };
+    return [
+      for (final a in accounts())
+        if (a.type == 'loan' || a.type == 'credit_card' ||
+            terms.containsKey(a.id))
+          if (a.balance < 0)
+            Debt(a, ((terms[a.id]?['apr'] as int?) ?? 0) / 10000,
+                (terms[a.id]?['min_payment'] as int?) ?? 0)
+    ];
   }
 
   void deleteTransaction(int id) =>

@@ -134,6 +134,10 @@ def ensure_sync_triggers(conn: Connection) -> None:
             f"VALUES ('{t}', OLD.uid, {_NOW}); END"))
 
 
+def _v08_bank_links(conn: Connection) -> None:
+    models.BankLink.__table__.create(conn, checkfirst=True)
+
+
 MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (1, "initial schema", _initial_schema),
     (2, "import presets", _import_presets),
@@ -143,6 +147,7 @@ MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (6, "envelope budgets, IOUs, review queue and sync ids",
      _v06_envelopes_sync),
     (7, "sync with the phone app", _v07_sync_state),
+    (8, "bank sync links", _v08_bank_links),
 ]
 
 

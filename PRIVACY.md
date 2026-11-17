@@ -44,6 +44,27 @@ its own hidden app folder in your Drive, not your other files; the sync files
 are kept there. On the PC the sign-in token is stored protected by Windows;
 on the phone the sign-in is handled by Google Play services.
 
+## Bank sync (optional)
+
+If you turn on Settings › Bank sync, PFI on the PC fetches new transactions
+from your bank through a service you sign up to yourself. PFI is not a
+customer of these services and has no server in between:
+
+- **SimpleFIN Bridge** (US and Canada): you link your banks on the SimpleFIN
+  website and give PFI a one-time setup token. PFI keeps the resulting access
+  URL protected by Windows on your PC and asks SimpleFIN for your accounts and
+  transactions. Your bank password stays with SimpleFIN and your bank.
+- **Enable Banking** (Europe): you register your own application with Enable
+  Banking and link your accounts there. PFI keeps the application's private
+  key protected by Windows on your PC; you approve access on your bank's own
+  pages. The bank sends a one-time code to the PFI website page
+  `bank-callback/`, which only forwards it to PFI on your PC (the page has no
+  server code and stores nothing).
+
+The transactions are stored in your local database like imported statements.
+Disconnecting in Settings deletes the saved access on the PC. The phone app
+does not contact banks.
+
 ## The Android app
 
 The phone app stores your data in a private database on the phone. It uses
@@ -58,6 +79,7 @@ PFI makes only these requests, and only for the purposes described:
 |---|---|---|---|
 | Exchange rates | [Exchange API](https://github.com/fawazahmed0/exchange-api) via cdn.jsdelivr.net or currency-api.pages.dev | currency codes (e.g. `chf`) and a date | once a day if enabled in Settings, or when you click "Update now" |
 | Stock, ETF & fund prices | query1.finance.yahoo.com | the symbol you entered (e.g. `VWRL.L`) and a date range | once a day for holdings with Yahoo Finance as price source, or on request |
+| Bank sync (optional) | SimpleFIN Bridge (bridge.simplefin.org) or api.enablebanking.com | your saved access or signed request, and a date range | every 6 hours while PFI runs, if you linked accounts |
 | Crypto prices | api.coingecko.com | the coin id (e.g. `bitcoin`) and a currency code | once a day for holdings with CoinGecko as price source, or on request |
 
 These services receive your IP address as part of any internet request;

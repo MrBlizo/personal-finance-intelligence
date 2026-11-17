@@ -18,7 +18,8 @@ from .config import get_settings
 from . import legacy
 from .db import SessionLocal, init_engine, sqlite_url
 from .migrations import run_migrations
-from .routers import analytics, automation, core, extras, investments
+from .routers import analytics, automation, banksync as banksync_router
+from .routers import core, extras, investments
 from .routers import planning, system, tools
 from .routers import budgeting, reports
 from .routers import transactions
@@ -112,11 +113,25 @@ def background_tasks(data_dir: Path, db_path: Path) -> None:
 SYNC_EVERY_SECONDS = 300
 
 
+def _bank_sync(data_dir: Path) -> None:
+    """Fetch new bank transactions when the last fetch is 6 hours old."""
+    from .services import banksync
+    try:
+        with SessionLocal() as db:
+            if banksync.due(db):
+                r = banksync.run(db, data_dir)
+                log.info("Bank sync: %d new, %d already there, %s",
+                         r.imported, r.duplicates, r.errors or "no problems")
+    except Exception as exc:
+        log.warning("Automatic bank sync skipped: %s", exc)
+
+
 def sync_loop(data_dir: Path) -> None:
-    """Sync with the other devices every few minutes while PFI runs."""
+    """Sync devices every few minutes and banks every 6 hours."""
     from .services import sync
     time.sleep(20)
     while True:
+        _bank_sync(data_dir)
         try:
             with SessionLocal() as db:
                 if sync.status(db, data_dir).enabled:
@@ -203,9 +218,10 @@ def create_app() -> FastAPI:
 
     for module in (system, core, transactions, extras, tools, planning,
                    investments, analytics, automation, reports, budgeting,
-                   sync_router):
+                   sync_router, banksync_router):
         app.include_router(module.router)
     app.include_router(sync_router.oauth_router)
+    app.include_router(banksync_router.oauth_router)
     if settings.frontend_dist.is_dir():
         app.mount("/", UiFiles(directory=settings.frontend_dist,
                                html=True), name="ui")

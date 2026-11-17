@@ -31,6 +31,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .. import models
+from ..seed import get_setting
 from ..db import Base
 from . import gdrive, secret_store
 
@@ -940,11 +941,18 @@ def _run(db: Session, data_dir: Path) -> SyncResult:
     changes = collect_changes(conn)
     number = int(_get(conn, "next_seq", "1"))
     name = _get(conn, "device_name") or socket.gethostname()
-    for start in range(0, len(changes), CHUNK):
-        part = changes[start:start + CHUNK]
+    # The phone takes its budget currency from the PC; announce it when it
+    # changed, even in a file without other changes.
+    base = get_setting(db, "base_currency", "USD")
+    parts = [changes[i:i + CHUNK] for i in range(0, len(changes), CHUNK)]
+    if not parts and _get(conn, "announced_base") != base:
+        parts = [[]]
+    for part in parts:
         store.write(me, number, seal(key, _aad(me, number), {
             "format": FORMAT, "device": me, "name": name, "seq": number,
-            "created": _now(), "changes": part}))
+            "created": _now(), "kind": "pc", "base_currency": base,
+            "changes": part}))
+        _set(conn, "announced_base", base)
         for rec in part:
             _seen(conn, rec["t"], rec["uid"],
                   "del:" + rec["del"] if "del" in rec else rec["u"])

@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-icons";
 import { usePrefs } from "@/components/AppFrame";
 import { BackupPanel } from "@/components/BackupPanel";
+import { BankSyncPanel } from "@/components/BankSyncPanel";
 import { SyncPanel } from "@/components/SyncPanel";
 import { OldDataRow } from "@/components/OldDataRow";
 import { CategoryDialog } from "@/components/CategoryDialog";
@@ -302,6 +303,13 @@ export default function SettingsPage() {
             <div className="group-title">{t("Sync")}</div>
             <div className="settings-group">
               <SyncPanel onMessage={setMsg} onSynced={() => { refs.reload(); rules.reload(); }} />
+            </div>
+          </section>
+
+          <section className="settings-block">
+            <div className="group-title">{t("Bank sync")}</div>
+            <div className="settings-group">
+              <BankSyncPanel onMessage={setMsg} />
             </div>
           </section>
 

@@ -13,7 +13,7 @@ import {
   Account, EnvelopeMonth, Goal, HomeCard, HomeCardId, Insight, PlotFigure, Reminder,
   Settings, Summary, get, insightText, put,
 } from "@/lib/api";
-import { date, money, pct, signClass } from "@/lib/format";
+import { date, locale, money, pct, signClass } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
 
 const PERIODS: Record<string, string> = {
@@ -211,7 +211,7 @@ export default function Home() {
   return (
     <>
       <PageHead title={t(greeting(new Date().getHours()))}
-        sub={new Date().toLocaleDateString(lang === "ar" ? "ar-MA" : lang === "fr" ? "fr-CH" : "en-GB", { weekday: "long", day: "numeric", month: "long" })}>
+        sub={new Date().toLocaleDateString(locale(), { weekday: "long", day: "numeric", month: "long" })}>
         <TabList size="small" selectedValue={period}
           onTabSelect={(_, d) => setPeriod(String(d.value))}>
           {Object.entries(PERIODS).map(([k, label]) => (
