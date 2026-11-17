@@ -431,6 +431,9 @@ class SyncEngine {
     ];
     final applied = <String, int>{};
     final names = <String, Map<String, Object?>>{};
+    // The PC owns the budget currency; adopt the newest one it announced.
+    String? pcBase;
+    var pcBaseAt = '';
     for (final dev in await store.devices()) {
       if (dev == me) continue;
       final last = int.parse(getState('applied:$dev') ?? '0');
@@ -445,6 +448,13 @@ class SyncEngine {
             .map((e) => (e as Map).cast<String, dynamic>()));
         applied[dev] = n;
         names[dev] = {'name': payload['name'] ?? dev, 'seen': payload['created']};
+        final base = payload['base_currency'];
+        final at = payload['created'] as String? ?? '';
+        if (payload['kind'] == 'pc' && base is String && base.length == 3 &&
+            at.compareTo(pcBaseAt) >= 0) {
+          pcBase = base.toUpperCase();
+          pcBaseAt = at;
+        }
       }
     }
     db.execute('BEGIN');
@@ -458,6 +468,12 @@ class SyncEngine {
       }
       applied.forEach((dev, n) => setState('applied:$dev', '$n'));
       names.forEach((dev, info) => setState('device:$dev', jsonEncode(info)));
+      if (pcBase != null) {
+        db.execute(
+            'INSERT OR REPLACE INTO settings (key, value) '
+            "VALUES ('base_currency', ?)",
+            [pcBase]);
+      }
       db.execute('COMMIT');
     } catch (_) {
       db.execute('ROLLBACK');
