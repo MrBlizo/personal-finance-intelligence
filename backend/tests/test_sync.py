@@ -88,6 +88,39 @@ def _tick():
     time.sleep(1.05)  # ORM timestamps have one-second resolution
 
 
+def _settle(a, b):
+    """Run both devices until nothing moves; at most one extra round.
+
+    Default categories both devices created are matched by name. If the
+    devices were set up in different seconds, the newer copy wins and is
+    sent once more, then sync is quiet.
+    """
+    for _ in range(2):
+        ra, rb = a.run(), b.run()
+        if not (ra.sent or ra.received or rb.sent or rb.received):
+            return
+    raise AssertionError(f"sync still busy: a={ra}, b={rb}")
+
+
+def test_converges_when_devices_start_in_different_seconds(tmp_path,
+                                                           monkeypatch):
+    monkeypatch.setattr(sync, "PBKDF2_ITERATIONS", 1000)
+    a = Device(tmp_path, "pc")
+    _tick()
+    b = Device(tmp_path, "phone")
+    folder = tmp_path / "cloud" / "PFI Sync"
+    a.setup(folder)
+    b.setup(folder)
+    acc = _add_account(a, "Salary account")
+    _add_txn(a, acc, "-42.50", "Migros", a.category("Groceries"))
+    a.run()
+    b.run()
+    _settle(a, b)
+    assert [t.description for t in b.txns()] == ["Migros"]
+    a.close()
+    b.close()
+
+
 def test_crypto_round_trip_and_wrong_key():
     key = b"k" * 32
     blob = sync.seal(key, "dev/00000001", {"x": "é"})
@@ -137,7 +170,7 @@ def test_two_devices_converge(pair):
     assert txns[0].category_id == b.category("Groceries").id
     # nothing is echoed back
     assert b.run().sent == 0
-    assert a.run().received == 0
+    _settle(a, b)
 
 
 def test_edit_and_delete_propagate(pair):
