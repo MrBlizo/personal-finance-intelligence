@@ -25,7 +25,7 @@
   "description": "Offline budget planner and expense tracker for Windows with an Android app: bank statement import, envelope budgets, debt payoff planner, investments and cash-flow forecast. No account and no PFI server; optional encrypted sync through your own OneDrive or Google Drive.",
   "url": "https://mrblizo.github.io/personal-finance-intelligence/",
   "downloadUrl": "https://apps.microsoft.com/detail/9MZKW4H9F0J5",
-  "softwareVersion": "0.7.1",
+  "softwareVersion": "0.8.0",
   "license": "https://www.gnu.org/licenses/agpl-3.0.html",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "author": { "@type": "Person", "name": "Ibrahim (MrBlizo)", "url": "https://github.com/MrBlizo" },
@@ -39,7 +39,7 @@
   "@type": "FAQPage",
   "mainEntity": [
     { "@type": "Question", "name": "Is PFI free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PFI is free on the Microsoft Store and open source under the GNU AGPL-3.0 license. There are no ads, no subscription and no in-app purchases." } },
-    { "@type": "Question", "name": "Does PFI connect to my bank?", "acceptedAnswer": { "@type": "Answer", "text": "No. You download your statement from your bank's website and import the file (CSV, OFX/QFX, QIF or CAMT.053). PFI never asks for your bank login." } },
+    { "@type": "Question", "name": "Does PFI connect to my bank?", "acceptedAnswer": { "@type": "Answer", "text": "Only if you want. You can import statement files (CSV, OFX/QFX, QIF, CAMT.053), or turn on bank sync with access you set up yourself: SimpleFIN Bridge for US and Canadian banks, Enable Banking for European banks. PFI never asks for your bank password." } },
     { "@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": { "@type": "Answer", "text": "In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a PFI server; backups go to a folder you choose and can be protected with a password." } },
     { "@type": "Question", "name": "Is there a phone app?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The free PFI app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through your own OneDrive or Google Drive and is encrypted with your passphrase before it leaves the device." } },
     { "@type": "Question", "name": "Which Windows versions are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs." } }
@@ -69,7 +69,7 @@
 <section class="hero-ms">
   <div class="wrap hero-grid">
     <div class="hero-text">
-      <p class="eyebrow">Personal Finance Intelligence 0.7.1</p>
+      <p class="eyebrow">Personal Finance Intelligence 0.8.0</p>
       <h1>Download PFI</h1>
       <p class="lead">The free budget app for Windows and Android. Plan every dollar, import your bank
         statements and see where your money goes, without an account and without a cloud server.</p>
@@ -104,6 +104,7 @@
         <h3>Plan ahead</h3><p>Cash-flow forecast from your own history, a debt payoff planner, investments with returns, and bills that never surprise you.</p></article>
     </div>
     <div class="more">
+      <div><strong>Bank sync</strong><span>New transactions arrive by themselves: SimpleFIN (US) or Enable Banking (Europe).</span></div>
       <div><strong>Phone app and sync</strong><span>Same data on Android, encrypted in your own OneDrive or Google Drive.</span></div>
       <div><strong>Debt payoff planner</strong><span>Avalanche or snowball, with your debt-free date.</span></div>
       <div><strong>Investments</strong><span>Money- and time-weighted returns, dividends, allocation.</span></div>
@@ -134,7 +135,7 @@
         <div class="qr-row">
           <img class="qr" src="img/qr-android.svg" width="120" height="120" alt="QR code to the PFI download page">
           <div><a class="btn primary" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest">Download the APK</a>
-            <p class="alt">Scan with your phone's camera, then open <code>PFI-0.7.1.apk</code>.</p></div>
+            <p class="alt">Scan with your phone's camera, then open <code>PFI-0.8.0.apk</code>.</p></div>
         </div>
       </div>
     </div>
@@ -204,7 +205,7 @@
     <div class="faq-head"><h2>Frequently asked questions</h2>
       <div><button type="button" data-faq="open">Expand all</button><button type="button" data-faq="close">Collapse all</button></div></div>
     <details><summary><span class="n">01/</span>Is PFI free?</summary><p>Yes. PFI is free on the Microsoft Store and open source under the GNU AGPL-3.0 license. There are no ads, no subscription and no in-app purchases.</p></details>
-    <details><summary><span class="n">02/</span>Does PFI connect to my bank?</summary><p>No. You download your statement from your bank's website and import the file (CSV, OFX/QFX, QIF or CAMT.053). PFI never asks for your bank login. <a href="guides/import-camt053.html">How to import a CAMT.053 file</a>.</p></details>
+    <details><summary><span class="n">02/</span>Does PFI connect to my bank?</summary><p>Only if you want. Import statement files (CSV, OFX/QFX, QIF or CAMT.053), or turn on bank sync in Settings with access you set up yourself: <strong>SimpleFIN Bridge</strong> for US and Canadian banks ($15 a year, paid to SimpleFIN) or <strong>Enable Banking</strong> for European banks (free for your own accounts). New transactions then arrive every few hours. PFI never asks for your bank password. <a href="guides/import-camt053.html">How to import a CAMT.053 file</a>.</p></details>
     <details><summary><span class="n">03/</span>Where is my data stored?</summary><p>In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a PFI server; backups go to a folder you choose and can be protected with a password.</p></details>
     <details><summary><span class="n">04/</span>Is there a phone app?</summary><p>Yes. The free PFI app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through your own OneDrive or Google Drive and is encrypted with your passphrase before it leaves the device. See <a href="#download">Connect your phone in three steps</a>.</p></details>
     <details><summary><span class="n">05/</span>Can I move to a new PC?</summary><p>Yes. Set up sync on the old PC (Settings › Sync), then install PFI on the new PC and set up sync with the same cloud drive and passphrase: everything comes over.</p></details>

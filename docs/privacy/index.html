@@ -30,7 +30,7 @@
   <article>
     <p class="crumbs"><a href="../">Home</a> › Privacy</p>
 <h1>Privacy policy</h1>
-<p><em>Personal Finance Intelligence (PFI) · last updated 16 November 2026</em></p>
+<p><em>Personal Finance Intelligence (PFI) · last updated 17 November 2026</em></p>
 <p>PFI is a desktop app (with an optional Android app) that keeps your
 financial data on your own devices.</p>
 <h2>What PFI stores</h2>
@@ -66,6 +66,25 @@ your Google account and the permission "drive.appdata". It lets PFI see only
 its own hidden app folder in your Drive, not your other files; the sync files
 are kept there. On the PC the sign-in token is stored protected by Windows;
 on the phone the sign-in is handled by Google Play services.</p>
+<h2>Bank sync (optional)</h2>
+<p>If you turn on Settings › Bank sync, PFI on the PC fetches new transactions
+from your bank through a service you sign up to yourself. PFI is not a
+customer of these services and has no server in between:</p>
+<ul>
+<li><strong>SimpleFIN Bridge</strong> (US and Canada): you link your banks on the SimpleFIN
+website and give PFI a one-time setup token. PFI keeps the resulting access
+URL protected by Windows on your PC and asks SimpleFIN for your accounts and
+transactions. Your bank password stays with SimpleFIN and your bank.</li>
+<li><strong>Enable Banking</strong> (Europe): you register your own application with Enable
+Banking and link your accounts there. PFI keeps the application's private
+key protected by Windows on your PC; you approve access on your bank's own
+pages. The bank sends a one-time code to the PFI website page
+<code>bank-callback/</code>, which only forwards it to PFI on your PC (the page has no
+server code and stores nothing).</li>
+</ul>
+<p>The transactions are stored in your local database like imported statements.
+Disconnecting in Settings deletes the saved access on the PC. The phone app
+does not contact banks.</p>
 <h2>The Android app</h2>
 <p>The phone app stores your data in a private database on the phone. It uses
 the network only for the sync described above. It has no account, no
@@ -93,6 +112,12 @@ analytics, no advertising and no telemetry.</p>
 <td>query1.finance.yahoo.com</td>
 <td>the symbol you entered (e.g. <code>VWRL.L</code>) and a date range</td>
 <td>once a day for holdings with Yahoo Finance as price source, or on request</td>
+</tr>
+<tr>
+<td>Bank sync (optional)</td>
+<td>SimpleFIN Bridge (bridge.simplefin.org) or api.enablebanking.com</td>
+<td>your saved access or signed request, and a date range</td>
+<td>every 6 hours while PFI runs, if you linked accounts</td>
 </tr>
 <tr>
 <td>Crypto prices</td>
