@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_label">PFI quick add</string>
+    <string name="widget_description">Cash on hand and one tap to add an expense or income.</string>
+    <string name="shortcut_expense">Add expense</string>
+    <string name="shortcut_income">Add income</string>
+</resources>

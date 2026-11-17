@@ -6,7 +6,7 @@ import '../data/repo.dart';
 import 'shell.dart' show confirmDelete;
 import 'widgets.dart';
 
-Future<void> openEditor(BuildContext context, {Txn? txn}) async {
+Future<void> openEditor(BuildContext context, {Txn? txn, String? kind}) async {
   final app = appOf(context, listen: false);
   if (app.repo.accounts().isEmpty) {
     ScaffoldMessenger.of(context)
@@ -14,12 +14,14 @@ Future<void> openEditor(BuildContext context, {Txn? txn}) async {
     return;
   }
   await Navigator.of(context).push(MaterialPageRoute(
-      fullscreenDialog: true, builder: (_) => EditTransactionPage(txn: txn)));
+      fullscreenDialog: true, builder: (_) => EditTransactionPage(txn: txn, kind: kind)));
 }
 
 class EditTransactionPage extends StatefulWidget {
-  const EditTransactionPage({super.key, this.txn});
+  const EditTransactionPage({super.key, this.txn, this.kind});
   final Txn? txn;
+  /// "expense" or "income" for a new transaction (from the widget).
+  final String? kind;
   @override
   State<EditTransactionPage> createState() => _EditTransactionPageState();
 }
@@ -39,7 +41,9 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
     super.initState();
     final t = widget.txn;
     final app = appOf(context, listen: false);
-    kind = t == null ? 'expense' : (t.amount > 0 ? 'income' : 'expense');
+    kind = t == null
+        ? (widget.kind == 'income' ? 'income' : 'expense')
+        : (t.amount > 0 ? 'income' : 'expense');
     amount = t == null ? '' : (t.amount.abs() / 100).toStringAsFixed(2);
     accountId = t?.accountId ??
         int.tryParse(app.prefs.getString('last_account') ?? '') ??

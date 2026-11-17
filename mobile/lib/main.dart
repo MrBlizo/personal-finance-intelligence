@@ -10,7 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/db.dart';
 import 'data/schema.dart';
+import 'launch.dart';
 import 'state.dart';
+import 'ui/edit_transaction.dart';
 import 'ui/settings.dart';
 import 'ui/shell.dart';
 import 'ui/theme.dart';
@@ -28,7 +30,18 @@ Future<void> main() async {
   final state = AppState(db, prefs);
   runApp(ChangeNotifierProvider.value(value: state, child: const PfiApp()));
   if (state.syncEnabled) state.syncNow();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    updateWidget(state);
+    listenForLaunches((action) {
+      final ctx = navigatorKey.currentContext;
+      if (ctx == null || !state.onboarded) return;
+      if (action == 'expense' || action == 'income') openEditor(ctx, kind: action);
+    });
+  });
 }
+
+/// Lets the home-screen widget open the editor from outside any screen.
+final navigatorKey = GlobalKey<NavigatorState>();
 
 class PfiApp extends StatelessWidget {
   const PfiApp({super.key});
@@ -37,6 +50,7 @@ class PfiApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final app = appOf(context);
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'PFI',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(app.accent, Brightness.light),

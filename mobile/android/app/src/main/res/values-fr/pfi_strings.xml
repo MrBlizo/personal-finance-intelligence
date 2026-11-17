@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_label">PFI ajout rapide</string>
+    <string name="widget_description">Argent disponible et ajout d\'une dépense ou d\'un revenu en un geste.</string>
+    <string name="shortcut_expense">Ajouter une dépense</string>
+    <string name="shortcut_income">Ajouter un revenu</string>
+</resources>
