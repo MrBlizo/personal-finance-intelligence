@@ -14,11 +14,11 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Ibrahim"
             VALUE "FileDescription", "Personal Finance Intelligence"
-            VALUE "FileVersion", "0.8.0"
+            VALUE "FileVersion", "0.9.0"
             VALUE "InternalName", "PFI"
             VALUE "OriginalFilename", "PFI.exe"
             VALUE "ProductName", "Personal Finance Intelligence"
-            VALUE "ProductVersion", "0.8.0"
+            VALUE "ProductVersion", "0.9.0"
         END
     END
     BLOCK "VarFileInfo"
