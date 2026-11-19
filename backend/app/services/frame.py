@@ -2,7 +2,7 @@
 from datetime import date
 
 import pandas as pd
-from sqlalchemy import select
+from sqlalchemy import BigInteger, select, type_coerce
 from sqlalchemy.orm import Session
 
 from ..models import (
@@ -47,8 +47,13 @@ def load_transactions(db: Session, fx: FxConverter, base: str,
         the part's amount and category), so totals per category count each
         part where it belongs. ``tags`` holds the transaction's tag names.
     """
-    stmt = (select(Transaction, Account).join(Account)
-            .order_by(Transaction.txn_date, Transaction.id))
+    # Plain columns: building one ORM object per row was most of the time.
+    T = Transaction
+    stmt = (select(T.id, T.txn_date, T.account_id, Account.name,
+                   Account.type, Account.currency,
+                   type_coerce(T.amount, BigInteger), T.kind, T.category_id,
+                   T.description, T.merchant, T.transfer_group)
+            .join(Account).order_by(T.txn_date, T.id))
     if start:
         stmt = stmt.where(Transaction.txn_date >= start)
     if end:
@@ -67,23 +72,24 @@ def load_transactions(db: Session, fx: FxConverter, base: str,
         tags.setdefault(txn_id, []).append(name)
     missing: set[str] = set()
     rows = []
-    for t, a in db.execute(stmt):
-        rate = fx.try_rate(a.currency, base, t.txn_date, missing)
-        pieces = parts.get(t.id) or [None]
+    for (tid, day, acc_id, acc_name, acc_type, cur, cents, kind, t_cat,
+         desc, merchant, group) in db.execute(stmt):
+        rate = fx.try_rate(cur, base, day, missing)
+        pieces = parts.get(tid) or [None]
         for piece in pieces:
-            cat_id = piece.category_id if piece else t.category_id
-            amount = float(piece.amount if piece else t.amount)
+            cat_id = piece.category_id if piece else t_cat
+            amount = float(piece.amount) if piece else cents / 100
             cat = cats.get(cat_id)
             top = cats.get(cat.parent_id) if cat and cat.parent_id else cat
             rows.append((
-                t.id, t.txn_date, a.id, a.name, a.type, a.currency, amount,
+                tid, day, acc_id, acc_name, acc_type, cur, amount,
                 amount * rate if rate is not None else float("nan"),
-                t.kind, cat_id,
+                kind, cat_id,
                 cat.name if cat else "Uncategorized",
                 top.id if top else None,
                 top.name if top else "Uncategorized",
-                t.description, t.merchant, t.transfer_group,
-                piece is not None, tags.get(t.id, [])))
+                desc, merchant, group,
+                piece is not None, tags.get(tid, [])))
     df = pd.DataFrame(rows, columns=COLUMNS)
     df["txn_date"] = pd.to_datetime(df["txn_date"])
     # pandas 3 stores missing strings as NaN (a float); keep them as None so

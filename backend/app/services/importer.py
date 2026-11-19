@@ -374,21 +374,38 @@ def parse_rows(df: pd.DataFrame, m: ImportMapping) -> ParsedRows:
             "No amount column was chosen. Select either an amount column "
             "or debit/credit columns.")
     out = ParsedRows()
-    for idx, row in df.iterrows():
+    # Plain lists instead of DataFrame rows, and each distinct date text is
+    # parsed once: a statement repeats the same few dates many times.
+    col = {c: df[c].tolist() for c in set(needed) if c}
+    days: dict[str, object] = {}
+
+    def to_day(raw_date: str):
+        if raw_date not in days:
+            try:
+                days[raw_date] = (
+                    pd.to_datetime(raw_date, format=m.date_format)
+                    if m.date_format else
+                    pd.to_datetime(raw_date, dayfirst=m.dayfirst))
+            except (ValueError, TypeError) as exc:
+                days[raw_date] = exc
+        found = days[raw_date]
+        if isinstance(found, Exception):
+            raise found
+        return found
+
+    for i, idx in enumerate(df.index):
         line = int(idx) + 2 + m.skip_rows
         try:
-            raw_date = row[m.date_column].strip()
-            day = (pd.to_datetime(raw_date, format=m.date_format)
-                   if m.date_format else
-                   pd.to_datetime(raw_date, dayfirst=m.dayfirst))
+            raw_date = col[m.date_column][i].strip()
+            day = to_day(raw_date)
             if pd.isna(day):
                 raise ValueError(f"empty date '{raw_date}'")
             if m.amount_column:
-                amount = parse_amount(row[m.amount_column], m.decimal)
+                amount = parse_amount(col[m.amount_column][i], m.decimal)
             else:
-                debit = parse_amount(row[m.debit_column], m.decimal) \
+                debit = parse_amount(col[m.debit_column][i], m.decimal) \
                     if m.debit_column else None
-                credit = parse_amount(row[m.credit_column], m.decimal) \
+                credit = parse_amount(col[m.credit_column][i], m.decimal) \
                     if m.credit_column else None
                 if debit is None and credit is None:
                     amount = None
@@ -402,8 +419,8 @@ def parse_rows(df: pd.DataFrame, m: ImportMapping) -> ParsedRows:
             out.rows.append({
                 "line": line, "txn_date": day.date(),
                 "amount": amount.quantize(Decimal("0.01")),
-                "description": row[m.description_column].strip()[:500],
-                "merchant": (row[m.merchant_column].strip()[:200] or None)
+                "description": col[m.description_column][i].strip()[:500],
+                "merchant": (col[m.merchant_column][i].strip()[:200] or None)
                 if m.merchant_column else None})
         except (ValueError, TypeError) as exc:
             out.errors.append(f"Line {line}: {exc}")

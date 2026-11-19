@@ -16,11 +16,12 @@ always predicting the most frequent category.
 """
 import math
 import re
+from functools import lru_cache
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import BigInteger, func, select, type_coerce
 from sqlalchemy.orm import Session
 
 from ..models import Category, Transaction
@@ -52,12 +53,19 @@ def tokens(description: str, merchant: str | None, amount: float) -> list[str]:
         Lower-case words (digits and very common words removed) plus a
         sign feature.
     """
+    return list(_tokens(description, merchant, amount > 0))
+
+
+@lru_cache(maxsize=50_000)
+def _tokens(description: str, merchant: str | None,
+            positive: bool) -> tuple[str, ...]:
+    # Bank descriptions repeat a lot, so the words are computed once.
     text = f"{description or ''} {merchant or ''}".lower()
     words = [w for w in _WORD.findall(text) if w not in _STOP]
     if merchant:
         words.append("m:" + merchant.strip().lower()[:40])
-    words.append("sign:+" if amount > 0 else "sign:-")
-    return words
+    words.append("sign:+" if positive else "sign:-")
+    return tuple(words)
 
 
 @dataclass
@@ -139,8 +147,10 @@ class Model:
 
 
 def _examples(db: Session) -> list[tuple[date, list[str], int]]:
+    # The raw integer amount: only its sign is used, so no Decimal needed.
     stmt = (select(Transaction.txn_date, Transaction.description,
-                   Transaction.merchant, Transaction.amount,
+                   Transaction.merchant,
+                   type_coerce(Transaction.amount, BigInteger),
                    Transaction.category_id)
             .where(Transaction.category_id.is_not(None),
                    Transaction.kind != "transfer",
@@ -156,12 +166,38 @@ def _allowed(kinds: dict[int, str], amount: float) -> set[int]:
     return {c for c, k in kinds.items() if k == want}
 
 
+_trained: dict[tuple, Model | None] = {}
+
+
+def _history_key(db: Session) -> tuple:
+    """Return a cheap summary that changes whenever the training data do."""
+    T = Transaction
+    row = db.execute(select(
+        func.count(), func.max(T.updated_at), func.sum(T.id),
+        func.sum(T.category_id), func.sum(func.length(T.description)))
+        .where(T.category_id.is_not(None), T.kind != "transfer",
+               (T.category_source.is_(None))
+               | (T.category_source != "model"))).one()
+    cats = db.execute(select(func.count(), func.max(Category.updated_at),
+                             func.sum(Category.id))).one()
+    return (str(db.get_bind().url), *map(str, row), *map(str, cats))
+
+
 def train(db: Session) -> Model | None:
-    """Fit the model on all eligible history, or None if too little."""
+    """Fit the model on all eligible history, or None if too little.
+
+    The fitted model is kept until the categorised history changes, so
+    repeated suggestions (and imports) do not re-read every transaction.
+    """
+    key = _history_key(db)
+    if key in _trained:
+        return _trained[key]
     ex = _examples(db)
-    if len(ex) < MIN_EXAMPLES or len({c for _, _, c in ex}) < 2:
-        return None
-    return Model().fit([(w, c) for _, w, c in ex])
+    model = (None if len(ex) < MIN_EXAMPLES or len({c for _, _, c in ex}) < 2
+             else Model().fit([(w, c) for _, w, c in ex]))
+    _trained.clear()
+    _trained[key] = model
+    return model
 
 
 def evaluate(db: Session, threshold: float) -> dict:
