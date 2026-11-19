@@ -1177,5 +1177,8 @@
   "Under Apps, click New connection and copy the setup token.": "تحت Apps انقر على New connection وانسخ رمز الإعداد.",
   "Waiting for the bank…": "في انتظار البنك…",
   "into {a}": "إلى {a}",
-  "{n} bank accounts update automatically every 6 hours while PFI is open.": "تتحدّث {n} حسابات بنكية تلقائيًا كل 6 ساعات ما دام PFI مفتوحًا."
+  "{n} bank accounts update automatically every 6 hours while PFI is open.": "تتحدّث {n} حسابات بنكية تلقائيًا كل 6 ساعات ما دام PFI مفتوحًا.",
+ "Navigation": "التنقل",
+ "PFI blue": "أزرق PFI",
+ "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.": "يولّد نظام الألوان كله: الأزرار والأسطح والتمييزات والرسوم البيانية. أزرق PFI يطابق تطبيق الهاتف والموقع."
 }

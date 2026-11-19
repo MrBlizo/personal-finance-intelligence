@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../data/repo.dart';
 import 'shell.dart' show confirmDelete;
+import 'theme.dart';
 import 'widgets.dart';
 
 Future<void> openEditor(BuildContext context, {Txn? txn, String? kind}) async {
@@ -143,7 +144,9 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                   '${amount.isEmpty ? '0' : amount}',
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: kind == 'expense' ? scheme.onSurface : Colors.green.shade600),
+                      color: kind == 'expense'
+                          ? scheme.onSurface
+                          : context.moneyColors.positive),
                 ),
               ),
             ),

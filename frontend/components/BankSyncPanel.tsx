@@ -8,6 +8,7 @@ import { Banner, Confirm, Modal, SettingRow, useLoad } from "@/components/ui";
 import { Account, del, get, post, put } from "@/lib/api";
 import { date, money } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { I } from "./icons";
 
 type Msg = { kind: "success" | "error" | "warning"; text: string };
 type Link = {
@@ -104,7 +105,7 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
     accounts.data?.find((a) => a.id === id)?.name ?? "";
 
   return (<>
-    <SettingRow icon={""} title={t("Bank sync")}
+    <SettingRow icon={I.syncAlt} title={t("Bank sync")}
       description={linked.length
         ? t("{n} bank accounts update automatically every 6 hours while PFI is open.", { n: linked.length })
         : t("Let PFI fetch new transactions from your bank, like YNAB, through access you set up yourself. US and Canada: SimpleFIN Bridge ($15 a year, paid to SimpleFIN). Europe: Enable Banking (free for your own accounts).")}>

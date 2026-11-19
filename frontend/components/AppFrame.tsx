@@ -12,45 +12,66 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
-import { QuickAddHotkey } from "./QuickAdd";
+import { openQuickAdd, QuickAddHotkey } from "./QuickAdd";
 import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
+import { I } from "./icons";
 
 export const NAV = [
-  { href: "/", label: "Home", glyph: "" },
-  { href: "/transactions/", label: "Transactions", glyph: "" },
-  { href: "/accounts/", label: "Accounts", glyph: "" },
-  { href: "/import/", label: "Import", glyph: "" },
-  { href: "/budgets/", label: "Budgets", glyph: "" },
-  { href: "/goals/", label: "Goals", glyph: "" },
-  { href: "/debts/", label: "Debt payoff", glyph: "\uE8C7" },
-  { href: "/ious/", label: "Lent & borrowed", glyph: "\uE716" },
-  { href: "/recurring/", label: "Bills & recurring", glyph: "" },
-  { href: "/investments/", label: "Investments", glyph: "" },
-  { href: "/forecast/", label: "Forecast", glyph: "" },
-  { href: "/insights/", label: "Insights", glyph: "" },
-  { href: "/calendar/", label: "Calendar", glyph: "\uE787" },
-  { href: "/reports/", label: "Reports", glyph: "" },
-  { href: "/settings/", label: "Settings", glyph: "" },
+  { href: "/", label: "Home", glyph: I.home },
+  { href: "/transactions/", label: "Transactions", glyph: I.receiptLong },
+  { href: "/accounts/", label: "Accounts", glyph: I.accountBalance },
+  { href: "/import/", label: "Import", glyph: I.download },
+  { href: "/budgets/", label: "Budgets", glyph: I.accountBalanceWallet },
+  { href: "/goals/", label: "Goals", glyph: I.flag },
+  { href: "/debts/", label: "Debt payoff", glyph: I.creditCard },
+  { href: "/ious/", label: "Lent & borrowed", glyph: I.handshake },
+  { href: "/recurring/", label: "Bills & recurring", glyph: I.eventRepeat },
+  { href: "/investments/", label: "Investments", glyph: I.trendingUp },
+  { href: "/forecast/", label: "Forecast", glyph: I.timeline },
+  { href: "/insights/", label: "Insights", glyph: I.lightbulb },
+  { href: "/calendar/", label: "Calendar", glyph: I.calendarMonth },
+  { href: "/reports/", label: "Reports", glyph: I.summarize },
+  { href: "/settings/", label: "Settings", glyph: I.settings },
 ];
 
 type Prefs = { lang: Lang; setLang: (l: Lang) => void };
 const PrefsCtx = createContext<Prefs>({ lang: "en", setLang: () => {} });
 export const usePrefs = () => useContext(PrefsCtx);
 
-function Sidebar({ path }: { path: string }) {
+/** Destinations that start a new group in the drawer (a divider above). */
+const GROUP_STARTS = new Set(["/budgets/", "/forecast/", "/settings/"]);
+
+/** Material 3 navigation drawer; a navigation rail on narrow windows.
+ *  The extended FAB above the destinations is the app's one primary
+ *  action (add a transaction), kept apart from navigation. */
+function NavDrawer({ path }: { path: string }) {
   const t = useT();
   const norm = (p: string) => (p.endsWith("/") ? p : p + "/");
   return (
-    <aside className="sidebar">
-      <div className="brand">Personal Finance Intelligence</div>
-      <nav className="nav">
-        {NAV.map((n) => (
-          <Link key={n.href} href={n.href}
-            className={norm(path) === n.href ? "active" : ""}>
-            <span className="glyph" aria-hidden>{n.glyph}</span>
-            {t(n.label)}
-          </Link>))}
+    <aside className="nav-drawer">
+      <div className="nav-brand">
+        <span className="nav-logo" aria-hidden>{I.accountBalanceWallet}</span>
+        <span className="nav-brand-text">Personal Finance Intelligence</span>
+      </div>
+      <button type="button" className="fab" onClick={openQuickAdd}
+        title={t("Add transaction")}>
+        <span className="icon" aria-hidden>{I.add}</span>
+        <span className="fab-label">{t("Add transaction")}</span>
+      </button>
+      <nav className="nav" aria-label={t("Navigation")}>
+        {NAV.map((n) => {
+          const active = norm(path) === n.href;
+          return (
+            <Link key={n.href} href={n.href} title={t(n.label)}
+              aria-current={active ? "page" : undefined}
+              className={`nav-item${GROUP_STARTS.has(n.href) ? " group-start" : ""}`}>
+              <span className="nav-indicator" aria-hidden>
+                <span className="icon">{n.glyph}</span>
+              </span>
+              <span className="nav-label">{t(n.label)}</span>
+            </Link>);
+        })}
       </nav>
     </aside>
   );
@@ -118,7 +139,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
         <ThemeRoot dir={lang === "ar" ? "rtl" : "ltr"} pref={theme} onChange={changeTheme}
           accent={accent} onAccent={changeAccent}>
           <div className="frame">
-            <Sidebar path={path} />
+            <NavDrawer path={path} />
             <main className="main">{children}</main>
           </div>
           <DownloadToasts />

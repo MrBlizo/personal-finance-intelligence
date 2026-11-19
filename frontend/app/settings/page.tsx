@@ -27,6 +27,7 @@ import {
 import { CURRENCIES, date, num, pct, today } from "@/lib/format";
 import { LANGS, Lang, translate, useT } from "@/lib/i18n";
 import { inShell, notifyLockSettings, queryHello, requestLock } from "@/lib/shell";
+import { I } from "@/components/icons";
 
 type Info = { version: string; data_dir: string; database: string; database_file?: string; empty?: boolean };
 
@@ -74,7 +75,7 @@ export default function SettingsPage() {
           <section className="settings-block">
             <div className="group-title">{t("General")}</div>
             <div className="settings-group">
-              <SettingRow icon={""} title={t("Language")}
+              <SettingRow icon={I.translate} title={t("Language")}
                 description={t("Language of the app and the monthly PDF report (Arabic reports are generated in English).")}>
                 <Select value={s.language} onChange={(_, d) => run(async () => {
                   await save({ language: d.value as Lang });
@@ -84,7 +85,7 @@ export default function SettingsPage() {
                   {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
                 </Select>
               </SettingRow>
-              <SettingRow icon={"\uE793"} title={t("Theme")}
+              <SettingRow icon={I.contrast} title={t("Theme")}
                 description={t("Light, dark, or the same as Windows. Also in the top right corner of every page.")}>
                 <Select value={theme.pref} onChange={(_, d) => theme.setPref(d.value as ThemePref)}>
                   <option value="system">{t("Same as Windows")}</option>
@@ -92,8 +93,8 @@ export default function SettingsPage() {
                   <option value="dark">{t("Dark")}</option>
                 </Select>
               </SettingRow>
-              <SettingRow icon={"\uE790"} title={t("Accent colour")}
-                description={t("Colours buttons, highlights and charts. Windows blue matches the rest of Windows.")}>
+              <SettingRow icon={I.palette} title={t("Accent colour")}
+                description={t("Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.")}>
                 <div className="swatches">
                   {ACCENTS.map((a) => (
                     <Tooltip key={a.id || "default"} content={t(a.label)} relationship="label">
@@ -102,7 +103,7 @@ export default function SettingsPage() {
                     </Tooltip>))}
                 </div>
               </SettingRow>
-              <SettingRow icon={""} title={t("Reporting currency")}
+              <SettingRow icon={I.payments} title={t("Reporting currency")}
                 description={t("Currencies in use: {list}", { list: s.currencies_in_use.join(", ") || "—" })}>
                 <Select value={s.base_currency} onChange={(_, d) => run(async () => {
                   await save({ base_currency: d.value }); missing.reload();
@@ -117,7 +118,7 @@ export default function SettingsPage() {
           <section className="settings-block">
             <div className="group-title">{t("Privacy & security")}</div>
             <div className="settings-group">
-              <SettingRow icon={""} title={t("App lock with Windows Hello")}
+              <SettingRow icon={I.lock} title={t("App lock with Windows Hello")}
                 description={!shell ? t("Only available in the desktop app.")
                   : hello === false ? t("Windows Hello is not set up on this PC. Set up a PIN, fingerprint or face in Windows Settings › Accounts › Sign-in options.")
                   : t("Ask for your face, fingerprint or Windows PIN when PFI opens and after it has been idle.")}>
@@ -152,7 +153,7 @@ export default function SettingsPage() {
           <section className="settings-block">
             <div className="group-title">{t("Smart categories")}</div>
             <div className="settings-group">
-              <SettingRow icon={""} title={t("Categorise imports automatically")}
+              <SettingRow icon={I.autoAwesome} title={t("Categorise imports automatically")}
                 description={t("Uses what PFI learned from the transactions you categorised yourself. Rules always come first.")}>
                 <Switch checked={s.auto_categorize} onChange={(_, d) => run(async () => {
                   await save({ auto_categorize: d.checked });
@@ -185,7 +186,7 @@ export default function SettingsPage() {
           <section className="settings-block">
             <div className="group-title">{t("Exchange rates & prices")}</div>
             <div className="settings-group">
-              <SettingRow icon={""} title={t("Update exchange rates automatically")}
+              <SettingRow icon={I.currencyExchange} title={t("Update exchange rates automatically")}
                 description={(s.fx_last_update ? t("Last update {d}.", { d: date(s.fx_last_update) }) + " " : "")
                   + t("Free Exchange API, once a day; only currency codes are sent.")}>
                 <Button icon={<ArrowSync20Regular />} disabled={busy === "fx"} onClick={() => run(async () => {
@@ -231,7 +232,7 @@ export default function SettingsPage() {
                               await del(`/api/fx-rates/${r.id}`); rates.reload(); missing.reload();
                             }} /></td></tr>))}</tbody></table>)}
                 </div>)}
-              <SettingRow icon={""} title={t("Update investment prices automatically")}
+              <SettingRow icon={I.trendingUp} title={t("Update investment prices automatically")}
                 description={(s.price_last_update ? t("Last update {d}.", { d: date(s.price_last_update) }) + " " : "")
                   + t("Once a day for holdings with an online price source; only the symbol and that provider's key are sent.")}>
                 <Switch checked={s.price_auto_update} onChange={(_, d) => run(async () => {
@@ -320,7 +321,7 @@ export default function SettingsPage() {
                 refs.reload(); rates.reload(); rules.reload(); presets.reload();
               }} />
               <OldDataRow onMessage={setMsg} />
-              <SettingRow icon={""} title={t("Import presets")}
+              <SettingRow icon={I.download} title={t("Import presets")}
                 description={t("Saved column settings per bank file format, applied automatically to files with the same columns.")}>
                 {presets.data?.length === 0 && <span className="caption">{t("None yet")}</span>}
               </SettingRow>
@@ -331,13 +332,13 @@ export default function SettingsPage() {
                       <Button appearance="subtle" size="small" icon={<Delete20Regular />} aria-label={t("Delete")}
                         onClick={async () => { await del(`/api/import/presets/${p.id}`); presets.reload(); }} /></div>))}
                 </div>)}
-              <SettingRow icon={""} title={t("Export everything")}
+              <SettingRow icon={I.fileSave} title={t("Export everything")}
                 description={t("All transactions, accounts, holdings and monthly summaries as an Excel workbook.")}>
                 <Button icon={<ArrowDownload20Regular />} as="a" href={downloadUrl("/api/export/workbook.xlsx")}>
                   {t("Excel workbook")}</Button>
               </SettingRow>
 {refs.data?.accounts.some((a) => a.is_demo) && (
-                <SettingRow icon={""} title={t("Demo data")}
+                <SettingRow icon={I.science} title={t("Demo data")}
                   description={t("Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.")}>
                   <Button onClick={() => setConfirm({ danger: true,
                     text: t("Remove all demo accounts, transactions, goals, budgets and demo rates?"),
@@ -350,13 +351,13 @@ export default function SettingsPage() {
           {info.data && (
             <section className="settings-block">
               <div className="group-title">{t("About")}</div>
-              <SettingRow icon={""} title={`Personal Finance Intelligence ${info.data.version}`}
+              <SettingRow icon={I.info} title={`Personal Finance Intelligence ${info.data.version}`}
                 description={<>{t("Database: {d}", { d: info.data.database })} · {t("Data folder:")}{" "}
                   <code>{info.data.data_dir}</code></>}>
                 <a className="link" href="https://github.com/MrBlizo/personal-finance-intelligence"
                   target="_blank" rel="noreferrer">GitHub</a>
               </SettingRow>
-              <SettingRow icon={""} title={t("Support PFI")}
+              <SettingRow icon={I.volunteerActivism} title={t("Support PFI")}
                 description={t("PFI is free and stays free. If it helps you, you can support its development. A donation unlocks nothing; every feature is for everyone.")}>
                 <a className="link" href="https://mrblizo.github.io/personal-finance-intelligence/support/"
                   target="_blank" rel="noreferrer">{t("Support PFI")} ♥</a>

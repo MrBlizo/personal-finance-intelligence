@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import AppFrame from "@/components/AppFrame";
+import "@fontsource-variable/roboto-flex";
+import "@fontsource-variable/noto-sans-arabic";
+import "./m3-tokens.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

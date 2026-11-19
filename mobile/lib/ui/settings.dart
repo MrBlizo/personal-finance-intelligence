@@ -6,6 +6,7 @@ import '../config.dart';
 import '../state.dart';
 import '../sync/cloud.dart';
 import 'shell.dart' show currencies;
+import 'theme.dart';
 import 'widgets.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -244,7 +245,8 @@ class _SyncSetupPageState extends State<SyncSetupPage> {
           )
         else ...[
           ListTile(
-            leading: Icon(Icons.check_circle, color: Colors.green.shade600),
+            leading: Icon(Icons.check_circle,
+                color: context.moneyColors.positive),
             title: Text(app.t('Signed in to {p}', {'p': provider.title})),
           ),
           TextField(

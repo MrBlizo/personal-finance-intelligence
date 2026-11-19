@@ -61,7 +61,7 @@ class PlanPage extends StatelessWidget {
             ),
             _PlanCard(
               icon: Icons.trending_down_rounded,
-              color: Colors.red,
+              color: context.moneyColors.negative,
               title: app.t('Debts'),
               value: debts.isEmpty
                   ? app.t('No debts')
@@ -550,7 +550,9 @@ class InvestmentsPage extends StatelessWidget {
                         Text(money(context, h.gain!, h.currency, sign: true),
                             style: TextStyle(
                                 fontSize: 12,
-                                color: h.gain! < 0 ? scheme.error : Colors.green.shade600)),
+                                color: h.gain! < 0
+                                    ? scheme.error
+                                    : context.moneyColors.positive)),
                     ],
                   ),
                 ),

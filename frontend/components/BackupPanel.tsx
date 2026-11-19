@@ -11,6 +11,7 @@ import { ApiError, Backup, BackupList, api, downloadUrl, get, post, put } from "
 import { bytes, dateTime } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { inShell, pickFolder } from "@/lib/shell";
+import { I } from "./icons";
 
 type Msg = { kind: "success" | "error" | "warning"; text: string };
 
@@ -193,14 +194,14 @@ export function BackupPanel({ onMessage, onRestored }: {
   };
 
   return (<>
-    <SettingRow icon={""} title={t("Backups")}
+    <SettingRow icon={I.backup} title={t("Backups")}
       description={t("A weekly automatic backup is made when the app starts (the newest 8 are kept). A safety backup is always made before a restore.")}>
       <RestoreFromFile onDone={done} onError={fail} />
       <Button appearance="primary" disabled={busy === "manual"} onClick={() => create("manual")}>
         {busy === "manual" ? t("Backing up…") : t("Back up now")}</Button>
     </SettingRow>
     {data?.folder_warning && <div className="setting-body"><Banner kind="warning">{data.folder_warning}</Banner></div>}
-    <SettingRow icon={""} title={t("Backup folder")}
+    <SettingRow icon={I.folder} title={t("Backup folder")}
       description={t("Choose a OneDrive folder or an external drive to keep a copy outside this PC. Empty = the app's own folder.")}>
       <Input style={{ minWidth: 260 }} value={chosen} placeholder={data?.default_folder}
         onChange={(_, d) => setFolder(d.value)} />
@@ -215,7 +216,7 @@ export function BackupPanel({ onMessage, onRestored }: {
       {data?.chosen_folder && folder === null && <Button appearance="subtle" onClick={() =>
         saveSettings({ folder: null }, t("Backups now go to the app's own folder."))}>{t("Use default")}</Button>}
     </SettingRow>
-    <SettingRow icon={""} title={t("Protect backups with a password")}
+    <SettingRow icon={I.lock} title={t("Protect backups with a password")}
       description={t("Backup files are encrypted, so a copy in OneDrive or on a USB drive cannot be read without the password. If you forget it, encrypted backups cannot be restored.")}>
       <Switch checked={Boolean(data?.encrypt)} onChange={(_, d) => {
         if (d.checked && !data?.has_password) { setPwModal(true); return; }
