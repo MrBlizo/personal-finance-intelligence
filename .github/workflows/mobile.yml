@@ -45,6 +45,21 @@ jobs:
         with:
           channel: stable
           cache: true
+      - name: Gradle repositories
+        # Flutter's own Gradle build resolves Kotlin only from the plugin
+        # portal, which intermittently misses artifacts; add Maven Central
+        # and Google to every settings file, included builds too.
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/repos.gradle <<'GRADLE'
+          beforeSettings { settings ->
+              settings.pluginManagement.repositories {
+                  mavenCentral()
+                  google()
+                  gradlePluginPortal()
+              }
+          }
+          GRADLE
       - name: SQLite for the tests
         run: sudo apt-get update -qq && sudo apt-get install -y -qq libsqlite3-dev
       - name: Platform folders

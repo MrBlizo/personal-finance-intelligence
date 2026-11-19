@@ -39,31 +39,31 @@ account (Accounts › Add account) and a few transactions (Ctrl+N), or import
 any bank CSV file under Import. First start takes a few seconds while the
 private database is created."
 
-## What's new in 0.8.0 (paste into "What's new in this version")
+## What's new in 0.9.0 (paste into "What's new in this version")
 
 **English**
 
-Version 0.8.0
-• Bank sync: new transactions arrive by themselves. US and Canadian banks through SimpleFIN Bridge, European banks through Enable Banking, with access you set up yourself.
-• Bank import recognises Chase, Bank of America, Wells Fargo, Citi, Capital One, Amex, Discover and more, and skips summary lines automatically.
-• Dates follow the app language.
-• Phone app: goals, bills, investments and debts, a home-screen widget to add an expense in one tap, and it follows the currency chosen on the PC.
+Version 0.9.0
+• A new Material 3 design on PC, phone and website: one colour scheme, a navigation drawer with an Add transaction button, and a compact rail on narrow windows.
+• Any accent colour now recolours the whole app, not just the buttons.
+• Faster: net worth, envelopes, age of money and statement import open up to 18 times faster on large histories.
+• Clearer settings, budget filters and status colours, in light and dark mode and in Arabic.
 
 **Français**
 
-Version 0.8.0
-• Synchronisation bancaire : les nouvelles transactions arrivent toutes seules. Banques américaines et canadiennes via SimpleFIN Bridge, banques européennes via Enable Banking, avec un accès que vous configurez vous-même.
-• L'import reconnaît Chase, Bank of America, Wells Fargo, Citi, Capital One, Amex, Discover et d'autres, et ignore automatiquement les lignes de résumé.
-• Les dates suivent la langue de l'application.
-• Application mobile : objectifs, factures, placements et dettes, un widget d'écran d'accueil pour ajouter une dépense en un geste, et la devise choisie sur le PC.
+Version 0.9.0
+• Nouveau design Material 3 sur PC, téléphone et site web : une seule palette, un tiroir de navigation avec un bouton Ajouter une transaction, et une barre compacte sur les fenêtres étroites.
+• La couleur d'accent recolore maintenant toute l'application, pas seulement les boutons.
+• Plus rapide : valeur nette, enveloppes, âge de l'argent et import de relevés s'ouvrent jusqu'à 18 fois plus vite sur de longs historiques.
+• Paramètres, filtres de budget et couleurs d'état plus clairs, en mode clair et sombre et en arabe.
 
 **العربية**
 
-الإصدار 0.8.0
-• مزامنة البنك: تصل المعاملات الجديدة تلقائيًا. البنوك الأمريكية والكندية عبر SimpleFIN Bridge، والبنوك الأوروبية عبر Enable Banking، بوصول تُعدّه بنفسك.
-• يتعرّف الاستيراد على Chase وBank of America وWells Fargo وCiti وCapital One وAmex وDiscover وغيرها، ويتجاوز أسطر الملخص تلقائيًا.
-• تتبع التواريخ لغة التطبيق.
-• تطبيق الهاتف: الأهداف والفواتير والاستثمارات والديون، وأداة على الشاشة الرئيسية لإضافة مصروف بلمسة واحدة، ويتبع العملة المختارة على الحاسوب.
+الإصدار 0.9.0
+• تصميم جديد بأسلوب Material 3 على الحاسوب والهاتف والموقع: نظام ألوان واحد، ودرج تنقّل مع زر إضافة معاملة، وشريط مدمج في النوافذ الضيقة.
+• لون التمييز يلوّن الآن التطبيق كله وليس الأزرار فقط.
+• أسرع: صافي الثروة والمغلفات وعمر المال واستيراد الكشوف تفتح أسرع بما يصل إلى 18 مرة مع السجلات الكبيرة.
+• إعدادات وفلاتر ميزانية وألوان حالة أوضح، في الوضعين الفاتح والداكن وبالعربية.
 
 ## 3. Store listing: English
 
@@ -187,3 +187,4 @@ placements, trésorerie, patrimoine, gestion d'argent
 1366×768 or larger, PNG. Use demo data (no real finances):
 Home, Transactions, Investments (Performance tab), Bills & recurring,
 Reports, Settings. Optional: one in Arabic and one in dark mode.
+The 0.9 (Material 3) set is in `packaging/store-screenshots-0.9/`.
