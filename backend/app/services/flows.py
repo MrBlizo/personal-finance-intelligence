@@ -4,13 +4,13 @@ from datetime import date
 
 import pandas as pd
 import plotly.graph_objects as go
-from sqlalchemy import select
+from sqlalchemy import BigInteger, select, type_coerce
 from sqlalchemy.orm import Session
 
 from ..models import LIQUID_TYPES, Account, Transaction
 from . import charts
 from .fx import FxConverter
-from .ledger import account_balances
+from .ledger import balances_on
 
 
 def money_flow(df: pd.DataFrame, currency: str, top_n: int = 10) -> dict:
@@ -100,8 +100,7 @@ def balance_history(db: Session, fx: FxConverter, base: str,
     if not accounts or not months:
         return charts.empty("Add an everyday account to see its balance")
     series: dict[int, list[float | None]] = {a.id: [] for a in accounts}
-    for day in months:
-        bal = account_balances(db, day)
+    for day, bal in zip(months, balances_on(db, months)):
         for a in accounts:
             rate = fx.try_rate(a.currency, base, day)
             opened = a.opening_date <= day
@@ -155,23 +154,27 @@ def age_of_money(db: Session, fx: FxConverter, base: str,
         if rate is not None and a.opening_balance > 0:
             events.append((a.opening_date, 0, float(a.opening_balance)
                            * rate))
-    txns = list(db.scalars(select(Transaction).where(
-        Transaction.account_id.in_(list(accounts)))
-        .order_by(Transaction.txn_date, Transaction.id)))
+    # Plain columns: building 10,000s of ORM objects costs far more than
+    # the walk below.
+    T = Transaction
+    txns = db.execute(select(
+        T.txn_date, T.account_id, T.transfer_group,
+        type_coerce(T.amount, BigInteger))
+        .where(T.account_id.in_(list(accounts)))
+        .order_by(T.txn_date, T.id)).all()
     legs: dict = {}
-    for t in txns:
-        if t.transfer_group is not None:
-            legs[t.transfer_group] = legs.get(t.transfer_group, 0) + 1
-    for t in txns:
+    for _, _, group, _ in txns:
+        if group is not None:
+            legs[group] = legs.get(group, 0) + 1
+    for day, acc_id, group, cents in txns:
         # Moving money between two everyday accounts does not spend it.
-        if t.transfer_group is not None and legs[t.transfer_group] > 1:
+        if group is not None and legs[group] > 1:
             continue
-        rate = fx.try_rate(accounts[t.account_id].currency, base,
-                           t.txn_date)
+        rate = fx.try_rate(accounts[acc_id].currency, base, day)
         if rate is not None:
             # Inflows sort before outflows of the same day.
-            amt = float(t.amount) * rate
-            events.append((t.txn_date, 0 if amt > 0 else 1, amt))
+            amt = cents / 100 * rate
+            events.append((day, 0 if amt > 0 else 1, amt))
     events.sort(key=lambda e: (e[0], e[1]))
     pool: deque[list] = deque()
     ages: list[tuple[date, float]] = []

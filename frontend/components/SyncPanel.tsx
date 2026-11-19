@@ -10,6 +10,7 @@ import { Banner, Confirm, Modal, SettingRow, useLoad } from "@/components/ui";
 import { SyncStatus, get, post } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { inShell, pickFolder } from "@/lib/shell";
+import { I } from "./icons";
 
 type Msg = { kind: "success" | "error" | "warning"; text: string };
 
@@ -88,7 +89,7 @@ export function SyncPanel({ onMessage, onSynced }: {
   };
 
   return (<>
-    <SettingRow icon={""} title={t("Sync with your phone")}
+    <SettingRow icon={I.smartphone} title={t("Sync with your phone")}
       description={s?.enabled
         ? t("Through {folder}. Last sync: {when}.", {
           folder: s.folder_label ?? s.folder ?? "", when: when(s.last_sync) || t("not yet") })

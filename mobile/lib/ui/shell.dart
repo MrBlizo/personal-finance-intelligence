@@ -6,6 +6,7 @@ import '../data/repo.dart';
 import '../state.dart';
 import 'edit_transaction.dart';
 import 'settings.dart';
+import 'theme.dart';
 import 'widgets.dart';
 
 part 'budget.dart';
@@ -164,7 +165,7 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(child: _Pill(app.t('Income'), money(context, income, base),
-                    Icons.south_west_rounded, Colors.green.shade600)),
+                    Icons.south_west_rounded, context.moneyColors.positive)),
                 const SizedBox(width: 12),
                 Expanded(child: _Pill(app.t('Expenses'), money(context, -spent, base),
                     Icons.north_east_rounded, scheme.error)),

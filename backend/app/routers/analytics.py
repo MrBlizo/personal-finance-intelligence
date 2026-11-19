@@ -10,7 +10,8 @@ from ..services.forecast import cash_flow_forecast
 from ..services.frame import expenses, incomes, load_transactions
 from ..services.fx import FxConverter
 from ..services.insights import build_insights
-from ..services.ledger import base_currency, holding_valuations, net_worth
+from ..services.ledger import (
+    balances_on, base_currency, holding_valuations, net_worth)
 from ..services.planning import add_months, budget_status
 
 router = APIRouter(prefix="/api")
@@ -61,8 +62,9 @@ def summary(start: date | None = None, end: date | None = None,
 def _net_worth_points(db: Session, fx: FxConverter, base: str,
                       end: date, months: int) -> list[dict]:
     points = []
-    for day in charts.month_range(end, months):
-        nw = net_worth(db, fx, base, day)
+    days = charts.month_range(end, months)
+    for day, bal in zip(days, balances_on(db, days)):
+        nw = net_worth(db, fx, base, day, balances=bal)
         points.append({"date": day, "total": nw.total, "liquid": nw.liquid,
                        "investments": nw.holdings + nw.investment_cash})
     return points

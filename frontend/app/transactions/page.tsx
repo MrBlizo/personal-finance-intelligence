@@ -4,7 +4,7 @@ import {
   Badge, Button, Checkbox, Input, Select, Tab, TabList, Tooltip,
 } from "@fluentui/react-components";
 import {
-  Add20Regular, ArrowDownload20Regular, ArrowSwap20Regular, Attach16Regular,
+  ArrowDownload20Regular, ArrowSwap20Regular, Attach16Regular,
   Checkmark20Regular, CheckmarkCircle16Regular, Delete20Regular, Edit20Regular,
   LockClosed16Regular,
   MoreHorizontal20Regular, Search20Regular,
@@ -12,7 +12,6 @@ import {
 } from "@fluentui/react-icons";
 import { BulkBar } from "@/components/BulkBar";
 import { AmountCell, CategoryCell, SearchHelp, TextCell } from "@/components/InlineEdit";
-import { openQuickAdd } from "@/components/QuickAdd";
 import { TxnDetails } from "@/components/TxnDetails";
 import { accountOptions, catLabel, categoryOptions, useRefs } from "@/components/refs";
 import {
@@ -142,9 +141,6 @@ export default function Transactions() {
           {t("Export CSV")}</Button>
         <Button icon={<ArrowSwap20Regular />} onClick={() => setModal("transfer")}>
           {t("Transfer")}</Button>
-        <Tooltip content={t("Ctrl+N from any page")} relationship="description">
-          <Button appearance="primary" icon={<Add20Regular />} onClick={openQuickAdd}>
-            {t("Add transaction")}</Button></Tooltip>
       </PageHead>
       <TabList selectedValue={reviewing ? "review" : "all"} style={{ marginBottom: 8 }}
         onTabSelect={(_, d) => setFilter("reviewed", d.value === "review" ? "false" : "")}>

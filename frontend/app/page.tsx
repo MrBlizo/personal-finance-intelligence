@@ -3,10 +3,8 @@ import Link from "next/link";
 import { ReactNode, useEffect, useState } from "react";
 import { Button, Link as FLink, Switch, Tab, TabList, Tooltip } from "@fluentui/react-components";
 import {
-  Add24Regular, ArrowDown20Regular, ArrowImport24Regular, ArrowSwap24Regular, ArrowUp20Regular,
-  CalendarLtr24Regular, Settings20Regular, Target24Regular,
+  ArrowDown20Regular, ArrowUp20Regular, Settings20Regular,
 } from "@fluentui/react-icons";
-import { openQuickAdd } from "@/components/QuickAdd";
 import Plot from "@/components/Plot";
 import { Banner, Empty, Kpi, Modal, PageHead, Progress, Section, Spinner, useLoad } from "@/components/ui";
 import {
@@ -15,13 +13,14 @@ import {
 } from "@/lib/api";
 import { date, locale, money, pct, signClass } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
+import { I } from "@/components/icons";
 
 const PERIODS: Record<string, string> = {
   this_month: "This month", last_3_months: "3 months",
   last_12_months: "12 months", year_to_date: "Year to date",
 };
 const SEV_GLYPH: Record<string, string> = {
-  warning: "", positive: "", info: "",
+  warning: I.warning, positive: I.checkCircle, info: I.info,
 };
 
 /** "Good morning" etc. for the hour of the day. */
@@ -30,15 +29,6 @@ function greeting(h: number): string {
   if (h < 12) return "Good morning";
   if (h < 18) return "Good afternoon";
   return "Good evening";
-}
-
-function Action({ icon, label, href, onClick }: {
-  icon: ReactNode; label: string; href?: string; onClick?: () => void;
-}) {
-  const body = <><span className="qa-circle" aria-hidden>{icon}</span><span className="qa-label">{label}</span></>;
-  return href
-    ? <Link className="qa" href={href}>{body}</Link>
-    : <button type="button" className="qa" onClick={onClick}>{body}</button>;
 }
 
 type Dash = { summary: Summary; charts: Record<string, PlotFigure> };
@@ -156,7 +146,7 @@ export default function Home() {
             {reminders.data?.length === 0 && <Empty>{t("Nothing due in the next 14 days.")}</Empty>}
             {reminders.data?.slice(0, 6).map((r) => (
               <div className="list-row" key={r.key}>
-                <span className="glyph" aria-hidden>{r.auto_post ? "\uE895" : "\uE787"}</span>
+                <span className="glyph" aria-hidden>{r.auto_post ? I.autorenew : I.calendarMonth}</span>
                 <div className="grow">
                   <span className="cell-main">{r.name}</span>
                   <span className="cell-sub">
@@ -252,13 +242,6 @@ export default function Home() {
               <div className="home-hero-value">{money(s.net_worth, cur)}</div>
               <div className="home-hero-sub">
                 {t("Liquid")} {money(s.liquid, undefined, 0)} · {t("Invested")} {money(s.investments, undefined, 0)}
-              </div>
-              <div className="quick-actions">
-                <Action icon={<Add24Regular />} label={t("Add")} onClick={openQuickAdd} />
-                <Action icon={<ArrowImport24Regular />} label={t("Import")} href="/import/" />
-                <Action icon={<ArrowSwap24Regular />} label={t("Budget")} href="/budgets/" />
-                <Action icon={<Target24Regular />} label={t("Goals")} href="/goals/" />
-                <Action icon={<CalendarLtr24Regular />} label={t("Bills")} href="/recurring/" />
               </div>
             </div>
             <div className="home-kpis">

@@ -11,6 +11,7 @@ import {
 import { Recurring, Reminder, del, get, post, put } from "@/lib/api";
 import { FREQUENCIES, date, money, signClass, today } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { I } from "@/components/icons";
 
 const PER_MONTH: Record<string, number> = {
   weekly: 52 / 12, biweekly: 26 / 12, monthly: 1, quarterly: 1 / 3, yearly: 1 / 12,
@@ -97,7 +98,7 @@ export default function RecurringPage() {
           {due.data?.length === 0 && <Empty>{t("Nothing due.")}</Empty>}
           {due.data?.map((r) => (
             <div className="list-row" key={r.key}>
-              <span className="glyph" aria-hidden>{r.auto_post ? "" : ""}</span>
+              <span className="glyph" aria-hidden>{r.auto_post ? I.autorenew : I.calendarMonth}</span>
               <div className="grow">
                 <span className="cell-main">{r.name}</span>
                 <span className="cell-sub">{date(r.date)} · {r.days_left === 0 ? t("today")

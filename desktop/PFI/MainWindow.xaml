@@ -28,9 +28,12 @@
             </StackPanel>
         </Grid>
 
+        <!-- The pane is hidden: the screens draw a Material 3 navigation
+             drawer themselves. The items stay for route sync and labels. -->
         <NavigationView x:Name="Nav" Grid.Row="1"
                         IsBackButtonVisible="Collapsed" IsSettingsVisible="False"
                         PaneDisplayMode="Left" OpenPaneLength="232" IsEnabled="False"
+                        IsPaneVisible="False" IsPaneToggleButtonVisible="False"
                         SelectionChanged="Nav_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Home" Tag="/">

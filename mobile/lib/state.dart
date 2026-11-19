@@ -13,9 +13,10 @@ import 'launch.dart';
 import 'sync/cloud.dart';
 import 'sync/crypto.dart';
 import 'sync/engine.dart';
+import 'ui/m3_tokens.dart' show pfiSeed;
 
 const accentColors = <String, Color>{
-  'Blue': Color(0xFF0067C0),
+  'Blue': pfiSeed, // shared with the PC and the website
   'Purple': Color(0xFF6B4FBB),
   'Indigo': Color(0xFF3F51B5),
   'Teal': Color(0xFF00897B),

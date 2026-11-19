@@ -1177,5 +1177,8 @@
   "Under Apps, click New connection and copy the setup token.": "Sous Apps, cliquez sur New connection et copiez le jeton.",
   "Waiting for the bank…": "En attente de la banque…",
   "into {a}": "dans {a}",
-  "{n} bank accounts update automatically every 6 hours while PFI is open.": "{n} comptes bancaires se mettent à jour toutes les 6 heures tant que PFI est ouvert."
+  "{n} bank accounts update automatically every 6 hours while PFI is open.": "{n} comptes bancaires se mettent à jour toutes les 6 heures tant que PFI est ouvert.",
+ "Navigation": "Navigation",
+ "PFI blue": "Bleu PFI",
+ "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.": "Génère toute la palette : boutons, surfaces, surlignages et graphiques. Le bleu PFI s'accorde avec l'application mobile et le site web."
 }

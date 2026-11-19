@@ -7,9 +7,10 @@ import { Banner, Empty, PageHead, Section, Spinner, useLoad } from "@/components
 import { Insight, PlotFigure, get, insightText, post } from "@/lib/api";
 import { date } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { I } from "@/components/icons";
 
 const SEV_GLYPH: Record<string, string> = {
-  warning: "", positive: "", info: "",
+  warning: I.warning, positive: I.checkCircle, info: I.info,
 };
 const CHARTS: [string, string][] = [
   ["category_trend", "Spending by category per month"],

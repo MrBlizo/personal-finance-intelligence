@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import ROUND_HALF_EVEN, Decimal
 
-from sqlalchemy import select
+from sqlalchemy import BigInteger, func, select, type_coerce
 from sqlalchemy.orm import Session
 
 from ..models import (
@@ -40,6 +40,14 @@ UNCATEGORIZED = 0
 
 def _cents(value: Decimal) -> Decimal:
     return value.quantize(CENT, rounding=ROUND_HALF_EVEN)
+
+
+def _dec(cents) -> Decimal:
+    return Decimal(int(cents or 0)).scaleb(-2)
+
+
+def _month(text: str) -> date:
+    return date(int(text[:4]), int(text[5:7]), 1)
 
 
 def month_start(day: date) -> date:
@@ -100,25 +108,52 @@ def build_ledger(db: Session, fx: FxConverter, base: str) -> Ledger:
     parts: dict[int, list[TransactionSplit]] = defaultdict(list)
     for sp in db.scalars(select(TransactionSplit)):
         parts[sp.transaction_id].append(sp)
-    for t in db.scalars(select(Transaction).where(
-            Transaction.account_id.in_(list(accounts)))):
-        acc = accounts[t.account_id]
-        rate = _rate(fx, acc.currency, base, t.txn_date, led.missing_fx)
+
+    def add_activity(month, kind, cat_id, amount):
+        cat = cats.get(cat_id) if cat_id else None
+        if cat is not None and cat.kind != "expense":
+            return
+        if cat is None and kind != "expense":
+            return
+        key = cat.id if cat is not None else UNCATEGORIZED
+        led.activity[(key, month)] += amount
+
+    # Same-currency accounts need no conversion or rounding, so their
+    # money is summed per month (and category) by the database. Splits and
+    # other currencies keep the per-transaction conversion below.
+    T = Transaction
+    raw = type_coerce(T.amount, BigInteger)
+    same = [a for a, acc in accounts.items() if acc.currency == base]
+    other = [a for a in accounts if a not in same]
+    if same:
+        ym = func.substr(T.txn_date, 1, 7)
+        for m, cents in db.execute(select(ym, func.sum(raw)).where(
+                T.account_id.in_(same)).group_by(ym)):
+            flow[_month(m)] += _dec(cents)
+        for m, kind, cat_id, cents in db.execute(
+                select(ym, T.kind, T.category_id, func.sum(raw)).where(
+                    T.account_id.in_(same), T.kind != "transfer",
+                    T.id.not_in(list(parts)))
+                .group_by(ym, T.kind, T.category_id)):
+            add_activity(_month(m), kind, cat_id, _dec(cents))
+    split_same = [i for i in parts] if same else []
+    rows = db.execute(select(
+        T.id, T.account_id, T.txn_date, T.kind, T.category_id, raw).where(
+        (T.account_id.in_(other)) | (T.account_id.in_(same)
+                                     & T.id.in_(split_same))))
+    for tid, acc_id, day, kind, cat_id, cents in rows:
+        acc = accounts[acc_id]
+        rate = _rate(fx, acc.currency, base, day, led.missing_fx)
         if rate is None:
             continue
-        month = month_start(t.txn_date)
-        flow[month] += _cents(t.amount * rate)
-        if t.kind == "transfer":
+        month = month_start(day)
+        if acc.currency != base:
+            flow[month] += _cents(_dec(cents) * rate)
+        if kind == "transfer":
             continue
-        for cat_id, amount in ([(p.category_id, p.amount) for p in
-                                parts[t.id]] or [(t.category_id, t.amount)]):
-            cat = cats.get(cat_id) if cat_id else None
-            if cat is not None and cat.kind != "expense":
-                continue
-            if cat is None and t.kind != "expense":
-                continue
-            key = cat.id if cat is not None else UNCATEGORIZED
-            led.activity[(key, month)] += _cents(amount * rate)
+        for p_cat, amount in ([(p.category_id, p.amount) for p in
+                               parts[tid]] or [(cat_id, _dec(cents))]):
+            add_activity(month, kind, p_cat, _cents(amount * rate))
     for a in db.scalars(select(BudgetAssignment)):
         led.assigned[(a.category_id, a.month)] += a.amount
     months = [m for m in flow] + [m for _, m in led.assigned]

@@ -13,10 +13,11 @@ import {
 import { Account, del, post, put } from "@/lib/api";
 import { ACCOUNT_TYPES, CURRENCIES, money, signClass, today } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { I } from "@/components/icons";
 
 const GLYPH: Record<string, string> = {
-  checking: "", savings: "", cash: "", credit_card: "",
-  investment: "", loan: "",
+  checking: I.accountBalance, savings: I.savings, cash: I.payments, credit_card: I.creditCard,
+  investment: I.trendingUp, loan: I.requestQuote,
 };
 
 export default function Accounts() {

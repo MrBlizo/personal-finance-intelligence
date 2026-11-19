@@ -1,16 +1,26 @@
+/* Material 3, same scheme as the app: colour roles from m3-tokens.css
+   (generated from the PFI seed by scripts/m3/gen-tokens.mjs). The short
+   names below are aliases of M3 roles. */
+@import url("m3-tokens.css");
+@font-face { font-family: "Roboto Flex"; font-style: normal; font-weight: 100 1000;
+  font-display: swap; src: url("fonts/roboto-flex-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: "Roboto Flex"; font-style: normal; font-weight: 100 1000;
+  font-display: swap; src: url("fonts/roboto-flex-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 :root {
-  --bg: #fafafa; --card: #ffffff; --text: #1b1b1f; --muted: #5c5f66; --line: #e3e4e8;
-  --accent: #0067c0; --accent-ink: #ffffff; --soft: #eef4fb; --good: #0f7b3f;
+  --bg: var(--md-sys-color-surface); --card: var(--md-sys-color-surface-container-low);
+  --text: var(--md-sys-color-on-surface); --muted: var(--md-sys-color-on-surface-variant);
+  --line: var(--md-sys-color-outline-variant); --accent: var(--md-sys-color-primary);
+  --accent-ink: var(--md-sys-color-on-primary); --soft: var(--md-sys-color-surface-container);
+  --good: var(--md-sys-color-positive);
+  --r-s: 8px; --r-m: 12px; --r-l: 16px; --r-xl: 28px;
   color-scheme: light dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --bg: #17181b; --card: #202226; --text: #f0f1f3; --muted: #a8adb7; --line: #33363c;
-    --accent: #4ca3f2; --accent-ink: #0b1420; --soft: #1d2a38; --good: #6ccb8f; }
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--text);
-  font: 17px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif; }
+  font: 17px/1.6 "Roboto Flex", system-ui, -apple-system, "Segoe UI", sans-serif; }
 a { color: var(--accent); }
 img { max-width: 100%; height: auto; display: block; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
@@ -256,3 +266,59 @@ body.sub { --accent: #2f6fe4; --soft: #eef3fd; }
 .bar nav.links a.mt:hover { color: var(--text); }
 .jump { transition: top .3s var(--ease); }
 body:has(.bar.scrolled) .jump { top: 52px; }
+
+/* ---- 0.9 Material 3 ----
+   One scheme for the app, the phone and this site. Flat tonal surfaces
+   instead of gradients, filled cards without outlines, fully rounded
+   40px buttons, state layers on hover, and a single expressive moment:
+   the hero on a primary container. */
+.ms, body.sub { --accent: var(--md-sys-color-primary); --accent-ink: var(--md-sys-color-on-primary);
+  --soft: var(--md-sys-color-surface-container); }
+h1, h2, h3, .hero-text h1, .ms h2 { font-weight: 500; }
+.btn { min-height: 40px; padding: 10px 24px; border-radius: 999px; border: 1px solid var(--md-sys-color-outline);
+  background: transparent; color: var(--md-sys-color-primary); font-weight: 500; font-size: 15px;
+  letter-spacing: .1px; transition: background .15s; }
+.btn:hover { filter: none; transform: none;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent); }
+.btn.primary { background: var(--md-sys-color-primary); border-color: transparent;
+  color: var(--md-sys-color-on-primary); }
+.btn.primary:hover { background: color-mix(in srgb, var(--md-sys-color-on-primary) 8%, var(--md-sys-color-primary)); }
+.btn.small { min-height: 36px; padding: 7px 18px; }
+.hero-ms { background: var(--md-sys-color-surface-container-low); }
+.hero-art img { border: 0; border-radius: var(--r-l); }
+.eyebrow { color: var(--md-sys-color-primary); font-weight: 500; letter-spacing: .1px; }
+.progress { background: var(--md-sys-color-primary); }
+.card, .dl-card, .steps, .plan, .note, details { border: 0; background: var(--md-sys-color-surface-container-low); }
+.card { border-radius: var(--r-m); }
+.dl-card, .steps, .plan { border-radius: var(--r-l); }
+.dl-card:hover, .plan:hover { transform: none; box-shadow: none;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, var(--md-sys-color-surface-container-low)); }
+a.card:hover { border: 0; background: var(--md-sys-color-surface-container); }
+.plan.main { border: 0; box-shadow: none; background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container); }
+.plan.main p, .plan.main .price span, .plan.main ul.ticks li::before { color: inherit; }
+.plan.main .btn.primary { background: var(--md-sys-color-on-primary-container);
+  color: var(--md-sys-color-primary-container); }
+.price { font-weight: 500; }
+.new { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+  border-radius: var(--r-s); font-weight: 500; }
+.ms section.tint { background: var(--md-sys-color-surface-container-low); }
+.more { gap: 2px; background: transparent; border: 0; border-radius: var(--r-l); }
+.more div { background: var(--md-sys-color-surface-container-low); }
+.fcard img, .gallery img, .split img, .shot { border: 0; border-radius: var(--r-m); }
+.fcard:hover img, .gallery figure:hover img { transform: none; box-shadow: none; }
+.panel { border: 0; border-radius: var(--r-l); background: var(--md-sys-color-surface-container);
+  box-shadow: 0 2px 6px 2px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .3); }
+.mi { border-radius: var(--r-m); }
+.mi:hover, .mi:focus-visible { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+  transform: none; }
+.mi-ico { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
+  border-radius: var(--r-m); }
+.mi:hover .mi-ico { transform: none; }
+.pill { background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent); }
+.bar { background: var(--md-sys-color-surface); border-bottom: 0; }
+.bar.scrolled { box-shadow: none; background: var(--md-sys-color-surface-container); }
+.jump { background: var(--md-sys-color-surface); border-bottom: 1px solid var(--md-sys-color-outline-variant); }
+.jump-ink { background: var(--md-sys-color-primary); }
+:focus-visible { outline: 3px solid var(--md-sys-color-secondary); outline-offset: 2px; }
+code { background: var(--md-sys-color-surface-container-high); }

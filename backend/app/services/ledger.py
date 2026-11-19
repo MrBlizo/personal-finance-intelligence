@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import BigInteger, func, select, type_coerce
 from sqlalchemy.orm import Session
 
 from ..models import (
@@ -46,6 +46,46 @@ def account_balances(db: Session, as_of: date | None = None
                    if as_of is None or acc.opening_date <= as_of else ZERO)
         out[acc.id] = opening + (sums.get(acc.id) or ZERO)
     return out
+
+
+def balances_on(db: Session, days: list[date]) -> list[dict[int, Decimal]]:
+    """Return ``account_balances`` for many dates with one query.
+
+    Parameters
+    ----------
+    db : Session
+        The open database session.
+    days : list of date
+        The dates (inclusive), in any order.
+
+    Returns
+    -------
+    list of dict
+        One balance mapping per entry of ``days``, in the same order;
+        identical to calling ``account_balances(db, day)`` for each.
+    """
+    if not days:
+        return []
+    raw = type_coerce(Transaction.amount, BigInteger)
+    rows = db.execute(
+        select(Transaction.txn_date, Transaction.account_id, func.sum(raw))
+        .where(Transaction.txn_date <= max(days))
+        .group_by(Transaction.txn_date, Transaction.account_id)
+        .order_by(Transaction.txn_date)).all()
+    accounts = list(db.scalars(select(Account)))
+    running: dict[int, int] = {}
+    out: dict[date, dict[int, Decimal]] = {}
+    i = 0
+    for day in sorted(set(days)):
+        while i < len(rows) and rows[i][0] <= day:
+            _, acc, cents = rows[i]
+            running[acc] = running.get(acc, 0) + int(cents)
+            i += 1
+        out[day] = {
+            a.id: (a.opening_balance if a.opening_date <= day else ZERO)
+            + (Decimal(running[a.id]) / 100 if a.id in running else ZERO)
+            for a in accounts}
+    return [out[d] for d in days]
 
 
 @dataclass
@@ -192,7 +232,8 @@ class NetWorth:
 
 
 def net_worth(db: Session, fx: FxConverter, base: str,
-              as_of: date | None = None) -> NetWorth:
+              as_of: date | None = None,
+              balances: dict[int, Decimal] | None = None) -> NetWorth:
     """Compute net worth (cash balances plus holdings) in ``base``.
 
     Parameters
@@ -205,6 +246,9 @@ def net_worth(db: Session, fx: FxConverter, base: str,
         The reporting currency.
     as_of : date, optional
         The valuation date; latest data if omitted.
+    balances : dict, optional
+        The account balances on ``as_of`` when already known (from
+        ``balances_on``); read from the database otherwise.
 
     Returns
     -------
@@ -212,7 +256,8 @@ def net_worth(db: Session, fx: FxConverter, base: str,
         The totals, per-account breakdown and data-quality warnings.
     """
     nw = NetWorth()
-    balances = account_balances(db, as_of)
+    if balances is None:
+        balances = account_balances(db, as_of)
     holdings = holding_valuations(db, fx, base, as_of)
     held_by_acc: dict[int, float] = {}
     for h in holdings:

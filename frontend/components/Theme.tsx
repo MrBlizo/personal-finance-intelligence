@@ -1,8 +1,7 @@
 "use client";
-// Fluent UI v9 themes built from one accent colour: Windows 11 blue by
-// default or the colour chosen in Settings. Every brand shade is derived
-// from it, with rounder corners and the lighter accent WinUI uses in dark
-// mode.
+// Material 3 everywhere: the Fluent UI v9 components are themed from a
+// Material 3 colour scheme (PFI blue by default, or the seed chosen in
+// Settings), and the same roles are exposed to CSS as --md-sys-color-*.
 import {
   BrandVariants, FluentProvider, Theme, createDarkTheme, createLightTheme,
   Button, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, Tooltip,
@@ -12,13 +11,14 @@ import {
 } from "@fluentui/react-icons";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n";
+import { cssVars, primaryRamp, schemeFor, SEED } from "@/lib/m3";
 import { notifyTheme } from "@/lib/shell";
 
-/** The Windows 11 default accent, used when no colour is chosen. */
-export const DEFAULT_ACCENT = "#005FB8";
-/** Accent colours offered in Settings (Material-style tones). */
+/** The PFI seed colour, used when no accent is chosen. */
+export const DEFAULT_ACCENT = SEED;
+/** Seed colours offered in Settings; each yields a full Material 3 scheme. */
 export const ACCENTS = [
-  { id: "", label: "Windows blue", hex: DEFAULT_ACCENT },
+  { id: "", label: "PFI blue", hex: DEFAULT_ACCENT },
   { id: "#6750A4", label: "Violet", hex: "#6750A4" },
   { id: "#3949AB", label: "Indigo", hex: "#3949AB" },
   { id: "#00796B", label: "Teal", hex: "#00796B" },
@@ -31,90 +31,99 @@ export const ACCENTS = [
   { id: "#455A64", label: "Slate", hex: "#455A64" },
 ];
 
-type Rgb = [number, number, number];
-const toRgb = (hex: string): Rgb => {
-  const h = hex.replace("#", "");
-  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as Rgb;
-};
-const toHex = (c: Rgb) => "#" + c.map((v) =>
-  Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("");
-const mix = (a: Rgb, b: Rgb, w: number): Rgb =>
-  [0, 1, 2].map((i) => a[i] * (1 - w) + b[i] * w) as Rgb;
+/** ``a`` with an M3 state layer of ``b`` at ``pct`` percent on top. */
+const layer = (a: string, b: string, pct: number) =>
+  `color-mix(in srgb, ${b} ${pct}%, ${a})`;
+const font = "'Roboto Flex Variable', 'Noto Sans Arabic Variable', "
+  + "system-ui, sans-serif";
 
-/** Sixteen Fluent brand shades with ``accent`` at step 80. */
-export function brandFrom(accent: string): BrandVariants {
-  const base = toRgb(accent);
-  const out: Record<number, string> = {};
-  for (let step = 10; step <= 160; step += 10) {
-    const k = (step - 80) / 80;
-    out[step] = toHex(k < 0 ? mix(base, [0, 0, 0], -k * 0.85)
-      : mix(base, [255, 255, 255], k * 0.9));
+/** Fluent UI v9 theme whose every token comes from a Material 3 scheme. */
+export function makeTheme(seed: string, dark: boolean): Theme {
+  const r = schemeFor(seed, dark);
+  const ramp = primaryRamp(seed);
+  const brand = Object.fromEntries(ramp.map((hex, i) => [(i + 1) * 10, hex]));
+  const base = (dark ? createDarkTheme : createLightTheme)(
+    brand as unknown as BrandVariants);
+  return {
+    ...base,
+    fontFamilyBase: font,
+    fontFamilyNumeric: font,
+    fontWeightSemibold: 600,
+    // Shape scale: extra-small for fields, medium for menus, extra-large
+    // for dialogs. Buttons are fully rounded in globals.css.
+    borderRadiusSmall: "4px",
+    borderRadiusMedium: "4px",
+    borderRadiusLarge: "12px",
+    borderRadiusXLarge: "28px",
+    colorBrandBackground: r.primary,
+    colorBrandBackgroundHover: layer(r.primary, r.onPrimary, 8),
+    colorBrandBackgroundPressed: layer(r.primary, r.onPrimary, 10),
+    colorBrandBackgroundSelected: r.primary,
+    colorBrandBackground2: r.primaryContainer,
+    colorNeutralForegroundOnBrand: r.onPrimary,
+    colorBrandForeground1: r.primary,
+    colorBrandForeground2: r.primary,
+    colorBrandForegroundLink: r.primary,
+    colorBrandForegroundLinkHover: r.primary,
+    colorBrandForegroundLinkPressed: r.primary,
+    colorBrandStroke1: r.primary,
+    colorCompoundBrandStroke: r.primary,
+    colorCompoundBrandStrokeHover: r.primary,
+    colorCompoundBrandStrokePressed: r.primary,
+    colorCompoundBrandBackground: r.primary,
+    colorCompoundBrandBackgroundHover: layer(r.primary, r.onPrimary, 8),
+    colorCompoundBrandBackgroundPressed: layer(r.primary, r.onPrimary, 10),
+    colorCompoundBrandForeground1: r.primary,
+    colorNeutralForeground1: r.onSurface,
+    colorNeutralForeground1Hover: r.onSurface,
+    colorNeutralForeground1Pressed: r.onSurface,
+    colorNeutralForeground2: r.onSurfaceVariant,
+    colorNeutralForeground2Hover: r.onSurface,
+    colorNeutralForeground2Pressed: r.onSurface,
+    colorNeutralForeground3: r.onSurfaceVariant,
+    colorNeutralForeground4: r.outline,
+    colorNeutralBackground1: r.surfaceContainerLow,
+    colorNeutralBackground1Hover: layer(r.surfaceContainerLow, r.onSurface, 8),
+    colorNeutralBackground1Pressed: layer(r.surfaceContainerLow, r.onSurface, 10),
+    colorNeutralBackground1Selected: r.secondaryContainer,
+    colorNeutralBackground2: r.surfaceContainer,
+    colorNeutralBackground3: r.surface,
+    colorNeutralBackground4: r.surfaceContainerHigh,
+    colorNeutralBackground5: r.surfaceContainerHighest,
+    colorNeutralCardBackground: r.surfaceContainerLow,
+    colorSubtleBackgroundHover: layer("transparent", r.onSurface, 8),
+    colorSubtleBackgroundPressed: layer("transparent", r.onSurface, 10),
+    colorSubtleBackgroundSelected: r.secondaryContainer,
+    colorTransparentBackgroundHover: layer("transparent", r.onSurface, 8),
+    colorTransparentBackgroundPressed: layer("transparent", r.onSurface, 10),
+    colorNeutralStroke1: r.outlineVariant,
+    colorNeutralStroke1Hover: r.outline,
+    colorNeutralStroke1Pressed: r.outline,
+    colorNeutralStroke2: r.outlineVariant,
+    colorNeutralStroke3: r.outlineVariant,
+    colorNeutralStrokeAccessible: r.outline,
+    colorNeutralStrokeAccessibleHover: r.onSurfaceVariant,
+    colorNeutralStrokeAccessiblePressed: r.onSurface,
+    colorStrokeFocus2: r.secondary,
+    colorStatusDangerBackground3: r.error,
+    colorStatusDangerForeground1: r.error,
+    colorStatusSuccessForeground1: r.positive,
+    colorStatusWarningForeground1: r.warning,
+    colorPaletteRedBackground3: r.error,
+    colorPaletteRedForeground1: r.error,
+    colorPaletteGreenForeground1: r.positive,
+    colorNeutralShadowAmbient: "rgba(0,0,0,0.12)",
+    colorNeutralShadowKey: "rgba(0,0,0,0.14)",
+  };
+}
+
+/** Writes the scheme as ``--md-sys-color-*`` on the document root. */
+function applyScheme(seed: string, dark: boolean) {
+  const style = document.documentElement.style;
+  for (const [name, value] of cssVars(schemeFor(seed, dark))) {
+    style.setProperty(name, value);
   }
-  return out as unknown as BrandVariants;
 }
-
-/** The lighter accent used on dark backgrounds (like WinUI's dark mode). */
-export const darkAccent = (accent: string) =>
-  toHex(mix(toRgb(accent), [255, 255, 255], 0.45));
-
-const font = "'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, "
-  + "'Noto Sans Arabic', sans-serif";
-const shared: Partial<Theme> = {
-  fontFamilyBase: font,
-  fontFamilyNumeric: font,
-  borderRadiusMedium: "8px",
-  borderRadiusLarge: "12px",
-  borderRadiusXLarge: "20px",
-};
-
-export function makeLight(accent: string): Theme {
-  const brand = brandFrom(accent);
-  return {
-    ...createLightTheme(brand), ...shared,
-    colorNeutralForeground1: "rgba(0,0,0,0.896)",
-    colorNeutralForeground2: "rgba(0,0,0,0.606)",
-    colorNeutralForeground3: "rgba(0,0,0,0.45)",
-    colorBrandForeground1: brand[60],
-    colorBrandForegroundLink: brand[60],
-    colorNeutralBackground1: "#FFFFFF",
-    colorNeutralBackground2: "#F9F9F9",
-    colorNeutralBackground3: "#F3F3F3",
-    colorNeutralStroke1: "rgba(0,0,0,0.0803)",
-    colorNeutralStroke2: "rgba(0,0,0,0.0578)",
-    colorNeutralStrokeAccessible: "rgba(0,0,0,0.4458)",
-  };
-}
-
-export function makeDark(accent: string): Theme {
-  const brand = brandFrom(accent);
-  const light = darkAccent(accent);
-  const lighter = toHex(mix(toRgb(light), [255, 255, 255], 0.4));
-  return {
-    ...createDarkTheme(brand), ...shared,
-    colorBrandBackground: light,
-    colorBrandBackgroundHover: toHex(mix(toRgb(light), [0, 0, 0], 0.08)),
-    colorBrandBackgroundPressed: toHex(mix(toRgb(light), [0, 0, 0], 0.15)),
-    colorBrandBackgroundSelected: light,
-    colorNeutralForegroundOnBrand: "#000000",
-    colorBrandForeground1: lighter,
-    colorBrandForeground2: lighter,
-    colorBrandForegroundLink: lighter,
-    colorBrandForegroundLinkHover: lighter,
-    colorCompoundBrandStroke: light,
-    colorCompoundBrandBackground: light,
-    colorNeutralForeground1: "#FFFFFF",
-    colorNeutralForeground2: "rgba(255,255,255,0.786)",
-    colorNeutralForeground3: "rgba(255,255,255,0.544)",
-    colorNeutralBackground1: "#2C2C2C",
-    colorNeutralBackground2: "#272727",
-    colorNeutralBackground3: "#202020",
-    colorNeutralStroke1: "rgba(255,255,255,0.0837)",
-    colorNeutralStroke2: "rgba(255,255,255,0.0605)",
-  };
-}
-
-export const lightTheme: Theme = makeLight(DEFAULT_ACCENT);
-export const darkTheme: Theme = makeDark(DEFAULT_ACCENT);
 
 export type ThemePref = "system" | "light" | "dark";
 type ThemeState = {
@@ -146,13 +155,11 @@ export function ThemeRoot({ dir, pref, onChange, accent, onAccent, children }: {
   const system = useSystemDark();
   const dark = pref === "system" ? system : pref === "dark";
   const hex = accent || DEFAULT_ACCENT;
-  const theme = useMemo(() => (dark ? makeDark(hex) : makeLight(hex)), [dark, hex]);
+  const theme = useMemo(() => makeTheme(hex, dark), [dark, hex]);
   useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.theme = dark ? "dark" : "light";
-    root.style.setProperty("--accent", dark ? darkAccent(hex) : hex);
-    root.style.setProperty("--accent-text", String(theme.colorBrandForeground1));
-  }, [dark, hex, theme]);
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    applyScheme(hex, dark);
+  }, [dark, hex]);
   useEffect(() => { notifyTheme(pref); }, [pref]);
   return (
     <ThemeCtx.Provider value={{ pref, dark, setPref: onChange, accent, setAccent: onAccent }}>

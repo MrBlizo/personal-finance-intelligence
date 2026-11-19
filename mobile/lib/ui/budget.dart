@@ -28,11 +28,11 @@ Color _stateColor(BuildContext context, _State s) {
     case _State.overspent:
       return scheme.error;
     case _State.underfunded:
-      return Colors.amber.shade700;
+      return context.moneyColors.warning;
     case _State.spent:
       return scheme.outline;
     case _State.funded:
-      return Colors.green.shade600;
+      return context.moneyColors.positive;
     case _State.none:
       return scheme.outlineVariant;
   }
@@ -362,8 +362,8 @@ class _EnvelopeTile extends StatelessWidget {
     final color = _stateColor(context, s);
     final pill = switch (s) {
       _State.overspent => scheme.errorContainer,
-      _State.underfunded => Colors.amber.withValues(alpha: 0.3),
-      _State.funded => Colors.green.withValues(alpha: 0.18),
+      _State.underfunded => context.moneyColors.warningContainer,
+      _State.funded => context.moneyColors.positiveContainer,
       _ => scheme.surfaceContainerHighest,
     };
     return InkWell(
@@ -539,7 +539,9 @@ class _CategorySheet extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: (row.assigned / row.need).clamp(0, 1).toDouble(),
                     minHeight: 8,
-                    color: row.assigned >= row.need ? Colors.green.shade600 : Colors.amber.shade700,
+                    color: row.assigned >= row.need
+                        ? context.moneyColors.positive
+                        : context.moneyColors.warning,
                     backgroundColor: scheme.surfaceContainerHighest,
                   ),
                 ),
