@@ -89,8 +89,8 @@ LAYOUTS: tuple[BankLayout, ...] = (
                "libelle", "montant"),
                "date operation", "libelle", amount="montant",
                decimal=",", dayfirst=True),
-    BankLayout("Moroccan bank (amount column)", ("date", "libelle",
-                                                  "montant"),
+    BankLayout("Moroccan bank (amount column)",
+               ("date", "libelle", "montant"),
                "date", "libelle", amount="montant", decimal=",",
                dayfirst=True),
 )
@@ -100,6 +100,7 @@ def _plain(name: str) -> str:
     """Lower-case a column name and drop accents ("Libellé" -> "libelle")."""
     decomposed = unicodedata.normalize("NFKD", name.strip().lower())
     return "".join(c for c in decomposed if not unicodedata.combining(c))
+
 
 # Wells Fargo files have no header row; the importer names the columns.
 HEADERLESS_5 = ["Date", "Amount", "Flag", "Check", "Description"]
