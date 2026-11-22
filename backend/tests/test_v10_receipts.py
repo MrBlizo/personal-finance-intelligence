@@ -130,3 +130,31 @@ def test_scan_without_windows_ocr_says_so(api, monkeypatch):
                    files={"file": ("r.jpg", b"\xff\xd8\xff", "image/jpeg")})
     assert res.status_code == 501
     assert "Windows" in res.json()["detail"]
+
+
+@pytest.mark.skipif(not receipts.ocr_available(),
+                    reason="Windows text recognition is only on Windows")
+def test_windows_ocr_reads_a_rendered_receipt():
+    """Runs on the PC build: Windows.Media.Ocr reads a drawn receipt."""
+    from io import BytesIO
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    img = Image.new("RGB", (900, 700), "white")
+    draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("arial.ttf", 40)
+    except OSError:
+        font = ImageFont.load_default()
+    for i, line in enumerate(["MIGROS", "Brot 3.20", "Milch 1.60",
+                              "TOTAL CHF 4.80", "21.11.2026"]):
+        draw.text((60, 60 + i * 110), line, fill="black", font=font)
+    buf = BytesIO()
+    img.save(buf, "PNG")
+    try:
+        text = receipts.ocr_image(buf.getvalue())
+    except receipts.OcrUnavailable as exc:
+        pytest.skip(str(exc))
+    found = receipts.parse_receipt(text, today=TODAY)
+    assert found["amount"] == "4.80", text
+    assert found["date"] == "2026-11-21", text
