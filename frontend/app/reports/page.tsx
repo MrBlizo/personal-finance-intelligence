@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Input, Tab, TabList } from "@fluentui/react-components";
 import {
   ArrowDownload20Regular, DocumentPdf20Regular, Table20Regular,
@@ -23,6 +23,10 @@ export default function Reports() {
   const [month, setMonth] = useState(
     `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, "0")}`);
   const [tab, setTab] = useState("monthly");
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get("tab");
+    if (want) setTab(want);
+  }, []);
   const [months, setMonths] = useState(24);
   const rep = useLoad(() => get<MonthlyReport>("/api/reports/monthly", { month }), [month]);
   const nw = useLoad(() => get<{ currency: string; points: NetWorthPoint[] }>(

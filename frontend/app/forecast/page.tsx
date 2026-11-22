@@ -69,8 +69,8 @@ export default function ForecastPage() {
               </div>)}
           </Section>
         </>)}
-      <WhatIfPlanner threshold={threshold} />
-      <IndependenceCalc />
+      <div id="what-if"><WhatIfPlanner threshold={threshold} /></div>
+      <div id="independence"><IndependenceCalc /></div>
     </>
   );
 }

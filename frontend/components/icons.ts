@@ -44,6 +44,7 @@ export const I = {
   rocketLaunch: "\ueb9b", // rocket_launch
   savings: "\ue2eb", // savings
   science: "\uea4b", // science
+  search: "\ue8b6", // search
   settings: "\ue8b8", // settings
   smartphone: "\ue0d4", // smartphone
   summarize: "\uf071", // summarize

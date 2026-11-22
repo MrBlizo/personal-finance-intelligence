@@ -12,6 +12,7 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
+import { CommandPalette, GUIDE_URL, openPalette } from "./CommandPalette";
 import { openQuickAdd, QuickAddHotkey } from "./QuickAdd";
 import { SetupAssistant } from "./SetupAssistant";
 import { UpdateBanner } from "./TrustPanels";
@@ -62,6 +63,12 @@ function NavDrawer({ path }: { path: string }) {
         <span className="icon" aria-hidden>{I.add}</span>
         <span className="fab-label">{t("Add transaction")}</span>
       </button>
+      <button type="button" className="nav-search" onClick={openPalette}
+        title={t("Search or jump to… (Ctrl+K)")}>
+        <span className="icon" aria-hidden>{I.search}</span>
+        <span className="nav-label grow">{t("Search or jump to…")}</span>
+        <kbd className="nav-label">Ctrl K</kbd>
+      </button>
       <nav className="nav" aria-label={t("Navigation")}>
         {NAV.map((n) => {
           const active = norm(path) === n.href;
@@ -75,6 +82,10 @@ function NavDrawer({ path }: { path: string }) {
               <span className="nav-label">{t(n.label)}</span>
             </Link>);
         })}
+        <a href={GUIDE_URL} target="_blank" rel="noreferrer" className="nav-item" title={t("User guide")}>
+          <span className="nav-indicator" aria-hidden><span className="icon">{I.help}</span></span>
+          <span className="nav-label">{t("User guide")}</span>
+        </a>
       </nav>
     </aside>
   );
@@ -157,6 +168,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
           <DownloadToasts />
           <RatePrompt />
           <QuickAddHotkey />
+          <CommandPalette />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>

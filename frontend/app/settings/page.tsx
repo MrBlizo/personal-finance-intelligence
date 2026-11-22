@@ -322,6 +322,7 @@ export default function SettingsPage() {
               <BackupPanel onMessage={setMsg} onRestored={() => {
                 refs.reload(); rates.reload(); rules.reload(); presets.reload();
               }} />
+              <div id="data" />
               <DataCheckRow onMessage={setMsg} />
               <OldDataRow onMessage={setMsg} />
               <SettingRow icon={I.download} title={t("Import presets")}
