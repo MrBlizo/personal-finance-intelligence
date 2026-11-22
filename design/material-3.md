@@ -1,11 +1,28 @@
 # Material 3 in PFI
 
 One Material 3 look for the Windows app, the phone app and the website.
+Since 1.0 it is the **Expressive** variant: violet, loud accents, heavy
+condensed numerals and shape masks in light mode, and a hand-tuned **Neon**
+synthwave scheme in dark mode.
 
 ## Tokens
 
-- **Seed:** `#2F6FE4` (PFI blue). **Scheme:** `SchemeFidelity`, standard
-  contrast, from `@material/material-color-utilities` 0.4.0.
+- **Seed:** `#8E5CF7` (PFI violet). **Light scheme:** `SchemeVibrant`,
+  standard contrast, from `@material/material-color-utilities` 0.4.0.
+  (Before 1.0: `#2F6FE4` with `SchemeFidelity`.)
+- **Dark scheme:** with the PFI violet seed, the hand-tuned `NEON` palette in
+  `scripts/m3/gen-tokens.mjs` (deep indigo surfaces, pink primary
+  `#FF5AD9`, violet secondary, cyan tertiary). The root gets `data-neon="1"`,
+  which turns on glows, the synthwave sun and the grid in
+  `frontend/app/expressive.css`. Other accents use `SchemeVibrant` dark. On
+  the phone, `buildTheme` uses `neonDarkScheme` and `context.neon`.
+- **Accents:** lime `#C6F432`, pink `#FF5AB4` and cyan `#24D3F2`, with
+  containers, deliberately not harmonized (the `AccentColors` extension on
+  the phone, `--md-sys-color-{lime,pink,cyan}-*` on the PC and the website).
+  Used for headline tiles: Earned (lime), Spent (pink), Savings rate (cyan),
+  Net (violet).
+- **Contrast audit:** the generator checks every text/background role pair
+  at 4.5:1 and stops with an error if one fails.
 - **Source of truth:** `design/m3-tokens.json`. Regenerate everything with:
 
   ```
@@ -21,13 +38,19 @@ One Material 3 look for the Windows app, the phone app and the website.
 - **Other accents:** a different accent chosen in Settings becomes a new
   seed. On the PC it is applied at run time by `frontend/lib/m3.ts`, which
   uses the same algorithm. On the phone it goes through
-  `ColorScheme.fromSeed(dynamicSchemeVariant: fidelity)`.
+  `ColorScheme.fromSeed(dynamicSchemeVariant: vibrant)`.
 - **Icons:** Material Symbols Rounded, subset to the glyphs listed in
   `frontend/components/icons.ts`. After adding an icon there, run
   `python scripts/m3/subset-icons.py`. The subset is 15 KB; the full font
   is about 5 MB.
 - **Type:** Roboto Flex, with Noto Sans Arabic for Arabic. The website
-  self-hosts Roboto Flex in `docs/fonts/`.
+  self-hosts Roboto Flex in `docs/fonts/`. Headline money figures use the
+  width axis (`font-stretch: 62%`, weight 800) for condensed display
+  numerals.
+- **Shapes:** M3 Expressive masks (cookie, sunny, clover, flower, burst) in
+  `frontend/app/shapes.css`, used for category icons and hero decorations.
+- **Motion:** spring easing `cubic-bezier(.34, 1.56, .64, 1)` for entrances,
+  the FAB and the month strip; everything respects `prefers-reduced-motion`.
 
 | Shape token | Value | Used for |
 |---|---|---|
