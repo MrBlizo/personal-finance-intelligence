@@ -1,6 +1,6 @@
 """Sync with the phone app through a folder in the user's cloud drive."""
 from dataclasses import asdict
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from ..config import get_settings
 from ..db import get_db
-from ..services import gdrive, sync
+from ..services import conflicts, gdrive, sync
 
 router = APIRouter(prefix="/api/sync")
 # The Google sign-in returns to this page in the browser, which has no PFI
@@ -33,6 +33,27 @@ def _out(db: Session) -> dict:
                              else st.folder),
             "google_available": gdrive.available(),
             "google_signed_in": gdrive.signed_in(data_dir)}
+
+
+class ResolveIn(BaseModel):
+    use: Literal["kept", "other"]
+
+
+@router.get("/conflicts")
+def list_conflicts(db: Session = Depends(get_db)):
+    """Edits made on two devices before they synced."""
+    return {"conflicts": conflicts.open_conflicts(db)}
+
+
+@router.post("/conflicts/{conflict_id}")
+def resolve_conflict(conflict_id: int, body: ResolveIn,
+                     db: Session = Depends(get_db)):
+    """Keep the synced version or switch to the other device's edit."""
+    try:
+        conflicts.resolve(db, conflict_id, body.use)
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from None
+    return {"conflicts": conflicts.open_conflicts(db)}
 
 
 @router.get("")

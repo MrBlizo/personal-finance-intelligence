@@ -28,6 +28,8 @@ export interface Settings {
   budget_mode: "limits" | "envelope";
   accent_color: string | null;
   home_layout: HomeCard[];
+  setup_done: boolean;
+  update_check: boolean;
 }
 export type HomeCardId = "review" | "cash_flow" | "spending" | "budgets"
   | "net_worth" | "upcoming" | "insights" | "accounts" | "goals";

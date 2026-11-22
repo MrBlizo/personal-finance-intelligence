@@ -13,6 +13,7 @@ import { BackupPanel } from "@/components/BackupPanel";
 import { BankSyncPanel } from "@/components/BankSyncPanel";
 import { SyncPanel } from "@/components/SyncPanel";
 import { OldDataRow } from "@/components/OldDataRow";
+import { ConflictsRow, DataCheckRow, UpdateRow } from "@/components/TrustPanels";
 import { CategoryDialog } from "@/components/CategoryDialog";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { ACCENTS, ThemePref, useTheme } from "@/components/Theme";
@@ -304,6 +305,7 @@ export default function SettingsPage() {
             <div className="group-title">{t("Sync")}</div>
             <div className="settings-group">
               <SyncPanel onMessage={setMsg} onSynced={() => { refs.reload(); rules.reload(); }} />
+              <ConflictsRow />
             </div>
           </section>
 
@@ -320,6 +322,7 @@ export default function SettingsPage() {
               <BackupPanel onMessage={setMsg} onRestored={() => {
                 refs.reload(); rates.reload(); rules.reload(); presets.reload();
               }} />
+              <DataCheckRow onMessage={setMsg} />
               <OldDataRow onMessage={setMsg} />
               <SettingRow icon={I.download} title={t("Import presets")}
                 description={t("Saved column settings per bank file format, applied automatically to files with the same columns.")}>
@@ -351,6 +354,7 @@ export default function SettingsPage() {
           {info.data && (
             <section className="settings-block">
               <div className="group-title">{t("About")}</div>
+              <div className="settings-group">
               <SettingRow icon={I.info} title={`Personal Finance Intelligence ${info.data.version}`}
                 description={<>{t("Database: {d}", { d: info.data.database })} · {t("Data folder:")}{" "}
                   <code>{info.data.data_dir}</code></>}>
@@ -362,6 +366,13 @@ export default function SettingsPage() {
                 <a className="link" href="https://mrblizo.github.io/personal-finance-intelligence/support/"
                   target="_blank" rel="noreferrer">{t("Support PFI")} ♥</a>
               </SettingRow>
+              <UpdateRow onMessage={setMsg} />
+              <SettingRow icon={I.lock} title={t("License")}
+                description={t("Free to use. The source code is public so anyone can check it, but PFI may not be sold, redistributed or published in changed versions.")}>
+                <a className="link" href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/LICENSE"
+                  target="_blank" rel="noreferrer">PolyForm Strict</a>
+              </SettingRow>
+              </div>
             </section>)}
         </div>)}
 

@@ -723,11 +723,53 @@ def _last_del(conn: Connection, table: str, uid: str) -> str:
         "AND uid = :u"), {"t": table, "u": uid}).scalar())
 
 
+#: Tables where an edit made on two devices is shown to the user.
+CONFLICT_TABLES = ("transactions", "accounts", "categories",
+                   "recurring_items", "goals")
+
+
+def _note_conflict(conn: Connection, table: str, rid: int, local_uid: str,
+                   local_u: str, values: dict, remote_newer: bool) -> None:
+    """Keep the losing edit when a row changed here and on another device.
+
+    A row changed here since it was last sent or received has an
+    ``updated_at`` that differs from ``sync_seen``; if the incoming values
+    differ too, both devices edited it.
+    """
+    if table not in CONFLICT_TABLES or not values:
+        return
+    seen = conn.execute(text(
+        "SELECT u FROM sync_seen WHERE table_name = :t AND uid = :u"),
+        {"t": table, "u": local_uid}).scalar()
+    if seen is None or norm_time(seen) == norm_time(local_u):
+        return
+    cols = list(values)
+    row = conn.execute(text(
+        f"SELECT {', '.join(cols)} FROM {table} WHERE rowid = :r"),
+        {"r": rid}).mappings().one()
+    local = {c: row[c] for c in cols}
+    if all(str(local[c]) == str(values[c]) for c in cols):
+        return
+    kept, other = (values, local) if remote_newer else (local, values)
+    conn.execute(text(
+        "UPDATE sync_conflicts SET resolved = 1 WHERE table_name = :t AND "
+        "uid = :u AND resolved = 0"), {"t": table, "u": local_uid})
+    conn.execute(text(
+        "INSERT INTO sync_conflicts (table_name, uid, kept, other, replaced, "
+        "resolved) VALUES (:t, :u, :k, :o, :r, 0)"),
+        {"t": table, "u": local_uid, "k": json.dumps(kept, default=str),
+         "o": json.dumps(other, default=str),
+         "r": "here" if remote_newer else "there"})
+
+
 def _update(conn: Connection, table: str, rid: int, local_uid: str,
             values: dict, u: str, seen: bool = True) -> bool:
     local_u = conn.execute(text(
         f"SELECT CAST(updated_at AS TEXT) FROM {table} WHERE rowid = :r"),
         {"r": rid}).scalar()
+    if seen:
+        _note_conflict(conn, table, rid, local_uid, local_u, values,
+                       norm_time(u) > norm_time(local_u))
     if norm_time(u) <= norm_time(local_u):
         return False
     sets = ", ".join(f"{c} = :{c}" for c in values)

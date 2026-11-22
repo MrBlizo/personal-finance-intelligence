@@ -30,6 +30,8 @@ DEFAULTS: dict[str, str] = {
     "budget_mode": "limits",
     "accent_color": "",
     "home_layout": "",
+    "setup_done": "",
+    "update_check": "1",
 }
 #: Personal API keys of price providers; never returned to the UI.
 API_KEYS = ("stooq_api_key", "twelvedata_api_key", "alphavantage_api_key")
@@ -110,6 +112,8 @@ def snapshot(db: Session) -> dict:
         "budget_mode": get(db, "budget_mode"),
         "accent_color": get(db, "accent_color") or None,
         "home_layout": get_home_layout(db),
+        "setup_done": get_bool(db, "setup_done"),
+        "update_check": get_bool(db, "update_check"),
         # Keys themselves are never sent back to the UI: only whether one is
         # saved and its last four characters.
         **{f"{k}_set": bool(get(db, k)) for k in API_KEYS},

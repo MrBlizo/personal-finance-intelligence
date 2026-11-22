@@ -1,4 +1,4 @@
-"""Health check, demo data, backups and the rating prompt."""
+"""Health check, demo data, backups, data checks, updates and rating."""
 from fastapi import (
     APIRouter, Depends, File, HTTPException, Request, UploadFile)
 from fastapi.responses import FileResponse
@@ -12,7 +12,7 @@ from ..db import get_db, get_engine
 from ..migrations import run_migrations
 from ..models import Account
 from ..services import backup as bk
-from ..services import rating
+from ..services import integrity, rating, updates
 from ..services.demo import remove_demo
 
 router = APIRouter(prefix="/api")
@@ -43,6 +43,32 @@ def shutdown(request: Request):
             "or PFI.exe.")
     server.should_exit = True
     return {"status": "stopping"}
+
+
+class FixIn(BaseModel):
+    code: str
+
+
+@router.get("/system/check")
+def check_data(db: Session = Depends(get_db)):
+    """Look for inconsistencies that would make figures wrong."""
+    return integrity.check(db)
+
+
+@router.post("/system/check/fix")
+def fix_data(body: FixIn, db: Session = Depends(get_db)):
+    """Repair one automatically fixable finding."""
+    try:
+        changed = integrity.fix(db, body.code)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from None
+    return {"changed": changed, **integrity.check(db)}
+
+
+@router.get("/system/update")
+def update_status(force: bool = False, db: Session = Depends(get_db)):
+    """Whether a newer PFI is available (installer builds only)."""
+    return updates.status(db, force=force)
 
 
 @router.delete("/demo")

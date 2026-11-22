@@ -13,6 +13,8 @@ import {
   openLastDownload,
 } from "@/lib/shell";
 import { openQuickAdd, QuickAddHotkey } from "./QuickAdd";
+import { SetupAssistant } from "./SetupAssistant";
+import { UpdateBanner } from "./TrustPanels";
 import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
 import { I } from "./icons";
@@ -104,6 +106,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang | null>(null);
   const [theme, setTheme] = useState<ThemePref>("system");
   const [accent, setAccent] = useState("");
+  const [setup, setSetup] = useState<{ base: string } | null>(null);
   const changeTheme = (p: ThemePref) => {
     setTheme(p);
     put("/api/settings", { theme: p }).catch(() => {});
@@ -119,6 +122,11 @@ export default function AppFrame({ children }: { children: ReactNode }) {
         setTheme(s.theme || "system");
         setAccent(s.accent_color || "");
         setLang((s.language as Lang) || "en");
+        if (!s.setup_done) {
+          get<{ empty?: boolean }>("/api/info").then((i) => {
+            if (i.empty) setSetup({ base: s.base_currency });
+          }).catch(() => {});
+        }
       })
       .catch(() => setLang("en"));
     return onShellNavigate((p) => router.push(p));
@@ -141,8 +149,11 @@ export default function AppFrame({ children }: { children: ReactNode }) {
           accent={accent} onAccent={changeAccent}>
           <div className="frame">
             <NavDrawer path={path} />
-            <main className="main">{children}</main>
+            <main className="main"><UpdateBanner />{children}</main>
           </div>
+          {setup && <SetupAssistant base={setup.base} lang={lang}
+            onLang={(l) => { setLang(l); put("/api/settings", { language: l }).catch(() => {}); }}
+            onDone={() => setSetup(null)} />}
           <DownloadToasts />
           <RatePrompt />
           <QuickAddHotkey />

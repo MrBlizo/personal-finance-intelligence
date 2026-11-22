@@ -51,7 +51,7 @@ def test_month_spent_paid_saved(api):
     assert d["daily"]["this"][4] == 120.5 and d["daily"]["this"][-1] == 120.5
 
     tl = api.get("/api/analytics/months",
-                    params={"count": 3}).json()["months"]
+                 params={"count": 3}).json()["months"]
     assert all(m["month"] <= date.today().strftime("%Y-%m") for m in tl)
 
 
@@ -67,7 +67,7 @@ def test_timeline_covers_requested_months(api):
     first = add_months(date.today().replace(day=1), -2)
     _txn(api, acc["id"], first.isoformat(), -10, "expense")
     tl = api.get("/api/analytics/months",
-                    params={"count": 3}).json()["months"]
+                 params={"count": 3}).json()["months"]
     assert [m["month"] for m in tl] == [
         add_months(first, i).strftime("%Y-%m") for i in range(3)]
     assert tl[0]["spent"] == 10 and tl[1]["spent"] == 0
