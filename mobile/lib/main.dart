@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'data/db.dart';
 import 'data/schema.dart';
 import 'launch.dart';
+import 'notify.dart';
 import 'state.dart';
 import 'ui/edit_transaction.dart';
 import 'ui/settings.dart';
@@ -32,6 +33,7 @@ Future<void> main() async {
   if (state.syncEnabled) state.syncNow();
   WidgetsBinding.instance.addPostFrameCallback((_) {
     updateWidget(state);
+    Notifier.refresh(state);
     listenForLaunches((action) {
       final ctx = navigatorKey.currentContext;
       if (ctx == null || !state.onboarded) return;

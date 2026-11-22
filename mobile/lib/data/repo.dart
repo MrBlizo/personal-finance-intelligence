@@ -3,6 +3,7 @@
 // as PFI on Windows.
 import 'package:sqlite3/sqlite3.dart';
 
+import 'csv_import.dart';
 import 'db.dart';
 
 const liquidTypes = ['checking', 'savings', 'cash', 'credit_card'];
@@ -247,6 +248,34 @@ class Debt {
   }
 }
 
+/// One month's money: what came in, what went out, what was paid and saved.
+class MonthSummary {
+  MonthSummary(this.month);
+  final DateTime month;
+  int income = 0;
+  int spent = 0;
+  int bills = 0;
+  int debtPayments = 0;
+  int saved = 0;
+  int get paid => bills + debtPayments;
+  int get net => income - spent;
+  double? get savingsRate => income > 0 ? (income - spent) / income : null;
+
+  /// Spending per top-level category name ('' = uncategorised).
+  final Map<String, int> categories = {};
+
+  /// Bills paid: (name, amount, day).
+  final List<(String, int, DateTime)> billsPaid = [];
+
+  /// Biggest single expenses: (title, amount, day).
+  final List<(String, int, DateTime)> biggest = [];
+
+  /// Spending per day of the month (index 0 = day 1).
+  late final List<int> daily =
+      List.filled(DateTime(month.year, month.month + 1, 0).day, 0);
+  final Set<String> missingFx = {};
+}
+
 class Repo {
   Repo(this.app);
   final AppDatabase app;
@@ -382,6 +411,76 @@ class Repo {
           'WHERE id = ?',
           [...args, id]);
     }
+  }
+
+  /// Adds statement rows to an account, skipping rows imported before (same
+  /// fingerprint as on the PC). Categories come from the category rules,
+  /// then from the payee's last category. Imported rows wait in review.
+  ({int added, int duplicates}) importRows(int accountId, List<CsvRow> rows) {
+    final rules = [
+      for (final r in db.select('SELECT pattern, match_field, is_regex, category_id '
+          'FROM category_rules ORDER BY priority DESC, id'))
+        r
+    ];
+    final known = <String, int?>{};
+    int? categoryFor(String text) {
+      for (final r in rules) {
+        final pattern = r['pattern'] as String;
+        final hit = (r['is_regex'] as int) != 0
+            ? (RegExp(pattern, caseSensitive: false).hasMatch(text))
+            : text.toLowerCase().contains(pattern.toLowerCase());
+        if (hit) return r['category_id'] as int;
+      }
+      return known.putIfAbsent(text, () {
+        final row = db.select(
+            'SELECT category_id FROM transactions WHERE category_id IS NOT NULL '
+            'AND (merchant = ? OR description = ?) ORDER BY txn_date DESC LIMIT 1',
+            [text, text]);
+        return row.isEmpty ? null : row.first['category_id'] as int?;
+      });
+    }
+
+    final existing = {
+      for (final r in db.select(
+          'SELECT fingerprint FROM transactions WHERE account_id = ? AND fingerprint IS NOT NULL',
+          [accountId]))
+        r['fingerprint'] as String
+    };
+    final seen = <String, int>{};
+    var added = 0, duplicates = 0;
+    db.execute('BEGIN');
+    try {
+      for (final row in rows) {
+        final key = '${isoDate(row.date)}|${row.amount}|${row.description.toLowerCase()}';
+        final n = seen[key] = (seen[key] ?? 0) + 1;
+        final fp = fingerprint(accountId, row.date, row.amount, row.description, n);
+        if (existing.contains(fp)) {
+          duplicates++;
+          continue;
+        }
+        int? cat;
+        try {
+          cat = categoryFor(row.description);
+        } on FormatException {
+          cat = null; // a rule with an invalid pattern
+        }
+        db.execute(
+            'INSERT INTO transactions (account_id, txn_date, amount, kind, description, '
+            'merchant, category_id, category_source, fingerprint, cleared, reviewed) '
+            'VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, 1, 0)',
+            [
+              accountId, isoDate(row.date), row.amount,
+              row.amount < 0 ? 'expense' : 'income', row.description, cat,
+              cat == null ? null : 'rule', fp,
+            ]);
+        added++;
+      }
+      db.execute('COMMIT');
+    } catch (_) {
+      db.execute('ROLLBACK');
+      rethrow;
+    }
+    return (added: added, duplicates: duplicates);
   }
 
   // --- goals, bills, investments, debts (same rules as on the PC) ------
@@ -550,6 +649,72 @@ class Repo {
       db.execute('DELETE FROM transactions WHERE id = ?', [id]);
 
   /// Income and spending of [month] in the base currency (transfers left out).
+  /// Totals for one month, in the base currency (see [MonthSummary]).
+  MonthSummary monthSummary(DateTime month) {
+    month = monthStart(month);
+    final out = MonthSummary(month);
+    final fx = Fx(db);
+    final base = baseCurrency;
+    final rows = db.select(
+        'SELECT t.amount, t.txn_date, t.kind, t.description, t.merchant, '
+        't.recurring_id, a.currency, a.type, r.name AS bill, '
+        'coalesce(p.name, c.name) AS top '
+        'FROM transactions t JOIN accounts a ON a.id = t.account_id '
+        'LEFT JOIN categories c ON c.id = t.category_id '
+        'LEFT JOIN categories p ON p.id = c.parent_id '
+        'LEFT JOIN recurring_items r ON r.id = t.recurring_id '
+        'WHERE t.txn_date >= ? AND t.txn_date < ?',
+        [isoDate(month), isoDate(addMonths(month, 1))]);
+    final expenses = <(String, int, DateTime)>[];
+    for (final r in rows) {
+      final day = r['txn_date'] as String;
+      final rate = fx.rate(r['currency'] as String, base, day);
+      if (rate == null) {
+        out.missingFx.add(r['currency'] as String);
+        continue;
+      }
+      final v = ((r['amount'] as int) * rate).round();
+      final type = r['type'] as String;
+      if (r['kind'] == 'transfer') {
+        if (v <= 0) continue;
+        if (type == 'credit_card' || type == 'loan') out.debtPayments += v;
+        if (type == 'savings' || type == 'investment') out.saved += v;
+        continue;
+      }
+      if (v > 0) {
+        out.income += v;
+        continue;
+      }
+      final date = DateTime.parse(day);
+      out.spent -= v;
+      out.daily[date.day - 1] -= v;
+      final top = r['top'] as String? ?? '';
+      out.categories[top] = (out.categories[top] ?? 0) - v;
+      final merchant = r['merchant'] as String?;
+      final title = (merchant?.isNotEmpty ?? false)
+          ? merchant!
+          : (r['description'] as String).isEmpty
+              ? '—'
+              : r['description'] as String;
+      if (r['recurring_id'] != null) {
+        out.bills -= v;
+        out.billsPaid.add((r['bill'] as String? ?? title, -v, date));
+      }
+      expenses.add((title, -v, date));
+    }
+    expenses.sort((a, b) => b.$2.compareTo(a.$2));
+    out.biggest.addAll(expenses.take(5));
+    out.billsPaid.sort((a, b) => a.$3.compareTo(b.$3));
+    return out;
+  }
+
+  /// The month of the oldest transaction, or this month when there is none.
+  DateTime firstMonth() {
+    final r = db.select('SELECT min(txn_date) AS d FROM transactions').first;
+    final d = r['d'] as String?;
+    return monthStart(d == null ? DateTime.now() : DateTime.parse(d));
+  }
+
   (int, int) monthTotals(DateTime month) {
     final fx = Fx(db);
     final from = isoDate(monthStart(month));

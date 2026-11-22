@@ -1,10 +1,13 @@
 // Settings: look, language, currency and sync with PFI on the PC.
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config.dart';
+import '../notify.dart';
 import '../state.dart';
 import '../sync/cloud.dart';
+import '../updates.dart';
 import 'shell.dart' show currencies;
 import 'theme.dart';
 import 'widgets.dart';
@@ -83,7 +86,7 @@ class SettingsPage extends StatelessWidget {
               child: Wrap(spacing: 10, runSpacing: 10, children: [
                 for (final e in accentColors.entries)
                   Tooltip(
-                    message: e.key,
+                    message: app.t(e.key),
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       onTap: () => app.setPref('accent', e.key),
@@ -141,13 +144,71 @@ class SettingsPage extends StatelessWidget {
             ),
           ]),
         ),
+        SectionTitle(app.t('Notifications')),
+        Card(
+          child: Column(children: [
+            SwitchListTile(
+              secondary: const Icon(Icons.event_repeat_outlined),
+              title: Text(app.t('Bill reminders')),
+              subtitle: Text(app.t('The day before a bill or recurring payment is due.')),
+              value: app.billReminders,
+              onChanged: (v) async {
+                if (v) await Notifier.requestPermission();
+                await app.setFlag('bill_reminders', v);
+              },
+            ),
+            SwitchListTile(
+              secondary: const Icon(Icons.warning_amber_rounded),
+              title: Text(app.t('Over-budget alerts')),
+              subtitle: Text(app.t('When a category you budgeted for is overspent.')),
+              value: app.budgetAlerts,
+              onChanged: (v) async {
+                if (v) await Notifier.requestPermission();
+                await app.setFlag('budget_alerts', v);
+              },
+            ),
+          ]),
+        ),
         SectionTitle(app.t('About')),
         Card(
-          child: ListTile(
-            title: Text('Personal Finance Intelligence $appVersion'),
-            subtitle: Text(app.t(
-                'Everything is stored on this phone. Sync files are encrypted with your passphrase before they reach your cloud drive.')),
-          ),
+          child: Column(children: [
+            ListTile(
+              title: Text('Personal Finance Intelligence $appVersion'),
+              subtitle: Text(app.t(
+                  'Everything is stored on this phone. Sync files are encrypted with your passphrase before they reach your cloud drive.')),
+            ),
+            SwitchListTile(
+              secondary: const Icon(Icons.system_update_outlined),
+              title: Text(app.t('Check for updates')),
+              subtitle: Text(app.t('Once a day, asks GitHub whether a newer version is out. Nothing about you or your data is sent.')),
+              value: app.updateCheck,
+              onChanged: (v) => app.setFlag('update_check', v),
+            ),
+            ListTile(
+              leading: const Icon(Icons.open_in_new_rounded),
+              title: Text(app.t('Check now')),
+              onTap: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                final v = await newerVersion(app, force: true);
+                messenger.showSnackBar(SnackBar(
+                  content: Text(v == null
+                      ? app.t('PFI is up to date.')
+                      : app.t('PFI {v} is available.', {'v': v})),
+                  action: v == null
+                      ? null
+                      : SnackBarAction(
+                          label: app.t('Download'),
+                          onPressed: () => launchUrl(Uri.parse(releasesPage),
+                              mode: LaunchMode.externalApplication)),
+                ));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.gavel_outlined),
+              title: Text(app.t('License')),
+              subtitle: Text(app.t('Free to use. PFI may not be sold, redistributed or published in changed versions (PolyForm Strict).')),
+            ),
+          ]),
         ),
       ]),
     );
