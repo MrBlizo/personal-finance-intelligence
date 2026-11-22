@@ -175,15 +175,26 @@ optional: daily exchange rates (only currency codes are sent) and market
 prices for holdings you link to an online source (only the symbol is sent).
 See [PRIVACY.md](PRIVACY.md).
 
-## Contributing
+## Feedback
 
-Issues and pull requests are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Bug reports and ideas are welcome as
+[issues](https://github.com/MrBlizo/personal-finance-intelligence/issues).
+Code contributions are not accepted for now; see
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[GNU AGPL-3.0-or-later](LICENSE) © 2026 Ibrahim (MrBlizo).
+Free to use, not free to take. From 1.0.0, PFI is released under the
+[PolyForm Strict License 1.0.0](LICENSE) © 2026 Ibrahim Oulkhir (MrBlizo).
 
-You may use, study, share and change PFI. If you distribute a changed
-version, or offer it to others over a network, you must publish your source
-code under the same license. Releases up to 0.7.0 were published under the
-MIT license and stay available under it.
+- You may download PFI and use it for free, for personal and other
+  noncommercial purposes, and read its source code.
+- You may not sell it, redistribute it, or publish changed versions or apps
+  built from its code.
+- For any other use (for example inside a company), ask first by opening an
+  issue.
+
+The code stays visible so anyone can check what PFI does with their data.
+Earlier releases keep the licences they were published under: up to 0.7.0
+under MIT, and 0.7.1 to 0.9.0 under the GNU AGPL-3.0. Those copies remain
+available under those terms.
