@@ -32,6 +32,7 @@ DEFAULTS: dict[str, str] = {
     "home_layout": "",
     "setup_done": "",
     "update_check": "1",
+    "tax_groups": "{}",
 }
 #: Personal API keys of price providers; never returned to the UI.
 API_KEYS = ("stooq_api_key", "twelvedata_api_key", "alphavantage_api_key")

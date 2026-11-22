@@ -1,11 +1,11 @@
 """Dashboard summary, Plotly charts, insights and forecast."""
 from datetime import date, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..services import charts, flows, monthly
+from ..services import charts, flows, monthly, scenarios
 from ..services.forecast import cash_flow_forecast
 from ..services.frame import expenses, incomes, load_transactions
 from ..services.fx import FxConverter
@@ -206,3 +206,37 @@ def month(month: str, db: Session = Depends(get_db)):
                  "example 2026-11.") from None
     return monthly.month_detail(db, FxConverter.from_db(db),
                                 base_currency(db), day)
+
+
+@router.post("/forecast/what-if")
+def forecast_what_if(changes: list[dict] = Body(..., embed=True),
+                     horizon_days: int = Body(365, ge=30, le=1825),
+                     threshold: float = Body(0.0),
+                     db: Session = Depends(get_db)):
+    """The forecast with and without some changes (a what-if scenario)."""
+    try:
+        return scenarios.what_if(db, FxConverter.from_db(db),
+                                 base_currency(db), changes, horizon_days,
+                                 threshold=threshold)
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(
+            422, f"The scenario could not be calculated: {exc}. Check each "
+                 "change has an amount (and a bill for percentage changes)."
+        ) from None
+
+
+@router.get("/forecast/what-if/choices")
+def what_if_choices(db: Session = Depends(get_db)):
+    """Bills and incomes a scenario can change by a percentage."""
+    return scenarios.recurring_choices(db)
+
+
+@router.get("/planning/independence")
+def independence(return_pct: float = Query(5.0, ge=-5, le=20),
+                 withdrawal_pct: float = Query(4.0, gt=0, le=15),
+                 extra_monthly: float = Query(0.0, ge=0, le=1e9),
+                 db: Session = Depends(get_db)):
+    """Years until investments could pay for your spending."""
+    return scenarios.financial_independence(
+        db, FxConverter.from_db(db), base_currency(db), return_pct,
+        withdrawal_pct, extra_monthly)

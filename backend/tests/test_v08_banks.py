@@ -117,3 +117,25 @@ def test_date_order_is_read_from_the_file():
     assert importer.guess_mapping(us)["dayfirst"] is False
     assert importer.guess_mapping(eu)["dayfirst"] is True
     assert importer.guess_mapping(both)["dayfirst"] is None
+
+
+MA_DEBIT_CREDIT = (
+    "Date Opération;Libellé;Date Valeur;Débit;Crédit\n"
+    "03/11/2026;PAIEMENT CARTE MARJANE;03/11/2026;1 234,50;\n"
+    "15/11/2026;VIREMENT SALAIRE;15/11/2026;;12 000,00\n")
+MA_AMOUNT = (
+    "DATE;LIBELLE;MONTANT\n"
+    "02/11/2026;RETRAIT GAB;-500,00\n"
+    "20/11/2026;VERSEMENT;2 500,00\n")
+
+
+@pytest.mark.parametrize("text, expected", [
+    (MA_DEBIT_CREDIT, [("2026-11-03", -1234.5), ("2026-11-15", 12000.0)]),
+    (MA_AMOUNT, [("2026-11-02", -500.0), ("2026-11-20", 2500.0)]),
+])
+def test_moroccan_layouts(api, text, expected):
+    acc = make_account(api, currency="MAD")
+    p, got = _go(api, acc, "releve.csv", text)
+    assert p["preset"] and p["preset"]["name"].startswith("Moroccan bank")
+    assert p["preset"]["mapping"]["decimal"] == ","
+    assert got == expected
