@@ -1,10 +1,14 @@
 // The main screens: Home, Budget, Spending, Accounts and Plan.
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/repo.dart';
 import '../state.dart';
+import '../updates.dart';
 import 'edit_transaction.dart';
+import 'import_csv.dart';
+import 'months.dart';
 import 'settings.dart';
 import 'theme.dart';
 import 'widgets.dart';
@@ -165,11 +169,24 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(child: _Pill(app.t('Income'), money(context, income, base),
-                    Icons.south_west_rounded, context.moneyColors.positive)),
+                    Icons.south_west_rounded, context.moneyColors.positive,
+                    onTap: () => _openMonths(context))),
                 const SizedBox(width: 12),
                 Expanded(child: _Pill(app.t('Expenses'), money(context, -spent, base),
-                    Icons.north_east_rounded, scheme.error)),
+                    Icons.north_east_rounded, scheme.error,
+                    onTap: () => _openMonths(context))),
               ]),
+              const SizedBox(height: 12),
+              Card(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  leading: Icon(Icons.calendar_view_month_rounded, color: scheme.primary),
+                  title: Text(app.t('Month by month')),
+                  subtitle: Text(app.t('What you spent, paid and saved each month')),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _openMonths(context),
+                ),
+              ),
               const SizedBox(height: 12),
               Card(
                 child: ListTile(
@@ -197,6 +214,28 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ],
+              FutureBuilder<String?>(
+                future: newerVersion(app),
+                builder: (context, snap) => snap.data == null
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Card(
+                          color: context.accents.limeContainer,
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            leading: Icon(Icons.system_update_rounded, color: context.accents.onLimeContainer),
+                            title: Text(app.t('PFI {v} is available.', {'v': snap.data}),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700, color: context.accents.onLimeContainer)),
+                            subtitle: Text(app.t('Tap to download the new APK from GitHub.'),
+                                style: TextStyle(color: context.accents.onLimeContainer)),
+                            onTap: () => launchUrl(Uri.parse(releasesPage),
+                                mode: LaunchMode.externalApplication),
+                          ),
+                        ),
+                      ),
+              ),
               if (!app.syncEnabled) ...[
                 const SizedBox(height: 12),
                 Card(
@@ -298,15 +337,22 @@ class _QuickAction extends StatelessWidget {
       );
 }
 
+void _openMonths(BuildContext context) => Navigator.of(context)
+    .push(MaterialPageRoute(builder: (_) => const MonthsPage()));
+
 class _Pill extends StatelessWidget {
-  const _Pill(this.label, this.value, this.icon, this.color);
+  const _Pill(this.label, this.value, this.icon, this.color, {this.onTap});
   final String label;
   final String value;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) => Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(children: [
@@ -326,6 +372,7 @@ class _Pill extends StatelessWidget {
               ]),
             ),
           ]),
+        ),
         ),
       );
 }
@@ -472,10 +519,17 @@ class AccountsPage extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 120),
       children: [
         _Header(app.t('Accounts'),
-            trailing: IconButton(
-                tooltip: app.t('Add account'),
-                onPressed: () => addAccountDialog(context),
-                icon: const Icon(Icons.add_circle_outline))),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              IconButton(
+                  tooltip: app.t('Import a bank statement'),
+                  onPressed: () => Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (_) => const ImportCsvPage())),
+                  icon: const Icon(Icons.upload_file_outlined)),
+              IconButton(
+                  tooltip: app.t('Add account'),
+                  onPressed: () => addAccountDialog(context),
+                  icon: const Icon(Icons.add_circle_outline)),
+            ])),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

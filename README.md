@@ -92,11 +92,25 @@ Shown with synthetic sample data (no real finances).
 - **Spending calendar:** a heatmap of every day's spending and a year in
   review (savings rate, no-spend days, biggest expense, top categories,
   change against the year before).
-- **Reports:** monthly PDF report, Excel workbook, CSV export, net-worth
-  history, money-flow (Sankey) diagram, balance history per account, age of
-  money and spending by payee.
-- **Import from YNAB:** reads a YNAB export (zip or CSV) with transfers,
-  splits and budget assignments, with a dry run first.
+- **Month by month (1.0):** what you earned, spent, paid (bills, card and
+  loan payments) and saved each month, compared with the month before, with
+  the spending pace and the biggest expenses. Also on the phone.
+- **Receipt scanning (1.0):** drop a photo on Quick add and Windows' offline
+  text recognition reads the total, date and shop; on the phone, ML Kit does
+  the same on the device. Nothing is uploaded.
+- **What if and financial independence (1.0):** try a purchase, a raise or a
+  bill change against the forecast and get a plain verdict; estimate when
+  your investments could pay for your spending.
+- **Reports:** monthly and yearly PDF reports, a tax export (CSV) by the
+  categories you mark, Excel workbook, CSV export, net-worth history,
+  money-flow (Sankey) diagram, balance history per account, age of money and
+  spending by payee.
+- **Import from YNAB, Cashew and Mint:** reads their exports with a dry run
+  first; YNAB also brings transfers, splits and budget assignments.
+- **Trust (1.0):** a first-run setup assistant, Check my data, a review of
+  items changed on two devices before they synced, a daily update check
+  (not in the Store version), and upgrade tests on databases from every
+  release since 0.4.
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
   a password (AES-256); move to a new PC through sync.
@@ -104,9 +118,12 @@ Shown with synthetic sample data (no real finances).
   as the PC through a folder in your OneDrive, encrypted with your
   passphrase (no PFI server). See [mobile/README.md](mobile/README.md) and
   [design/sync-protocol.md](design/sync-protocol.md).
-- **Look:** light, dark or the same as Windows, switchable in every page
-  header; eleven accent colours; icons and colours per category; a Home page
-  whose cards you can reorder or hide.
+- **Look:** Material 3 Expressive in PFI violet, with a neon dark mode;
+  light, dark or the same as Windows, switchable in every page header;
+  eleven accent colours; icons and colours per category; a Home page whose
+  cards you can reorder or hide; Ctrl+K to jump to any page or action.
+- **Phone extras (1.0):** statement (CSV) import, bill reminders and
+  over-budget alerts, and an update check for the APK (or use Obtainium).
 
 ## Architecture
 
@@ -141,8 +158,8 @@ Double-click **`build.bat`**. It runs the backend tests, builds the screens,
 packages the backend, builds `PFI.exe`, smoke-tests the packaged app and
 creates:
 
-- `dist\PFI-Setup-0.9.0.exe`: installer for direct download;
-- `dist\PFI-0.9.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-1.0.0.exe`: installer for direct download;
+- `dist\PFI-1.0.0.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:

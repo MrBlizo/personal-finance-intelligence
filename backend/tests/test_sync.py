@@ -453,3 +453,64 @@ def test_phone_can_find():
     assert not sync.phone_can_find(r"C:\Users\me\Documents\PFI Sync")
     assert not sync.phone_can_find(r"C:\Users\me\OneDrive\PFI Sync")
     assert not sync.phone_can_find(None)
+
+
+def test_edit_on_both_devices_is_kept_as_a_conflict(pair):
+    from app.services import conflicts
+    a, b, folder = pair
+    a.setup(folder)
+    b.setup(folder)
+    acc = _add_account(a, "Card")
+    t = _add_txn(a, acc, "-5", "Bus")
+    a.run()
+    b.run()
+    _tick()
+    t.description = "Bus (A)"
+    a.db.commit()
+    _tick()
+    bt = b.txns()[0]
+    bt.description = "Bus (B, later)"
+    b.db.commit()
+    a.run()
+    b.run()   # B edited too and receives A's older edit: a conflict here
+    a.run()
+    assert conflicts.open_conflicts(a.db) == []
+    found = conflicts.open_conflicts(b.db)
+    assert len(found) == 1
+    c = found[0]
+    assert c["table"] == "transactions" and c["replaced"] == "there"
+    assert c["kept"]["description"] == "Bus (B, later)"
+    assert c["other"]["description"] == "Bus (A)"
+    assert c["kept"]["account"] == "Card" and c["kept"]["amount"] == -5
+    # Choosing the other edit makes it a new edit that syncs everywhere.
+    _tick()
+    conflicts.resolve(b.db, c["id"], "other")
+    assert conflicts.open_conflicts(b.db) == []
+    b.run()
+    a.run()
+    a.db.expire_all()
+    b.db.expire_all()
+    assert a.txns()[0].description == "Bus (A)"
+    assert b.txns()[0].description == "Bus (A)"
+    with pytest.raises(LookupError):
+        conflicts.resolve(b.db, c["id"], "kept")
+
+
+def test_same_edit_on_both_devices_is_not_a_conflict(pair):
+    from app.services import conflicts
+    a, b, folder = pair
+    a.setup(folder)
+    b.setup(folder)
+    acc = _add_account(a, "Card")
+    t = _add_txn(a, acc, "-5", "Bus")
+    a.run()
+    b.run()
+    _tick()
+    t.description = "Tram"
+    a.db.commit()
+    _tick()
+    b.txns()[0].description = "Tram"
+    b.db.commit()
+    a.run()
+    b.run()
+    assert conflicts.open_conflicts(b.db) == []

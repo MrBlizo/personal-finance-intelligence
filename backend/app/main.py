@@ -21,7 +21,7 @@ from .migrations import run_migrations
 from .routers import analytics, automation, banksync as banksync_router
 from .routers import core, extras, investments
 from .routers import planning, system, tools
-from .routers import budgeting, reports
+from .routers import budgeting, receipts, reports
 from .routers import transactions
 from .routers import sync as sync_router
 from .security import TokenMiddleware
@@ -218,6 +218,7 @@ def create_app() -> FastAPI:
 
     for module in (system, core, transactions, extras, tools, planning,
                    investments, analytics, automation, reports, budgeting,
+                   receipts,
                    sync_router, banksync_router):
         app.include_router(module.router)
     app.include_router(sync_router.oauth_router)

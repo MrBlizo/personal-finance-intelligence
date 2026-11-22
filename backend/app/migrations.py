@@ -138,6 +138,10 @@ def _v08_bank_links(conn: Connection) -> None:
     models.BankLink.__table__.create(conn, checkfirst=True)
 
 
+def _v10_sync_conflicts(conn: Connection) -> None:
+    models.SyncConflict.__table__.create(conn, checkfirst=True)
+
+
 MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
     (1, "initial schema", _initial_schema),
     (2, "import presets", _import_presets),
@@ -148,6 +152,7 @@ MIGRATIONS: list[tuple[int, str, Callable[[Connection], None]]] = [
      _v06_envelopes_sync),
     (7, "sync with the phone app", _v07_sync_state),
     (8, "bank sync links", _v08_bank_links),
+    (9, "sync conflicts", _v10_sync_conflicts),
 ]
 
 

@@ -1,11 +1,18 @@
-"""Built-in CSV layouts of common US banks and card issuers.
+"""Built-in CSV layouts of common US banks, card issuers and Moroccan banks.
 
 A layout is recognised from the column names of the file, so a bank that
 adds a column later is still matched. Users can still change any setting
 in the preview; a mapping they save for a file wins over these.
 The layouts follow the banks' download formats as of late 2026 and are
 checked by tests with sample headers, not with live bank files.
+
+The Moroccan layouts (Attijariwafa bank, Bank of Africa / BMCE, Banque
+Populaire, CIH, and others using the same French statement columns) follow
+the common "Date opération / Libellé / Débit / Crédit" layout with day-first
+dates and decimal commas. They were not checked against each bank's own
+export; column names are matched without accents or letter case.
 """
+import unicodedata
 from dataclasses import dataclass, field
 
 
@@ -23,6 +30,8 @@ class BankLayout:
     merchant: str | None = None
     invert_sign: bool = False
     extra: dict = field(default_factory=dict)
+    decimal: str = "."
+    dayfirst: bool = False
 
 
 # More specific layouts first: the first full match wins.
@@ -67,7 +76,31 @@ LAYOUTS: tuple[BankLayout, ...] = (
     BankLayout("Wells Fargo", ("date", "amount", "flag", "check",
                "description"),
                "Date", "Description", amount="Amount"),
+    BankLayout("Moroccan bank (Attijariwafa, Bank of Africa, Banque "
+               "Populaire, CIH)", ("date operation", "libelle", "debit",
+                                   "credit"),
+               "date operation", "libelle", debit="debit", credit="credit",
+               decimal=",", dayfirst=True),
+    BankLayout("Moroccan bank (Attijariwafa, Bank of Africa, Banque "
+               "Populaire, CIH)", ("date", "libelle", "debit", "credit"),
+               "date", "libelle", debit="debit", credit="credit",
+               decimal=",", dayfirst=True),
+    BankLayout("Moroccan bank (amount column)", ("date operation",
+               "libelle", "montant"),
+               "date operation", "libelle", amount="montant",
+               decimal=",", dayfirst=True),
+    BankLayout("Moroccan bank (amount column)",
+               ("date", "libelle", "montant"),
+               "date", "libelle", amount="montant", decimal=",",
+               dayfirst=True),
 )
+
+
+def _plain(name: str) -> str:
+    """Lower-case a column name and drop accents ("Libellé" -> "libelle")."""
+    decomposed = unicodedata.normalize("NFKD", name.strip().lower())
+    return "".join(c for c in decomposed if not unicodedata.combining(c))
+
 
 # Wells Fargo files have no header row; the importer names the columns.
 HEADERLESS_5 = ["Date", "Amount", "Flag", "Check", "Description"]
@@ -87,7 +120,7 @@ def match(columns: list[str]) -> dict | None:
         ``{"name": ..., "mapping": {...}}`` with the file's own column
         names, or None when no layout matches.
     """
-    actual = {c.strip().lower(): c for c in columns}
+    actual = {_plain(c): c for c in columns}
     for lay in LAYOUTS:
         if not all(r in actual for r in lay.required):
             continue
@@ -96,7 +129,7 @@ def match(columns: list[str]) -> dict | None:
             continue
 
         def col(name: str | None) -> str | None:
-            return actual.get(name.lower()) if name else None
+            return actual.get(_plain(name)) if name else None
 
         return {"id": None, "name": lay.name, "builtin": True, "mapping": {
             "date_column": col(lay.date),
@@ -105,6 +138,6 @@ def match(columns: list[str]) -> dict | None:
             "debit_column": col(lay.debit),
             "credit_column": col(lay.credit),
             "merchant_column": col(lay.merchant),
-            "date_format": None, "dayfirst": False, "decimal": ".",
-            "invert_sign": lay.invert_sign}}
+            "date_format": None, "dayfirst": lay.dayfirst,
+            "decimal": lay.decimal, "invert_sign": lay.invert_sign}}
     return None

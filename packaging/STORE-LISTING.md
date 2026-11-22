@@ -39,31 +39,37 @@ account (Accounts › Add account) and a few transactions (Ctrl+N), or import
 any bank CSV file under Import. First start takes a few seconds while the
 private database is created."
 
-## What's new in 0.9.0 (paste into "What's new in this version")
+## What's new in 1.0.0 (paste into "What's new in this version")
 
 **English**
 
-Version 0.9.0
-• A new Material 3 design on PC, phone and website: one colour scheme, a navigation drawer with an Add transaction button, and a compact rail on narrow windows.
-• Any accent colour now recolours the whole app, not just the buttons.
-• Faster: net worth, envelopes, age of money and statement import open up to 18 times faster on large histories.
-• Clearer settings, budget filters and status colours, in light and dark mode and in Arabic.
+Version 1.0.0
+• New look: Material 3 Expressive in violet, with a neon dark mode.
+• Month by month: what you earned, spent, paid and saved each month.
+• Scan receipts: drop a photo on Quick add; amount, date and shop are read on your PC.
+• What if…? planner, financial independence calculator, year report PDF and tax export.
+• Move in from Cashew or Mint; Moroccan bank statements recognised.
+• Ctrl+K to jump anywhere, a setup assistant, Check my data and a review of sync conflicts.
 
 **Français**
 
-Version 0.9.0
-• Nouveau design Material 3 sur PC, téléphone et site web : une seule palette, un tiroir de navigation avec un bouton Ajouter une transaction, et une barre compacte sur les fenêtres étroites.
-• La couleur d'accent recolore maintenant toute l'application, pas seulement les boutons.
-• Plus rapide : valeur nette, enveloppes, âge de l'argent et import de relevés s'ouvrent jusqu'à 18 fois plus vite sur de longs historiques.
-• Paramètres, filtres de budget et couleurs d'état plus clairs, en mode clair et sombre et en arabe.
+Version 1.0.0
+• Nouveau look : Material 3 Expressive en violet, avec un mode sombre néon.
+• Mois par mois : ce que vous avez gagné, dépensé, payé et épargné chaque mois.
+• Scan de tickets : déposez une photo dans Ajout rapide ; montant, date et magasin sont lus sur votre PC.
+• Planificateur « Et si… ? », calcul de l'indépendance financière, rapport annuel PDF et export fiscal.
+• Import depuis Cashew ou Mint ; relevés des banques marocaines reconnus.
+• Ctrl+K pour aller partout, un assistant de démarrage, Vérifier mes données et la revue des conflits de synchro.
 
 **العربية**
 
-الإصدار 0.9.0
-• تصميم جديد بأسلوب Material 3 على الحاسوب والهاتف والموقع: نظام ألوان واحد، ودرج تنقّل مع زر إضافة معاملة، وشريط مدمج في النوافذ الضيقة.
-• لون التمييز يلوّن الآن التطبيق كله وليس الأزرار فقط.
-• أسرع: صافي الثروة والمغلفات وعمر المال واستيراد الكشوف تفتح أسرع بما يصل إلى 18 مرة مع السجلات الكبيرة.
-• إعدادات وفلاتر ميزانية وألوان حالة أوضح، في الوضعين الفاتح والداكن وبالعربية.
+الإصدار 1.0.0
+• مظهر جديد: Material 3 Expressive باللون البنفسجي مع وضع داكن نيون.
+• شهرًا بشهر: ما كسبته وأنفقته ودفعته وادّخرته كل شهر.
+• مسح الإيصالات: أسقط صورة في الإضافة السريعة فيُقرأ المبلغ والتاريخ والمتجر على حاسوبك.
+• مخطط «ماذا لو…؟» وحاسبة الاستقلال المالي وتقرير سنوي PDF وتصدير ضريبي.
+• الانتقال من Cashew أو Mint؛ والتعرّف على كشوف البنوك المغربية.
+• Ctrl+K للانتقال إلى أي مكان، ومساعد البدء، وفحص بياناتي، ومراجعة تعارضات المزامنة.
 
 ## 3. Store listing: English
 
@@ -187,4 +193,4 @@ placements, trésorerie, patrimoine, gestion d'argent
 1366×768 or larger, PNG. Use demo data (no real finances):
 Home, Transactions, Investments (Performance tab), Bills & recurring,
 Reports, Settings. Optional: one in Arabic and one in dark mode.
-The 0.9 (Material 3) set is in `packaging/store-screenshots-0.9/`.
+The 1.0 (Expressive) set is in `packaging/store-screenshots-1.0/{en,fr,ar}/`; upload each language to its own listing. The 0.9 set is in `packaging/store-screenshots-0.9/`.

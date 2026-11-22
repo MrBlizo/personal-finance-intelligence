@@ -591,6 +591,27 @@ class SyncPending(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
 
 
+class SyncConflict(Base):
+    """A row changed on two devices before they synced.
+
+    Sync keeps the newer edit everywhere (so every device ends up the same);
+    the other edit is kept here so the user can switch to it.
+    """
+
+    __tablename__ = "sync_conflicts"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    table_name: Mapped[str] = mapped_column(String(64))
+    uid: Mapped[str] = mapped_column(String(32), index=True)
+    #: The values that were kept, and the other device's values (JSON).
+    kept: Mapped[str] = mapped_column(Text)
+    other: Mapped[str] = mapped_column(Text)
+    #: "here" when this device's edit was replaced, "there" otherwise.
+    replaced: Mapped[str] = mapped_column(String(5))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+    resolved: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 #: Tables whose rows carry ``uid``/``updated_at`` and are merged by sync.
 SYNCED_TABLES: tuple[str, ...] = tuple(
     m.__tablename__ for m in Base.__subclasses__()

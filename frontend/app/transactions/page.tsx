@@ -82,15 +82,15 @@ export default function Transactions() {
   const refs = useRefs();
   const [f, setF] = useState<Record<string, string>>({
     q: "", account_id: "", category_id: "", kind: "", start: "", end: "",
-    uncategorized: "", tag: "", reviewed: "",
+    uncategorized: "", tag: "", reviewed: "", ids: "",
   });
   const [offset, setOffset] = useState(0);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const acc = q.get("account");
     if (acc || q.get("uncategorized") || q.get("tag") || q.get("start") || q.get("end")
-      || q.get("review") || q.get("q")) {
-      setF((old) => ({ ...old, account_id: acc ?? "",
+      || q.get("review") || q.get("q") || q.get("ids")) {
+      setF((old) => ({ ...old, account_id: acc ?? "", ids: q.get("ids") ?? "",
         uncategorized: q.get("uncategorized") ? "true" : "", tag: q.get("tag") ?? "",
         start: q.get("start") ?? "", end: q.get("end") ?? "",
         reviewed: q.get("review") ? "false" : "", q: q.get("q") ?? "" }));
@@ -154,6 +154,14 @@ export default function Transactions() {
             onClick={() => approve(sel.size ? [...sel] : [])}>
             {sel.size ? t("Approve {n} selected", { n: sel.size }) : t("Approve all")}</Button>}>
           {t("Imported and automatically posted transactions wait here until you check their category and amount.")}
+        </Banner>)}
+      {f.ids && (
+        <Banner kind="info" title={t("Showing the transactions found by Check my data")}
+          action={<Button size="small" onClick={() => {
+            window.history.replaceState(null, "", window.location.pathname);
+            setFilter("ids", "");
+          }}>{t("Show all")}</Button>}>
+          {t("Open each one to correct it.")}
         </Banner>)}
       {msg && <Banner kind="success" onClose={() => setMsg(null)}>{msg}</Banner>}
       {err && <Banner kind="error" onClose={() => setErr(null)}>{err}</Banner>}

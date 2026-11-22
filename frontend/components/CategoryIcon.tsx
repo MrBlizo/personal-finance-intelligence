@@ -87,15 +87,21 @@ export function categoryColor(name: string, color?: string | null) {
   return PALETTE[h % PALETTE.length];
 }
 
+/** Which of the five Expressive shapes a category sits on, stable per name. */
+function shapeIndex(name: string) {
+  let h = 7;
+  for (const ch of name) h = (h * 33 + ch.charCodeAt(0)) >>> 0;
+  return h % 5;
+}
+
 export function CategoryIcon({ name, icon, color, size = 32 }: {
   name: string; icon?: string | null; color?: string | null; size?: number;
 }) {
   const Icon = ICONS[icon || guessIcon(name)] ?? TagRegular;
   const c = categoryColor(name, color);
   return (
-    <span className="cat-icon" aria-hidden style={{
-      width: size, height: size, color: c,
-      background: `color-mix(in srgb, ${c} 16%, transparent)`,
+    <span className={`cat-icon s-${shapeIndex(name)}`} aria-hidden style={{
+      width: size, height: size, color: c, ["--cat" as string]: c,
     }}>
       <Icon fontSize={Math.round(size * 0.56)} />
     </span>

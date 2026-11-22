@@ -10,14 +10,15 @@ import 'data/db.dart';
 import 'data/repo.dart';
 import 'l10n/strings.dart';
 import 'launch.dart';
+import 'notify.dart';
 import 'sync/cloud.dart';
 import 'sync/crypto.dart';
 import 'sync/engine.dart';
 import 'ui/m3_tokens.dart' show pfiSeed;
 
 const accentColors = <String, Color>{
-  'Blue': pfiSeed, // shared with the PC and the website
-  'Purple': Color(0xFF6B4FBB),
+  'Violet': pfiSeed, // shared with the PC and the website; neon dark mode
+  'Blue': Color(0xFF2F6FE4),
   'Indigo': Color(0xFF3F51B5),
   'Teal': Color(0xFF00897B),
   'Green': Color(0xFF2E7D32),
@@ -54,15 +55,29 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     return const ['fr', 'ar'].contains(code) ? code : 'en';
   }
 
-  Color get accent => accentColors[prefs.getString('accent')] ??
-      accentColors['Blue']!;
-  String get accentName => prefs.getString('accent') ?? 'Blue';
+  Color get accent => accentColors[accentName] ?? pfiSeed;
+  String get accentName {
+    final name = prefs.getString('accent');
+    // 'Purple' was replaced by PFI violet in 1.0.
+    return name == null || name == 'Purple' || !accentColors.containsKey(name)
+        ? 'Violet'
+        : name;
+  }
   ThemeMode get themeMode => switch (prefs.getString('theme')) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
         _ => ThemeMode.system,
       };
   bool get onboarded => prefs.getBool('onboarded') ?? !app.isEmpty;
+  bool get billReminders => prefs.getBool('bill_reminders') ?? true;
+  bool get budgetAlerts => prefs.getBool('budget_alerts') ?? true;
+  bool get updateCheck => prefs.getBool('update_check') ?? true;
+
+  Future<void> setFlag(String key, bool value) async {
+    await prefs.setBool(key, value);
+    notifyListeners();
+    Notifier.refresh(this);
+  }
 
   Future<void> setPref(String key, String value) async {
     if (key == 'lang') Future.microtask(() => updateWidget(this));
@@ -84,6 +99,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
     revision++;
     notifyListeners();
     updateWidget(this);
+    Notifier.refresh(this);
     if (sync && syncEnabled) {
       _debounce?.cancel();
       _debounce = Timer(const Duration(seconds: 8), () => syncNow());
@@ -146,6 +162,7 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
       if (res.received > 0) {
         revision++;
         updateWidget(this);
+        Notifier.refresh(this);
       }
       return res;
     } on SyncException catch (e) {

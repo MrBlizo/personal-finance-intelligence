@@ -1,7 +1,8 @@
 "use client";
 // Quick add: a transaction in a few keystrokes, from any page (Ctrl+N).
 // The payee remembers its last category, amounts accept sums (12.50+3),
-// and the last account used is pre-selected.
+// and the last account used is pre-selected. A receipt photo dropped on the
+// form is read by Windows' offline OCR and attached to the new transaction.
 import { useEffect, useRef, useState } from "react";
 import {
   Button, Combobox, Field, Input, Option, Select, Tab, TabList,
@@ -9,7 +10,8 @@ import {
 import { CategoryIcon } from "./CategoryIcon";
 import { accountOptions, catLabel, categoryOptions, useRefs } from "./refs";
 import { Banner, Modal } from "./ui";
-import { PayeeHint, get, post } from "@/lib/api";
+import { I } from "./icons";
+import { PayeeHint, Txn, api, get, post } from "@/lib/api";
 import { evalAmount, isFormula } from "@/lib/calc";
 import { money, today } from "@/lib/format";
 import { useT } from "@/lib/i18n";
@@ -17,6 +19,13 @@ import { useT } from "@/lib/i18n";
 const LAST_ACCOUNT = "pfi.quickadd.account";
 const remember = (id: string) => { try { localStorage.setItem(LAST_ACCOUNT, id); } catch { /* private mode */ } };
 const recall = () => { try { return localStorage.getItem(LAST_ACCOUNT) ?? ""; } catch { return ""; } };
+
+export interface ReceiptRead {
+  amount: string | null; amount_source: "total" | "largest" | "none";
+  date: string | null; merchant: string | null; currency: string | null;
+  category_id: number | null; lines: string[];
+}
+const isImage = (f: File) => f.type.startsWith("image/") || /\.(jpe?g|png|bmp|gif|tiff?|heic)$/i.test(f.name);
 
 export function QuickAdd({ onClose, onSaved }: { onClose: () => void; onSaved?: () => void }) {
   const t = useT();
@@ -35,6 +44,31 @@ export function QuickAdd({ onClose, onSaved }: { onClose: () => void; onSaved?: 
   const [busy, setBusy] = useState(false);
   const touchedCat = useRef(false);
   const amountRef = useRef<HTMLInputElement>(null);
+  const pickFile = useRef<HTMLInputElement>(null);
+  const [receipt, setReceipt] = useState<File | null>(null);
+  const [scan, setScan] = useState<{ busy: boolean; read?: ReceiptRead; note?: string }>({ busy: false });
+  const [dragging, setDragging] = useState(false);
+
+  const readReceipt = async (f: File) => {
+    if (!isImage(f)) { setError(t("Drop a photo of the receipt (JPEG or PNG).")); return; }
+    setReceipt(f);
+    setError(null);
+    setScan({ busy: true });
+    const d = new FormData(); d.append("file", f);
+    try {
+      const read = await api<ReceiptRead>("/api/receipts/scan", { method: "POST", body: d });
+      if (read.amount) setAmount(read.amount);
+      if (read.date) setDay(read.date);
+      if (read.merchant && !payee) setPayee(read.merchant);
+      setType("expense");
+      const c = cats.find((x) => x.id === read.category_id);
+      if (c && !touchedCat.current) setCategory(String(c.id));
+      setScan({ busy: false, read });
+    } catch (e) {
+      // The photo is still attached on save even when it couldn't be read.
+      setScan({ busy: false, note: (e as Error).message });
+    }
+  };
 
   useEffect(() => { amountRef.current?.focus(); }, []);
   useEffect(() => {
@@ -70,16 +104,21 @@ export function QuickAdd({ onClose, onSaved }: { onClose: () => void; onSaved?: 
     setBusy(true);
     setError(null);
     try {
-      await post("/api/transactions", {
+      const saved = await post<Txn>("/api/transactions", {
         account_id: Number(account), txn_date: day,
         amount: String(type === "expense" ? -value : value), kind: type,
         category_id: category ? Number(category) : null,
         description: payee, merchant: payee || null, notes: note || null,
       });
+      if (receipt) {
+        const d = new FormData(); d.append("file", receipt);
+        await api(`/api/transactions/${saved.id}/attachments`, { method: "POST", body: d });
+      }
       remember(account);
       onSaved?.();
       if (again) {
         setAmount(""); setPayee(""); setCategory(""); setNote("");
+        setReceipt(null); setScan({ busy: false });
         touchedCat.current = false;
         amountRef.current?.focus();
       } else onClose();
@@ -93,7 +132,36 @@ export function QuickAdd({ onClose, onSaved }: { onClose: () => void; onSaved?: 
       <Button disabled={busy} onClick={() => save(true)}>{t("Save and add another")}</Button>
       <Button onClick={onClose}>{t("Cancel")}</Button></>}>
       {error && <Banner kind="error">{error}</Banner>}
-      <form className="form-grid" onSubmit={(e) => { e.preventDefault(); save(false); }}>
+      <form className={`form-grid${dragging ? " dropping" : ""}`} onSubmit={(e) => { e.preventDefault(); save(false); }}
+        onDragOver={(e) => { if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDragging(true); } }}
+        onDragLeave={(e) => { if (e.currentTarget === e.target) setDragging(false); }}
+        onDrop={(e) => {
+          e.preventDefault(); setDragging(false);
+          const f = e.dataTransfer.files?.[0];
+          if (f) readReceipt(f);
+        }}>
+        <input ref={pickFile} type="file" hidden accept="image/*" onChange={(e) => {
+          const f = e.target.files?.[0]; e.target.value = "";
+          if (f) readReceipt(f);
+        }} />
+        <button type="button" className={`receipt-drop full${receipt ? " has" : ""}`}
+          onClick={() => pickFile.current?.click()} aria-busy={scan.busy}>
+          <span className="icon" aria-hidden>{scan.busy ? I.autorenew : receipt ? I.checkCircle : I.documentScanner}</span>
+          <span className="grow" aria-live="polite">
+            <strong>{scan.busy ? t("Reading the receipt…")
+              : receipt ? receipt.name
+              : t("Scan a receipt")}</strong>
+            <span className="caption">{scan.busy ? t("Text recognition runs on this PC; nothing is uploaded.")
+              : scan.read ? (scan.read.amount
+                ? t(scan.read.amount_source === "total" ? "Read the total, date and shop. Check them before saving."
+                  : "No total line found: took the largest amount. Check it before saving.")
+                : t("No amount could be read. Type it in; the photo is still attached."))
+              : scan.note ? scan.note
+              : t("Drop a photo here or click to choose one. It is read on this PC and attached to the transaction.")}</span>
+            {scan.read?.currency && (
+              <span className="caption">{t("Receipt currency: {c}", { c: scan.read.currency })}</span>)}
+          </span>
+        </button>
         <TabList className="full" selectedValue={type}
           onTabSelect={(_, d) => { setType(d.value as "expense" | "income"); setCategory(""); }}>
           <Tab value="expense">{t("Expense")}</Tab>

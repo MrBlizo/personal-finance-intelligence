@@ -88,9 +88,13 @@ def list_transactions(
         kind: str | None = None, q: str | None = None,
         uncategorized: bool = False, tag: str | None = None,
         reviewed: bool | None = None,
+        ids: str | None = Query(None, pattern=r"^\d+(,\d+)*$"),
         limit: int = Query(100, ge=1, le=5000), offset: int = 0,
         db: Session = Depends(get_db)):
     stmt = select(Transaction)
+    if ids:
+        stmt = stmt.where(Transaction.id.in_(
+            [int(i) for i in ids.split(",")[:500]]))
     if start:
         stmt = stmt.where(Transaction.txn_date >= start)
     if end:

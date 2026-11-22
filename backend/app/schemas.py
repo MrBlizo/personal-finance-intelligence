@@ -59,6 +59,8 @@ class SettingsOut(BaseModel):
     budget_mode: str = "limits"
     accent_color: str | None = None
     home_layout: list[dict] = []
+    setup_done: bool = False
+    update_check: bool = True
 
 
 class HomeCard(BaseModel):
@@ -93,6 +95,10 @@ class SettingsIn(_UpperCurrency):
     accent_color: Annotated[str | None, Field(
         pattern=r"^(#[0-9A-Fa-f]{6})?$")] = None
     home_layout: list[HomeCard] | None = None
+    #: The first-run setup assistant was completed or skipped.
+    setup_done: bool | None = None
+    #: Look for a newer version on GitHub (installer builds only).
+    update_check: bool | None = None
 
     @field_validator("base_currency", mode="before")
     @classmethod

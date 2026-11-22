@@ -14,7 +14,7 @@ from ..models import (
     PeriodBudget, PeriodBudgetCategory, Tag, Transaction)
 from ..services import budgeting as bg
 from ..services import envelope as env
-from ..services import ynab
+from ..services import app_import, ynab
 from ..services.fx import FxConverter
 from ..services.ledger import account_balances, base_currency
 from ..services.planning import add_months
@@ -307,6 +307,41 @@ async def import_ynab(file: UploadFile = File(...),
     except ynab.YnabError as exc:
         db.rollback()
         raise HTTPException(422, str(exc)) from exc
+
+
+@router.post("/import/app")
+async def import_other_app(file: UploadFile = File(...),
+                           currency: str = Form(...),
+                           source: str = Form("auto"),
+                           dry_run: bool = Form(True),
+                           db: Session = Depends(get_db)):
+    """Import a Cashew or Mint CSV export (``source`` auto-detects).
+
+    With ``dry_run`` (the default) nothing is saved; the report shows what
+    would be created.
+    """
+    data = await file.read(MAX_YNAB + 1)
+    if len(data) > MAX_YNAB:
+        raise HTTPException(413, "The file is larger than 50 MB. Export a "
+                                 "shorter period from the other app.")
+    if not (len(currency) == 3 and currency.isalpha()):
+        raise HTTPException(
+            422, "Choose the currency of the imported accounts, for "
+            "example USD or EUR.")
+    kind = app_import.detect(data) if source == "auto" else source
+    if kind is None:
+        raise HTTPException(
+            422, "This file doesn't look like a Cashew or Mint export. "
+            "Export it again from the other app, or use Import › bank "
+            "statement for a bank's CSV file.")
+    try:
+        rows = app_import.normalise(data, kind)
+        report = app_import.import_rows(db, rows, kind, currency.upper(),
+                                        dry_run)
+    except app_import.AppImportError as exc:
+        db.rollback()
+        raise HTTPException(422, str(exc)) from exc
+    return {"source": kind, **report}
 
 
 # --- payee memory -----------------------------------------------------------

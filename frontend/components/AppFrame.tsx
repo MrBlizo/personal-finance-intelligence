@@ -12,13 +12,17 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
+import { CommandPalette, GUIDE_URL, openPalette } from "./CommandPalette";
 import { openQuickAdd, QuickAddHotkey } from "./QuickAdd";
+import { SetupAssistant } from "./SetupAssistant";
+import { UpdateBanner } from "./TrustPanels";
 import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
 import { I } from "./icons";
 
 export const NAV = [
   { href: "/", label: "Home", glyph: I.home },
+  { href: "/months/", label: "Month by month", glyph: I.calendarViewMonth },
   { href: "/transactions/", label: "Transactions", glyph: I.receiptLong },
   { href: "/accounts/", label: "Accounts", glyph: I.accountBalance },
   { href: "/import/", label: "Import", glyph: I.download },
@@ -59,6 +63,12 @@ function NavDrawer({ path }: { path: string }) {
         <span className="icon" aria-hidden>{I.add}</span>
         <span className="fab-label">{t("Add transaction")}</span>
       </button>
+      <button type="button" className="nav-search" onClick={openPalette}
+        title={t("Search or jump to… (Ctrl+K)")}>
+        <span className="icon" aria-hidden>{I.search}</span>
+        <span className="nav-label grow">{t("Search or jump to…")}</span>
+        <kbd className="nav-label">Ctrl K</kbd>
+      </button>
       <nav className="nav" aria-label={t("Navigation")}>
         {NAV.map((n) => {
           const active = norm(path) === n.href;
@@ -72,6 +82,10 @@ function NavDrawer({ path }: { path: string }) {
               <span className="nav-label">{t(n.label)}</span>
             </Link>);
         })}
+        <a href={GUIDE_URL} target="_blank" rel="noreferrer" className="nav-item" title={t("User guide")}>
+          <span className="nav-indicator" aria-hidden><span className="icon">{I.help}</span></span>
+          <span className="nav-label">{t("User guide")}</span>
+        </a>
       </nav>
     </aside>
   );
@@ -103,6 +117,7 @@ export default function AppFrame({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang | null>(null);
   const [theme, setTheme] = useState<ThemePref>("system");
   const [accent, setAccent] = useState("");
+  const [setup, setSetup] = useState<{ base: string } | null>(null);
   const changeTheme = (p: ThemePref) => {
     setTheme(p);
     put("/api/settings", { theme: p }).catch(() => {});
@@ -118,6 +133,11 @@ export default function AppFrame({ children }: { children: ReactNode }) {
         setTheme(s.theme || "system");
         setAccent(s.accent_color || "");
         setLang((s.language as Lang) || "en");
+        if (!s.setup_done) {
+          get<{ empty?: boolean }>("/api/info").then((i) => {
+            if (i.empty) setSetup({ base: s.base_currency });
+          }).catch(() => {});
+        }
       })
       .catch(() => setLang("en"));
     return onShellNavigate((p) => router.push(p));
@@ -140,11 +160,15 @@ export default function AppFrame({ children }: { children: ReactNode }) {
           accent={accent} onAccent={changeAccent}>
           <div className="frame">
             <NavDrawer path={path} />
-            <main className="main">{children}</main>
+            <main className="main"><UpdateBanner />{children}</main>
           </div>
+          {setup && <SetupAssistant base={setup.base} lang={lang}
+            onLang={(l) => { setLang(l); put("/api/settings", { language: l }).catch(() => {}); }}
+            onDone={() => setSetup(null)} />}
           <DownloadToasts />
           <RatePrompt />
           <QuickAddHotkey />
+          <CommandPalette />
         </ThemeRoot>
       </I18nProvider>
     </PrefsCtx.Provider>

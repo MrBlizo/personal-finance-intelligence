@@ -1,6 +1,6 @@
 # Privacy policy
 
-*Personal Finance Intelligence (PFI) · last updated 16 November 2026*
+*Personal Finance Intelligence (PFI) · last updated 22 November 2026*
 
 PFI is a desktop app (with an optional Android app) that keeps your
 financial data on your own devices.
@@ -68,8 +68,16 @@ does not contact banks.
 ## The Android app
 
 The phone app stores your data in a private database on the phone. It uses
-the network only for the sync described above. It has no account, no
-analytics, no advertising and no telemetry.
+the network only for the sync described above and for the update check
+below. It has no account, no analytics, no advertising and no telemetry.
+
+- **Receipt scanning** uses Google ML Kit's on-device text recognition. The
+  photo is read on the phone and is not kept or uploaded; the recognition
+  model is bundled with the app.
+- **Statement import** reads the CSV file you choose on the phone.
+- **Notifications** (bill reminders, over-budget alerts) are computed and shown
+  on the phone. Android asks for your permission first; you can switch both
+  off in Settings.
 
 ## Network requests
 
@@ -81,6 +89,7 @@ PFI makes only these requests, and only for the purposes described:
 | Stock, ETF & fund prices | query1.finance.yahoo.com | the symbol you entered (e.g. `VWRL.L`) and a date range | once a day for holdings with Yahoo Finance as price source, or on request |
 | Bank sync (optional) | SimpleFIN Bridge (bridge.simplefin.org) or api.enablebanking.com | your saved access or signed request, and a date range | every 6 hours while PFI runs, if you linked accounts |
 | Crypto prices | api.coingecko.com | the coin id (e.g. `bitcoin`) and a currency code | once a day for holdings with CoinGecko as price source, or on request |
+| Update check | api.github.com (the latest PFI release) | nothing beyond the request itself; only the version number is read | once a day on the PC (not in the Microsoft Store version, which the Store updates) and on the phone, unless switched off in Settings |
 
 These services receive your IP address as part of any internet request;
 their own privacy policies apply. You can switch both automatic updates off
@@ -100,6 +109,9 @@ in your local database only and are no longer sent anywhere.)
   the window was closed or a rating was submitted; your answer is stored on
   this PC.
 - **Notifications** (bill reminders): shown locally by Windows.
+- **Receipt scanning**: a receipt photo you drop on Quick add is read by
+  Windows' built-in offline text recognition (Windows.Media.Ocr). Nothing is
+  sent anywhere; the photo is stored with the transaction like any attachment.
 
 ## Your control
 

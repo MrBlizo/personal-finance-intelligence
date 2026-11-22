@@ -7,7 +7,7 @@ import {
 import { ArrowUpload20Regular, DocumentTable20Regular } from "@fluentui/react-icons";
 import { accountOptions, useRefs } from "@/components/refs";
 import { Banner, Confirm, Empty, PageHead, Section, Spinner, useLoad } from "@/components/ui";
-import { YnabImport } from "@/components/YnabImport";
+import { AppImport, YnabImport } from "@/components/YnabImport";
 import {
   ImportBatch, ImportCheck, ImportPreview, ImportResult, PossibleDuplicate, api, del, get,
 } from "@/lib/api";
@@ -317,6 +317,7 @@ export default function Import() {
         onYes={async () => { await del(`/api/import/batches/${undo.id}`); batches.reload(); }} />}
       <div style={{ marginTop: 16 }}>
         <YnabImport baseCurrency={refs.data?.settings.base_currency ?? "USD"} />
+        <AppImport baseCurrency={refs.data?.settings.base_currency ?? "USD"} />
       </div>
     </>
   );

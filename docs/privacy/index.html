@@ -30,7 +30,7 @@
   <article>
     <p class="crumbs"><a href="../">Home</a> › Privacy</p>
 <h1>Privacy policy</h1>
-<p><em>Personal Finance Intelligence (PFI) · last updated 17 November 2026</em></p>
+<p><em>Personal Finance Intelligence (PFI) · last updated 22 November 2026</em></p>
 <p>PFI is a desktop app (with an optional Android app) that keeps your
 financial data on your own devices.</p>
 <h2>What PFI stores</h2>
@@ -87,8 +87,17 @@ Disconnecting in Settings deletes the saved access on the PC. The phone app
 does not contact banks.</p>
 <h2>The Android app</h2>
 <p>The phone app stores your data in a private database on the phone. It uses
-the network only for the sync described above. It has no account, no
-analytics, no advertising and no telemetry.</p>
+the network only for the sync described above and for the update check
+below. It has no account, no analytics, no advertising and no telemetry.</p>
+<ul>
+<li><strong>Receipt scanning</strong> uses Google ML Kit's on-device text recognition. The
+  photo is read on the phone and is not kept or uploaded; the recognition
+  model is bundled with the app.</li>
+<li><strong>Statement import</strong> reads the CSV file you choose on the phone.</li>
+<li><strong>Notifications</strong> (bill reminders, over-budget alerts) are computed and shown
+  on the phone. Android asks for your permission first; you can switch both
+  off in Settings.</li>
+</ul>
 <h2>Network requests</h2>
 <p>PFI makes only these requests, and only for the purposes described:</p>
 <table>
@@ -125,6 +134,12 @@ analytics, no advertising and no telemetry.</p>
 <td>the coin id (e.g. <code>bitcoin</code>) and a currency code</td>
 <td>once a day for holdings with CoinGecko as price source, or on request</td>
 </tr>
+<tr>
+<td>Update check</td>
+<td>api.github.com (the latest PFI release)</td>
+<td>nothing beyond the request itself; only the version number is read</td>
+<td>once a day on the PC (not in the Microsoft Store version, which the Store updates) and on the phone, unless switched off in Settings</td>
+</tr>
 </tbody>
 </table>
 <p>These services receive your IP address as part of any internet request;
@@ -143,6 +158,9 @@ in your local database only and are no longer sent anywhere.)</p>
   the window was closed or a rating was submitted; your answer is stored on
   this PC.</li>
 <li><strong>Notifications</strong> (bill reminders): shown locally by Windows.</li>
+<li><strong>Receipt scanning</strong>: a receipt photo you drop on Quick add is read by
+  Windows' built-in offline text recognition (Windows.Media.Ocr). Nothing is
+  sent anywhere; the photo is stored with the transaction like any attachment.</li>
 </ul>
 <h2>Your control</h2>
 <p>You can export everything (Excel, CSV, backups), and you can delete all data
