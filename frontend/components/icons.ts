@@ -16,6 +16,7 @@ export const I = {
   celebration: "\uea65", // celebration
   checkCircle: "\ue86c", // check_circle
   checklist: "\ue6b1", // checklist
+  close: "\ue5cd", // close
   contrast: "\ueb37", // contrast
   creditCard: "\ue870", // credit_card
   currencyExchange: "\ueb70", // currency_exchange

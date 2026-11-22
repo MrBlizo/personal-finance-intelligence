@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button, Field, Link as FLink, SpinButton, Tab, TabList } from "@fluentui/react-components";
 import Plot from "@/components/Plot";
+import { IndependenceCalc, WhatIfPlanner } from "@/components/Planner";
 import { Banner, Empty, Kpi, PageHead, Section, Spinner, useLoad } from "@/components/ui";
 import { Forecast, get } from "@/lib/api";
 import { date, money, pct, signClass } from "@/lib/format";
@@ -68,6 +69,8 @@ export default function ForecastPage() {
               </div>)}
           </Section>
         </>)}
+      <WhatIfPlanner threshold={threshold} />
+      <IndependenceCalc />
     </>
   );
 }

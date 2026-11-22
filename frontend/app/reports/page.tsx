@@ -6,6 +6,7 @@ import {
   ArrowDownload20Regular, DocumentPdf20Regular, Table20Regular,
 } from "@fluentui/react-icons";
 import { BalanceReport, FlowReport, PayeeReport } from "@/components/FlowReports";
+import { YearReport } from "@/components/YearReport";
 import Plot from "@/components/Plot";
 import { catLabel } from "@/components/refs";
 import { Banner, Empty, Kpi, PageHead, Section, Spinner, StatusBadge, useLoad } from "@/components/ui";
@@ -50,7 +51,7 @@ export default function Reports() {
 
   return (
     <>
-      <PageHead title={t("Reports")} sub={t("Monthly report, exports and net-worth history")}>
+      <PageHead title={t("Reports")} sub={t("Monthly and yearly reports, tax export and net-worth history")}>
         <Button icon={<Table20Regular />} as="a" href={downloadUrl("/api/export/workbook.xlsx")}>
           {t("Excel workbook")}</Button>
         <Button icon={<ArrowDownload20Regular />} as="a" href={downloadUrl("/api/export/transactions.csv")}>
@@ -58,12 +59,14 @@ export default function Reports() {
       </PageHead>
       <TabList selectedValue={tab} onTabSelect={(_, d) => setTab(String(d.value))} style={{ marginBottom: 12 }}>
         <Tab value="monthly">{t("Monthly report")}</Tab>
+        <Tab value="year">{t("Year in review")}</Tab>
         <Tab value="networth">{t("Net worth over time")}</Tab>
         <Tab value="tags">{t("By tag")}</Tab>
         <Tab value="flow">{t("Money flow")}</Tab>
         <Tab value="balances">{t("Balances & age of money")}</Tab>
         <Tab value="payees">{t("By payee")}</Tab>
       </TabList>
+      {tab === "year" && <YearReport />}
       {tab === "flow" && <FlowReport />}
       {tab === "balances" && <BalanceReport />}
       {tab === "payees" && <PayeeReport />}
