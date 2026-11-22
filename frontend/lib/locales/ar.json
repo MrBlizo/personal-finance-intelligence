@@ -1180,5 +1180,8 @@
   "{n} bank accounts update automatically every 6 hours while PFI is open.": "تتحدّث {n} حسابات بنكية تلقائيًا كل 6 ساعات ما دام PFI مفتوحًا.",
  "Navigation": "التنقل",
  "PFI blue": "أزرق PFI",
- "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.": "يولّد نظام الألوان كله: الأزرار والأسطح والتمييزات والرسوم البيانية. أزرق PFI يطابق تطبيق الهاتف والموقع."
+ "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.": "يولّد نظام الألوان كله: الأزرار والأسطح والتمييزات والرسوم البيانية. أزرق PFI يطابق تطبيق الهاتف والموقع.",
+ "PFI violet": "بنفسجي PFI",
+ "Blue": "أزرق",
+ "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI violet matches the phone app and the website, and turns dark mode neon.": "يولّد نظام الألوان كله: الأزرار والأسطح والتمييزات والرسوم البيانية. بنفسجي PFI يطابق تطبيق الهاتف والموقع، ويجعل الوضع الداكن نيونياً."
 }

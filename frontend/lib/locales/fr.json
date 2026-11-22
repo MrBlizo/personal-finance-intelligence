@@ -1180,5 +1180,8 @@
   "{n} bank accounts update automatically every 6 hours while PFI is open.": "{n} comptes bancaires se mettent à jour toutes les 6 heures tant que PFI est ouvert.",
  "Navigation": "Navigation",
  "PFI blue": "Bleu PFI",
- "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.": "Génère toute la palette : boutons, surfaces, surlignages et graphiques. Le bleu PFI s'accorde avec l'application mobile et le site web."
+ "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.": "Génère toute la palette : boutons, surfaces, surlignages et graphiques. Le bleu PFI s'accorde avec l'application mobile et le site web.",
+ "PFI violet": "Violet PFI",
+ "Blue": "Bleu",
+ "Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI violet matches the phone app and the website, and turns dark mode neon.": "Génère toute la palette : boutons, surfaces, surlignages et graphiques. Le violet PFI s'accorde avec l'application mobile et le site web, et rend le mode sombre néon."
 }

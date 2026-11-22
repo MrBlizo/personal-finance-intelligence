@@ -245,14 +245,14 @@ export default function Home() {
               </div>
             </div>
             <div className="home-kpis">
-              <Kpi label={t("Income")} value={money(s.income, cur)}
+              <Kpi tone="lime" label={t("Income")} value={money(s.income, cur)}
                 sub={t("Avg. {v} / month", { v: money(s.avg_monthly_income, undefined, 0) })} />
-              <Kpi label={t("Expenses")} value={money(s.expenses, cur)}
+              <Kpi tone="pink" label={t("Expenses")} value={money(s.expenses, cur)}
                 sub={t("Avg. {v} / month", { v: money(s.avg_monthly_expenses, undefined, 0) })} />
-              <Kpi label={t("Net saved")} value={money(s.net, cur)} cls={signClass(s.net)}
+              <Kpi tone="violet" label={t("Net saved")} value={money(s.net, cur)}
                 sub={t("{n} transactions", { n: s.transactions })} />
-              <Kpi label={t("Savings rate")} value={pct(s.savings_rate)}
-                cls={signClass(s.savings_rate)} sub={t("(income − expenses) / income")} />
+              <Kpi tone="cyan" label={t("Savings rate")} value={pct(s.savings_rate)}
+                sub={t("(income − expenses) / income")} />
             </div>
           </div>
           <div className="home-cards">

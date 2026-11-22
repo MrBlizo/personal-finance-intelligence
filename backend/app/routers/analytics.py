@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..services import charts, flows
+from ..services import charts, flows, monthly
 from ..services.forecast import cash_flow_forecast
 from ..services.frame import expenses, incomes, load_transactions
 from ..services.fx import FxConverter
@@ -185,3 +185,24 @@ def periods():
         "last_12_months": [add_months(first, -11), today],
         "year_to_date": [today.replace(month=1, day=1), today],
     }
+
+
+@router.get("/analytics/months")
+def months(count: int = Query(24, ge=1, le=120),
+           db: Session = Depends(get_db)):
+    """Income, spent, paid and saved for each recent month."""
+    return monthly.months_timeline(db, FxConverter.from_db(db),
+                                   base_currency(db), count)
+
+
+@router.get("/analytics/months/{month}")
+def month(month: str, db: Session = Depends(get_db)):
+    """One month in detail (``month`` is ``YYYY-MM``)."""
+    try:
+        day = date.fromisoformat(month + "-01")
+    except ValueError:
+        raise HTTPException(
+            422, f"'{month}' is not a month. Use the form YYYY-MM, for "
+                 "example 2026-11.") from None
+    return monthly.month_detail(db, FxConverter.from_db(db),
+                                base_currency(db), day)

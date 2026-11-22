@@ -94,7 +94,7 @@ export default function SettingsPage() {
                 </Select>
               </SettingRow>
               <SettingRow icon={I.palette} title={t("Accent colour")}
-                description={t("Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI blue matches the phone app and the website.")}>
+                description={t("Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI violet matches the phone app and the website, and turns dark mode neon.")}>
                 <div className="swatches">
                   {ACCENTS.map((a) => (
                     <Tooltip key={a.id || "default"} content={t(a.label)} relationship="label">

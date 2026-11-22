@@ -77,6 +77,39 @@ function translateFigure(fig: PlotFigure, t: T): PlotFigure {
   return { data, layout };
 }
 
+/** The backend draws with the Okabe-Ito palette; repaint it with the app's
+ *  chart colours (--chart-*), keeping each series' hue family and any
+ *  transparency, so charts match the Expressive and Neon looks. */
+const OKABE: Record<string, string> = {
+  "0072b2": "--chart-blue", "009e73": "--chart-green", "d55e00": "--chart-verm",
+  "e69f00": "--chart-orange", "56b4e9": "--chart-sky", "f0e442": "--chart-yellow",
+  "cc79a7": "--chart-purple",
+};
+const RGB: Record<string, string> = Object.fromEntries(Object.keys(OKABE).map((h) => [
+  [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(","), h]));
+
+function repaint<V>(v: V, css: CSSStyleDeclaration): V {
+  const pick = (hex: string) => css.getPropertyValue(OKABE[hex]).trim();
+  const swap = (x: string): string => {
+    const hex = /^#([0-9a-f]{6})$/i.exec(x)?.[1]?.toLowerCase();
+    if (hex && OKABE[hex]) return pick(hex) || x;
+    const m = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/i.exec(x);
+    const key = m && RGB[`${m[1]},${m[2]},${m[3]}`];
+    if (!m || !key) return x;
+    const to = pick(key);
+    const rgb = /^#([0-9a-f]{6})$/i.exec(to)?.[1];
+    if (!rgb) return x;
+    const [r, g, b] = [0, 2, 4].map((i) => parseInt(rgb.slice(i, i + 2), 16));
+    return `rgba(${r},${g},${b},${m[4] ?? 1})`;
+  };
+  if (typeof v === "string") return swap(v) as V;
+  if (Array.isArray(v)) return v.map((x) => repaint(x, css)) as V;
+  if (v && typeof v === "object") {
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, repaint(x, css)])) as V;
+  }
+  return v;
+}
+
 function themed(layout: Record<string, unknown>) {
   const css = getComputedStyle(document.documentElement);
   const text = css.getPropertyValue("--text-2").trim() || "#555";
@@ -113,7 +146,8 @@ export default function Plot({ figure, height = 320 }: {
     const fig = translateFigure(figure, t);
     loadPlotly().then((P) => {
       if (!alive) return;
-      P.react(el, fig.data, { ...themed(fig.layout), height }, {
+      const css = getComputedStyle(document.documentElement);
+      P.react(el, repaint(fig.data, css), { ...themed(repaint(fig.layout, css)), height }, {
         displaylogo: false, responsive: true, displayModeBar: "hover", locale: lang,
         modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"],
       });

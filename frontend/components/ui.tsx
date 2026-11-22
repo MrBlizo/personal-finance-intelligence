@@ -72,11 +72,13 @@ export function Empty({ children, action }: { children: ReactNode; action?: Reac
   );
 }
 
-export function Kpi({ label, value, sub, cls }: {
+export function Kpi({ label, value, sub, cls, tone }: {
   label: string; value: ReactNode; sub?: ReactNode; cls?: string;
+  /** Loud tonal background for headline figures (Expressive look). */
+  tone?: "lime" | "pink" | "violet" | "cyan";
 }) {
   return (
-    <div className="card kpi">
+    <div className={`card kpi${tone ? ` tone-${tone}` : ""}`}>
       <div className="kpi-label">{label}</div>
       <div className={`kpi-value ${cls ?? ""}`}>{value}</div>
       {sub !== undefined && <div className="kpi-sub">{sub}</div>}

@@ -19,6 +19,7 @@ import { I } from "./icons";
 
 export const NAV = [
   { href: "/", label: "Home", glyph: I.home },
+  { href: "/months/", label: "Month by month", glyph: I.calendarViewMonth },
   { href: "/transactions/", label: "Transactions", glyph: I.receiptLong },
   { href: "/accounts/", label: "Accounts", glyph: I.accountBalance },
   { href: "/import/", label: "Import", glyph: I.download },

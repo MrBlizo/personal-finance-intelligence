@@ -1,6 +1,6 @@
 "use client";
 // Material 3 everywhere: the Fluent UI v9 components are themed from a
-// Material 3 colour scheme (PFI blue by default, or the seed chosen in
+// Material 3 colour scheme (PFI violet by default, or the seed chosen in
 // Settings), and the same roles are exposed to CSS as --md-sys-color-*.
 import {
   BrandVariants, FluentProvider, Theme, createDarkTheme, createLightTheme,
@@ -11,15 +11,15 @@ import {
 } from "@fluentui/react-icons";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n";
-import { cssVars, primaryRamp, schemeFor, SEED } from "@/lib/m3";
+import { cssVars, isNeon, primaryRamp, schemeFor, SEED } from "@/lib/m3";
 import { notifyTheme } from "@/lib/shell";
 
 /** The PFI seed colour, used when no accent is chosen. */
 export const DEFAULT_ACCENT = SEED;
 /** Seed colours offered in Settings; each yields a full Material 3 scheme. */
 export const ACCENTS = [
-  { id: "", label: "PFI blue", hex: DEFAULT_ACCENT },
-  { id: "#6750A4", label: "Violet", hex: "#6750A4" },
+  { id: "", label: "PFI violet", hex: DEFAULT_ACCENT },
+  { id: "#2F6FE4", label: "Blue", hex: "#2F6FE4" },
   { id: "#3949AB", label: "Indigo", hex: "#3949AB" },
   { id: "#00796B", label: "Teal", hex: "#00796B" },
   { id: "#2E7D32", label: "Green", hex: "#2E7D32" },
@@ -158,6 +158,7 @@ export function ThemeRoot({ dir, pref, onChange, accent, onAccent, children }: {
   const theme = useMemo(() => makeTheme(hex, dark), [dark, hex]);
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
+    document.documentElement.dataset.neon = isNeon(hex, dark) ? "1" : "0";
     applyScheme(hex, dark);
   }, [dark, hex]);
   useEffect(() => { notifyTheme(pref); }, [pref]);
