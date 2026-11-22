@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFI user guide: budgets, imports, receipts, month by month and sync | PFI</title>
+<meta name="description" content="How to use PFI on Windows and Android: first steps, month-by-month view, importing statements, scanning receipts, envelope budgets, the What if planner, the year report and tax export, phone sync, reminders and keyboard shortcuts.">
+<link rel="canonical" href="https://mrblizo.github.io/personal-finance-intelligence/guide.html">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PFI user guide">
+<meta property="og:description" content="Everything PFI can do, step by step, on Windows and Android.">
+<meta property="og:image" content="https://mrblizo.github.io/personal-finance-intelligence/img/social.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="sub">
+<div class="progress" aria-hidden="true"></div>
+<header class="bar" id="top">
+  <div class="wrap bar-in">
+    <a class="brand" href="./"><img src="img/icon.svg" alt="" width="32" height="32">PFI</a>
+    <nav class="links" aria-label="Main">
+      <span class="pill" aria-hidden="true"></span>
+      <div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-product">Product<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-product" role="menu"><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-download">Download<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel" id="m-download" role="menu"><a class="mi" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-res">Resources<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-res" role="menu"><a class="mi" href="guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" href="#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" href="privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" href="support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support PFI</b><small>Help one developer</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Public on GitHub, PolyForm Strict</small></span></a></div></div>
+      <a class="mt" href="#free">Free</a>
+    </nav>
+    <a class="btn primary small cta-dl" href="#download">Download</a>
+    <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sheet"><span></span><span></span><span></span></button>
+  </div>
+  <div class="sheet" id="sheet"><div class="wrap"><p class="sh-h" style="--i:0">Product</p><a class="mi" style="--i:1" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" style="--i:2" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" style="--i:3" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" style="--i:4" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a><p class="sh-h" style="--i:4">Download</p><a class="mi" style="--i:5" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" style="--i:6" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" style="--i:7" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a><p class="sh-h" style="--i:8">Resources</p><a class="mi" style="--i:9" href="guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" style="--i:10" href="#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" style="--i:11" href="privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" style="--i:12" href="support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support PFI</b><small>Help one developer</small></span></a><a class="mi" style="--i:13" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Public on GitHub, PolyForm Strict</small></span></a>
+    <a class="btn primary" style="--i:14" href="#download">Download PFI</a></div></div>
+</header>
+<div class="wrap">
+  <article class="guide">
+    <p class="crumbs"><a href="./">Home</a> › User guide</p>
+    <h1>PFI user guide</h1>
+    <p class="lead">Everything PFI does, on the PC and on the phone. Each section is short: read the one you need.
+      In the Windows app, press <kbd>Ctrl</kbd>+<kbd>K</kbd> and type a few letters to jump to any page.</p>
+
+    <nav class="toc" aria-label="Contents">
+      <a href="#start">First steps</a><a href="#months">Month by month</a><a href="#add">Adding transactions</a>
+      <a href="#receipts">Scanning receipts</a><a href="#import">Importing statements</a>
+      <a href="#move">Moving from another app</a><a href="#budget">Budgets</a><a href="#plan">What if and independence</a>
+      <a href="#year">Year report and taxes</a><a href="#phone">Phone and sync</a>
+      <a href="#reminders">Reminders and updates</a><a href="#safety">Keeping your data safe</a>
+      <a href="#keys">Keyboard shortcuts</a>
+    </nav>
+
+    <h2 id="start">First steps</h2>
+    <p>The first time you open PFI, a short assistant asks for your language, your main currency, your accounts
+      and whether you want a starter budget. You can change every answer later in <b>Settings</b>.</p>
+    <ol>
+      <li>Add your accounts: checking, savings, cash, cards, loans and investments, each with its own currency.</li>
+      <li>Bring in your history: import a statement from your bank, or move over from YNAB, Cashew or Mint.</li>
+      <li>Open <b>Month by month</b> to see where the money went.</li>
+    </ol>
+
+    <h2 id="months">Month by month</h2>
+    <p>Pick a month on the strip at the top. PFI shows what you <b>earned</b>, <b>spent</b>, <b>paid</b> (bills and
+      card or loan payments) and <b>saved</b> (transfers into savings and investment accounts), where the money went
+      compared with the month before, your spending pace through the month, and the biggest expenses.
+      On the phone, tap <b>Income</b> or <b>Expenses</b> on Home, or the <b>Month by month</b> card.</p>
+
+    <h2 id="add">Adding transactions</h2>
+    <p>Press <kbd>Ctrl</kbd>+<kbd>N</kbd> anywhere on the PC, or the big + on the phone. The amount field accepts
+      sums such as <code>12.50+3</code>, the payee remembers its last category, and the last account is preselected.
+      On Android you can also long-press the app icon or add the PFI widget to the home screen.</p>
+
+    <h2 id="receipts">Scanning receipts</h2>
+    <p><b>On the PC:</b> open Quick add and drop a photo of the receipt on the dashed box (or click it). Windows' own
+      text recognition reads the total, the date and the shop; nothing leaves your PC. The photo is attached to the
+      transaction. If Windows says no recognition language is installed, add one in
+      <i>Settings › Time &amp; language › Language &amp; region</i>.</p>
+    <p><b>On the phone:</b> in the transaction editor, tap the scan icon at the top, then take a photo or choose one.
+      The phone reads it offline and fills in the form.</p>
+    <p class="note">Always check the amount before saving. PFI looks for the line that says Total, Net à payer,
+      Summe or المجموع; when there is none it takes the largest amount and tells you so.</p>
+
+    <h2 id="import">Importing bank statements</h2>
+    <p>PFI reads CSV, OFX/QFX, QIF and CAMT.053 files. Many US, Swiss, European and Moroccan bank layouts are
+      recognised automatically; for others you choose the columns once and PFI remembers them. Rows that were imported
+      before are skipped, and possible duplicates are shown side by side so you can decide.</p>
+    <p>On the phone: <b>Accounts › import icon</b>, choose the CSV file, check the columns PFI guessed and the preview,
+      then import. New rows wait in the review list.</p>
+    <p>See also: <a href="guides/import-camt053.html">How to import a CAMT.053 statement</a>.</p>
+
+    <h2 id="move">Moving from another app</h2>
+    <ul>
+      <li><b>YNAB:</b> in YNAB choose <i>Export Plan</i> and upload the zip in <b>Import › Move from YNAB</b>.
+        Accounts, categories, transactions and monthly assignments come over.</li>
+      <li><b>Cashew:</b> in Cashew open <i>Settings › Export data › Export CSV</i>, then use
+        <b>Import › Move from Cashew or Mint</b>.</li>
+      <li><b>Mint:</b> use the <code>transactions.csv</code> you exported from Mint or Credit Karma, in the same place.</li>
+    </ul>
+    <p>PFI shows what will be created before anything is saved, and importing the same file twice adds nothing.</p>
+
+    <h2 id="budget">Budgets</h2>
+    <p>Choose between simple monthly limits per category and envelope budgeting (give every dollar a job) in
+      <b>Settings</b>. With envelopes you assign money to categories each month, move money when one is overspent and
+      set targets that PFI can fund in one click. On the phone, tap a category to assign, move or fund it.</p>
+
+    <h2 id="plan">What if and financial independence</h2>
+    <p>On the <b>Forecast</b> page, <b>What if…?</b> lets you try a purchase, a raise or a price change (for example
+      rent +10%) and shows your balance with and without it, with a plain verdict: affordable, tight or not yet.
+      <b>Financial independence</b> estimates when your investments could pay for your spending, from your last 12
+      months. Both are projections from your own history, not promises or advice.</p>
+
+    <h2 id="year">Year report and taxes</h2>
+    <p><b>Reports › Year in review</b> shows the year's income, spending, savings rate, months, categories and top
+      payees, and downloads a PDF. Under <b>For your tax return</b>, mark the categories that matter where you live
+      (donations, medical, childcare…). <b>Tax export (CSV)</b> then lists every matching transaction for your accountant.</p>
+
+    <h2 id="phone">Phone and sync</h2>
+    <ol>
+      <li><b>On the PC:</b> Settings › Sync › choose your OneDrive, Dropbox or Google Drive folder and a passphrase.</li>
+      <li><b>On the phone:</b> Settings › Set up sync › the same service and account.</li>
+      <li>Enter the <b>same passphrase</b>. Everything is encrypted before it leaves each device; there is no PFI server.</li>
+    </ol>
+    <p>If both devices changed the same item before they synced, PFI keeps the newest change and lists the other one
+      in <b>Settings › Changed on two devices</b>, where you can switch with one click.</p>
+    <h3 id="obtainium">Automatic phone updates with Obtainium</h3>
+    <p>The Android app is not on Google Play. To get updates automatically, install
+      <a href="https://github.com/ImranR98/Obtainium">Obtainium</a>, tap <b>Add app</b> and paste
+      <code>https://github.com/MrBlizo/personal-finance-intelligence</code>. Obtainium then installs each new APK
+      from the GitHub releases. Without it, PFI shows a card on Home when a newer version is out.</p>
+
+    <h2 id="reminders">Reminders and updates</h2>
+    <p>The phone reminds you the day before a bill is due and tells you when a category you budgeted for is
+      overspent. Turn either off in <b>Settings › Notifications</b>. The PC checks once a day whether a newer version is
+      out (the Microsoft Store version updates itself); only the version number is fetched.</p>
+
+    <h2 id="safety">Keeping your data safe</h2>
+    <ul>
+      <li>A backup is made every week, and before every restore. Choose a OneDrive folder or a USB drive in
+        <b>Settings › Backup folder</b> and protect backups with a password.</li>
+      <li><b>Settings › Check my data</b> looks for transfers with a missing side, splits that don't add up and other
+        problems, and links you straight to the transactions concerned.</li>
+      <li>Updates never touch your data: every version since 0.4 is upgraded automatically, and this is tested on
+        real databases from each release.</li>
+    </ul>
+
+    <h2 id="keys">Keyboard shortcuts (Windows)</h2>
+    <table class="keys">
+      <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Search or jump to any page or action</td></tr>
+      <tr><td><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>Quick add a transaction</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>Esc</kbd></td><td>Save / cancel an inline edit</td></tr>
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Move in the command palette</td></tr>
+    </table>
+    <p>Search accepts filters such as <code>amount:&gt;100</code>, <code>category:groceries</code>,
+      <code>account:card</code> or <code>is:unreviewed</code>.</p>
+
+    <p class="note">Something missing or wrong? <a href="https://github.com/MrBlizo/personal-finance-intelligence/issues">Tell me on GitHub</a>.</p>
+  </article>
+</div>
+<footer><div class="wrap cols"><div>Personal Finance Intelligence · PolyForm Strict license</div>
+  <div><a href="guides/">Guides</a> · <a href="privacy/">Privacy</a> · <a href="https://github.com/MrBlizo/personal-finance-intelligence">GitHub</a></div></div></footer>
+<script src="site.js" defer></script>
+</body>
+</html>
