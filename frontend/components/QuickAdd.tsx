@@ -147,7 +147,7 @@ export function QuickAdd({ onClose, onSaved }: { onClose: () => void; onSaved?: 
         <button type="button" className={`receipt-drop full${receipt ? " has" : ""}`}
           onClick={() => pickFile.current?.click()} aria-busy={scan.busy}>
           <span className="icon" aria-hidden>{scan.busy ? I.autorenew : receipt ? I.checkCircle : I.documentScanner}</span>
-          <span className="grow">
+          <span className="grow" aria-live="polite">
             <strong>{scan.busy ? t("Reading the receipt…")
               : receipt ? receipt.name
               : t("Scan a receipt")}</strong>
