@@ -1,7 +1,8 @@
 "use client";
 // Material 3 everywhere: the Fluent UI v9 components are themed from a
-// Material 3 colour scheme (PFI violet by default, or the seed chosen in
+// Material 3 colour scheme (indigo by default, or the seed chosen in
 // Settings), and the same roles are exposed to CSS as --md-sys-color-*.
+// Light and dark share the tiles, filled buttons and chart colours.
 import {
   BrandVariants, FluentProvider, Theme, createDarkTheme, createLightTheme,
   Button, Menu, MenuItemRadio, MenuList, MenuPopover, MenuTrigger, Tooltip,
@@ -11,16 +12,16 @@ import {
 } from "@fluentui/react-icons";
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { useT } from "@/lib/i18n";
-import { cssVars, isNeon, primaryRamp, schemeFor, SEED } from "@/lib/m3";
+import { cssVars, primaryRamp, schemeFor, SEED } from "@/lib/m3";
 import { notifyTheme } from "@/lib/shell";
 
 /** The PFI seed colour, used when no accent is chosen. */
 export const DEFAULT_ACCENT = SEED;
 /** Seed colours offered in Settings; each yields a full Material 3 scheme. */
 export const ACCENTS = [
-  { id: "", label: "PFI violet", hex: DEFAULT_ACCENT },
+  { id: "", label: "Indigo", hex: DEFAULT_ACCENT },
+  { id: "#8E5CF7", label: "Violet", hex: "#8E5CF7" },
   { id: "#2F6FE4", label: "Blue", hex: "#2F6FE4" },
-  { id: "#3949AB", label: "Indigo", hex: "#3949AB" },
   { id: "#00796B", label: "Teal", hex: "#00796B" },
   { id: "#2E7D32", label: "Green", hex: "#2E7D32" },
   { id: "#827717", label: "Olive", hex: "#827717" },
@@ -55,12 +56,13 @@ export function makeTheme(seed: string, dark: boolean): Theme {
     borderRadiusMedium: "4px",
     borderRadiusLarge: "12px",
     borderRadiusXLarge: "28px",
-    colorBrandBackground: r.primary,
-    colorBrandBackgroundHover: layer(r.primary, r.onPrimary, 8),
-    colorBrandBackgroundPressed: layer(r.primary, r.onPrimary, 10),
-    colorBrandBackgroundSelected: r.primary,
+    // Filled buttons keep the vivid light primary in dark mode too.
+    colorBrandBackground: r.brand,
+    colorBrandBackgroundHover: layer(r.brand, r.onBrand, 8),
+    colorBrandBackgroundPressed: layer(r.brand, r.onBrand, 10),
+    colorBrandBackgroundSelected: r.brand,
     colorBrandBackground2: r.primaryContainer,
-    colorNeutralForegroundOnBrand: r.onPrimary,
+    colorNeutralForegroundOnBrand: r.onBrand,
     colorBrandForeground1: r.primary,
     colorBrandForeground2: r.primary,
     colorBrandForegroundLink: r.primary,
@@ -70,9 +72,9 @@ export function makeTheme(seed: string, dark: boolean): Theme {
     colorCompoundBrandStroke: r.primary,
     colorCompoundBrandStrokeHover: r.primary,
     colorCompoundBrandStrokePressed: r.primary,
-    colorCompoundBrandBackground: r.primary,
-    colorCompoundBrandBackgroundHover: layer(r.primary, r.onPrimary, 8),
-    colorCompoundBrandBackgroundPressed: layer(r.primary, r.onPrimary, 10),
+    colorCompoundBrandBackground: r.brand,
+    colorCompoundBrandBackgroundHover: layer(r.brand, r.onBrand, 8),
+    colorCompoundBrandBackgroundPressed: layer(r.brand, r.onBrand, 10),
     colorCompoundBrandForeground1: r.primary,
     colorNeutralForeground1: r.onSurface,
     colorNeutralForeground1Hover: r.onSurface,
@@ -158,7 +160,6 @@ export function ThemeRoot({ dir, pref, onChange, accent, onAccent, children }: {
   const theme = useMemo(() => makeTheme(hex, dark), [dark, hex]);
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
-    document.documentElement.dataset.neon = isNeon(hex, dark) ? "1" : "0";
     applyScheme(hex, dark);
   }, [dark, hex]);
   useEffect(() => { notifyTheme(pref); }, [pref]);

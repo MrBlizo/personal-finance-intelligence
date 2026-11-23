@@ -9,6 +9,7 @@ import { Empty, Kpi, PageHead, Section, Spinner, useLoad } from "@/components/ui
 import { get } from "@/lib/api";
 import { date, locale, money, pct } from "@/lib/format";
 import { useT } from "@/lib/i18n";
+import { CountUp } from "@/components/CountUp";
 
 interface Totals {
   income: number; spent: number; bills: number; debt_payments: number;
@@ -112,7 +113,7 @@ export default function Months() {
           <div className="month-top">
             <div className="month-hero">
               <div className="home-hero-label">{t("Spent in {m}", { m: label(d.month) })}</div>
-              <div className="month-hero-value">{money(d.totals.spent, cur)}</div>
+              <div className="month-hero-value"><CountUp value={money(d.totals.spent, cur)} /></div>
               <div className="home-hero-sub">
                 {spentChange === null ? t("No spending the month before to compare with.")
                   : spentChange <= 0

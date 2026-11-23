@@ -1,8 +1,8 @@
-// Material 3 colour roles at run time, for accents other than the PFI seed.
+// Material 3 colour roles at run time, for accents other than the default.
 // Same algorithm as scripts/m3/gen-tokens.mjs (SchemeVibrant, standard
-// contrast, money colours harmonized toward the seed, lime and pink accents
-// left loud), so a chosen accent gets a complete, accessible scheme. The
-// hand-tuned Neon dark palette belongs to the PFI seed only.
+// contrast, money colours harmonized toward the seed, tiles and filled
+// buttons identical in light and dark, one chart palette), so a chosen
+// accent gets a complete, accessible scheme.
 import {
   Blend, Hct, MaterialDynamicColors, SchemeVibrant, TonalPalette,
   argbFromHex, hexFromArgb,
@@ -20,6 +20,7 @@ const MONEY: Record<string, string> = {
   positive: "#1E8E3E", negative: "#D93025", warning: "#E8A33D",
 };
 const ACCENTS: Record<string, string> = { lime: "#C6F432", pink: "#FF5AB4", cyan: "#24D3F2" };
+const CHART_KEYS = Object.keys(tokens.light).filter((k) => k.startsWith("chart"));
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 /** All colour roles for ``seedHex`` in light or dark. */
@@ -42,15 +43,17 @@ export function schemeFor(seedHex: string, dark: boolean): Roles {
     const p = TonalPalette.fromInt(argbFromHex(hex));
     out[name] = hexFromArgb(p.tone(dark ? 80 : 40));
     out["on" + cap(name)] = hexFromArgb(p.tone(dark ? 20 : 100));
-    out[name + "Container"] = hexFromArgb(p.tone(dark ? 30 : 90));
-    out["on" + cap(name) + "Container"] = hexFromArgb(p.tone(dark ? 90 : 10));
+    out[name + "Container"] = hexFromArgb(p.tone(90));
+    out["on" + cap(name) + "Container"] = hexFromArgb(p.tone(10));
   }
+  const light = new SchemeVibrant(Hct.fromInt(seed), false, 0);
+  out.lavenderContainer = hexFromArgb(dyn.primaryContainer.getArgb(light));
+  out.onLavenderContainer = hexFromArgb(dyn.onPrimaryContainer.getArgb(light));
+  out.brand = hexFromArgb(dyn.primary.getArgb(light));
+  out.onBrand = hexFromArgb(dyn.onPrimary.getArgb(light));
+  for (const k of CHART_KEYS) out[k] = (tokens.light as Roles)[k];
   return out;
 }
-
-/** True when the hand-tuned Neon dark palette is in use. */
-export const isNeon = (seedHex: string, dark: boolean) =>
-  dark && seedHex.toUpperCase() === SEED;
 
 /** Tones 5..98 of the primary palette, for Fluent's 16 brand shades. */
 export function primaryRamp(seedHex: string): string[] {

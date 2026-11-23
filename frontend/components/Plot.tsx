@@ -79,7 +79,7 @@ function translateFigure(fig: PlotFigure, t: T): PlotFigure {
 
 /** The backend draws with the Okabe-Ito palette; repaint it with the app's
  *  chart colours (--chart-*), keeping each series' hue family and any
- *  transparency, so charts match the Expressive and Neon looks. */
+ *  transparency, so charts use the app's palette in light and dark. */
 const OKABE: Record<string, string> = {
   "0072b2": "--chart-blue", "009e73": "--chart-green", "d55e00": "--chart-verm",
   "e69f00": "--chart-orange", "56b4e9": "--chart-sky", "f0e442": "--chart-yellow",
@@ -129,6 +129,8 @@ function themed(layout: Record<string, unknown>) {
   out.paper_bgcolor = "rgba(0,0,0,0)";
   out.plot_bgcolor = "rgba(0,0,0,0)";
   out.autosize = true;
+  // Values glide to their new place when a filter or the period changes.
+  out.transition = { duration: 450, easing: "cubic-in-out" };
   return out;
 }
 

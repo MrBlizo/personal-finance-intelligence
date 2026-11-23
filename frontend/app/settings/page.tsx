@@ -29,6 +29,7 @@ import { CURRENCIES, date, num, pct, today } from "@/lib/format";
 import { LANGS, Lang, translate, useT } from "@/lib/i18n";
 import { inShell, notifyLockSettings, queryHello, requestLock } from "@/lib/shell";
 import { I } from "@/components/icons";
+import { GUIDE_URL } from "@/components/CommandPalette";
 
 type Info = { version: string; data_dir: string; database: string; database_file?: string; empty?: boolean };
 
@@ -356,7 +357,11 @@ export default function SettingsPage() {
             <section className="settings-block">
               <div className="group-title">{t("About")}</div>
               <div className="settings-group">
-              <SettingRow icon={I.info} title={`Personal Finance Intelligence ${info.data.version}`}
+              <SettingRow icon={I.help} title={t("User guide")}
+                description={t("Every feature explained step by step, with keyboard shortcuts.")}>
+                <a className="link" href={GUIDE_URL} target="_blank" rel="noreferrer">{t("Open the guide")}</a>
+              </SettingRow>
+              <SettingRow icon={I.info} title={`Personal Finance ${info.data.version}`}
                 description={<>{t("Database: {d}", { d: info.data.database })} · {t("Data folder:")}{" "}
                   <code>{info.data.data_dir}</code></>}>
                 <a className="link" href="https://github.com/MrBlizo/personal-finance-intelligence"

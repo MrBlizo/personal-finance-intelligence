@@ -14,6 +14,7 @@ import {
 import { date, locale, money, pct, signClass } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
 import { I } from "@/components/icons";
+import { CountUp } from "@/components/CountUp";
 
 const PERIODS: Record<string, string> = {
   this_month: "This month", last_3_months: "3 months",
@@ -239,7 +240,7 @@ export default function Home() {
           <div className="home-top">
             <div className="home-hero">
               <div className="home-hero-label">{t("Net worth")}</div>
-              <div className="home-hero-value">{money(s.net_worth, cur)}</div>
+              <div className="home-hero-value"><CountUp value={money(s.net_worth, cur)} /></div>
               <div className="home-hero-sub">
                 {t("Liquid")} {money(s.liquid, undefined, 0)} · {t("Invested")} {money(s.investments, undefined, 0)}
               </div>

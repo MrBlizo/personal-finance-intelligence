@@ -11,6 +11,7 @@ import { Dismiss20Regular } from "@fluentui/react-icons";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n";
 import { ThemeMenu } from "./Theme";
+import { CountUp } from "./CountUp";
 
 export function useLoad<T>(fn: () => Promise<T>, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
@@ -80,7 +81,7 @@ export function Kpi({ label, value, sub, cls, tone }: {
   return (
     <div className={`card kpi${tone ? ` tone-${tone}` : ""}`}>
       <div className="kpi-label">{label}</div>
-      <div className={`kpi-value ${cls ?? ""}`}>{value}</div>
+      <div className={`kpi-value ${cls ?? ""}`}>{typeof value === "string" ? <CountUp value={value} /> : value}</div>
       {sub !== undefined && <div className="kpi-sub">{sub}</div>}
     </div>
   );

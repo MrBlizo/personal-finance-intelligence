@@ -98,7 +98,10 @@ class _EditTransactionPageState extends State<EditTransactionPage> {
                   ? 'Read the total, date and shop. Check them before saving.'
                   : 'No total line found: took the largest amount. Check it before saving.'))));
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(app.t('The receipt could not be read: {e}', {'e': e.toString()}))));
+      debugPrint('Receipt scan failed: $e');
+      messenger.showSnackBar(SnackBar(
+          content: Text(app.t(
+              'The receipt could not be read. Take the photo again with the receipt flat, in good light.'))));
     } finally {
       await recognizer.close();
       if (mounted) setState(() => scanning = false);

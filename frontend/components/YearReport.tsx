@@ -11,6 +11,7 @@ import { Banner, Empty, Kpi, Section, Spinner, useLoad } from "./ui";
 import { PlotFigure, downloadUrl, get, put } from "@/lib/api";
 import { money, pct } from "@/lib/format";
 import { useI18n } from "@/lib/i18n";
+import { CountUp } from "./CountUp";
 
 interface YearData {
   year: number; currency: string; income: number; expenses: number; net: number;
@@ -81,7 +82,7 @@ export function YearReport() {
           <Banner kind="warning">{t("Some amounts have no exchange rate and are left out: {c}.", { c: y.missing_fx.join(", ") })}</Banner>)}
         <div className="year-hero">
           <span className="caption">{t("Your {y} in money", { y: y.year })}</span>
-          <span className="year-big">{money(y.net, cur, 0)}</span>
+          <span className="year-big"><CountUp value={money(y.net, cur, 0)} /></span>
           <span>{y.net >= 0 ? t("saved this year") : t("more spent than earned")}</span>
         </div>
         <div className="kpis">
