@@ -37,4 +37,4 @@ if (-not $dev -or $dev.AllowDevelopmentWithoutDevLicense -ne 1) {
     exit 1
 }
 Add-AppxPackage -Register $manifest -ForceUpdateFromAnyVersion
-Write-Host "Installed $name. Start 'Personal Finance' from the Start menu (the packaged test version)." -ForegroundColor Green
+Write-Host "Installed $name. Start 'Personal Finance : Budget Planner' from the Start menu (the packaged test version)." -ForegroundColor Green

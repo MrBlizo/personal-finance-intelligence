@@ -73,7 +73,7 @@ Version 1.0.1
 
 ## 3. Store listing: English
 
-**Product name:** Personal Finance
+**Product name:** Personal Finance : Budget Planner (reserved in Partner Center; "Personal Finance" alone is taken)
 
 **Short description (≤ 100):** Budgets, investments and cash-flow forecasts.
 Private: your data stays on your PC.

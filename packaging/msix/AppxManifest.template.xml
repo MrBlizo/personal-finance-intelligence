@@ -13,7 +13,7 @@
             Version="{{VERSION}}" ProcessorArchitecture="x64" />
 
   <Properties>
-    <DisplayName>Personal Finance Intelligence</DisplayName>
+    <DisplayName>Personal Finance : Budget Planner</DisplayName>
     <PublisherDisplayName>{{PUBLISHER_DISPLAY}}</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Track income, expenses, investments and savings goals, forecast cash flow and analyse spending. Your data stays on your PC.</Description>
@@ -31,7 +31,7 @@
 
   <Applications>
     <Application Id="App" Executable="PFI.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements DisplayName="Personal Finance Intelligence"
+      <uap:VisualElements DisplayName="Personal Finance : Budget Planner"
                           Description="Personal finance tracking, forecasting and analysis"
                           BackgroundColor="transparent"
                           Square150x150Logo="Assets\Square150x150Logo.png"
@@ -49,7 +49,7 @@
         </desktop:Extension>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="PFI.exe" DisplayName="Personal Finance Intelligence"
+            <com:ExeServer Executable="PFI.exe" DisplayName="Personal Finance"
                            Arguments="----AppNotificationActivated:">
               <com:Class Id="{{TOAST_CLSID}}" />
             </com:ExeServer>

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds Personal Finance Intelligence: PFI.exe (WinUI 3) + backend +
+    Builds Personal Finance: PFI.exe (WinUI 3) + backend +
     screens, tests it, and creates PFI-Setup.exe.
 
 .DESCRIPTION
@@ -165,7 +165,7 @@ if (-not $exe) { Fail "MSBuild finished but PFI.exe was not found under desktop\
 Say "7/10 Assembling dist\PFI"
 $running = Get-Process -Name PFI -ErrorAction SilentlyContinue |
     Where-Object { $_.Path -and $_.Path.StartsWith($Stage, [StringComparison]::OrdinalIgnoreCase) }
-if ($running) { Fail "Personal Finance Intelligence is running from dist\PFI. Close it and run build.bat again." }
+if ($running) { Fail "Personal Finance is running from dist\PFI. Close it and run build.bat again." }
 Stop-Smoke
 if (Test-Path $Stage) {
     try { Remove-Item $Stage -Recurse -Force -ErrorAction Stop }
