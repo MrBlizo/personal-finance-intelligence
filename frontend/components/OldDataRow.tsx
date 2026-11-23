@@ -8,7 +8,7 @@ import { bytes } from "@/lib/format";
 import { useT } from "@/lib/i18n";
 import { I } from "./icons";
 
-/** Settings row that removes what PFI 0.4 left from the 0.3 database.
+/** Settings row that removes what Personal Finance 0.4 left from the 0.3 database.
  *  Hidden when there is nothing to remove. */
 export function OldDataRow({ onMessage }: {
   onMessage: (m: { kind: "success" | "error"; text: string }) => void;
@@ -22,14 +22,14 @@ export function OldDataRow({ onMessage }: {
   const total = d.size + (dumps ? d.dump_size : 0);
   return (
     <>
-      <SettingRow icon={I.history} title={t("Old data from PFI 0.3")}
+      <SettingRow icon={I.history} title={t("Old data from Personal Finance 0.3")}
         description={<>
           {t("Your data was moved to the new format in 0.4. The old copy is no longer used and takes {size}.",
             { size: bytes(d.size) })}
           {d.dumps > 0 && (
             <div style={{ marginTop: 6 }}>
               <Checkbox checked={dumps} onChange={(_, v) => setDumps(!!v.checked)}
-                label={t("Also delete {n} old backups from 0.3 (.dump, {size}); PFI 0.5 can no longer restore them",
+                label={t("Also delete {n} old backups from 0.3 (.dump, {size}); Personal Finance 0.5 can no longer restore them",
                   { n: d.dumps, size: bytes(d.dump_size) })} />
             </div>)}
         </>}>
@@ -38,7 +38,7 @@ export function OldDataRow({ onMessage }: {
       </SettingRow>
       {asking && (
         <Confirm danger yesLabel={t("Delete")} onClose={() => setAsking(false)}
-          text={t("Delete the old PFI 0.3 data ({size})? Your current data and your .pfibak backups are not touched. This cannot be undone.",
+          text={t("Delete the old Personal Finance 0.3 data ({size})? Your current data and your .pfibak backups are not touched. This cannot be undone.",
             { size: bytes(total) })}
           onYes={async () => {
             const r = await post<LegacyData & { freed: number }>("/api/legacy-data/delete", { dumps });

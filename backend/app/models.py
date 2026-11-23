@@ -1,4 +1,4 @@
-"""ORM models for Personal Finance Intelligence.
+"""ORM models for Personal Finance.
 
 Sign convention: ``Transaction.amount`` is signed in the account currency.
 Positive values are money flowing into the account, negative values are

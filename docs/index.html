@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Download PFI – Offline Budget Planner for Windows and Android</title>
-<meta name="description" content="Personal Finance Intelligence is a free budget planner and expense tracker for Windows 10 and 11. Import bank statements, plan budgets, pay off debt and track investments. Works offline, no account: your data stays on your PC.">
+<title>Download Personal Finance – Offline Budget Planner for Windows and Android</title>
+<meta name="description" content="Personal Finance is a free budget planner and expense tracker for Windows 10 and 11. Import bank statements, plan budgets, pay off debt and track investments. Works offline, no account: your data stays on your PC.">
 <link rel="canonical" href="https://mrblizo.github.io/personal-finance-intelligence/">
 <link rel="icon" href="img/icon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
-<meta property="og:title" content="PFI – the offline budget app for Windows">
+<meta property="og:title" content="Personal Finance – the offline budget app for Windows">
 <meta property="og:description" content="Budgets, bank statement import, debt payoff plans and investments in one native Windows app. No account, no cloud. Free.">
 <meta property="og:url" content="https://mrblizo.github.io/personal-finance-intelligence/">
 <meta property="og:image" content="https://mrblizo.github.io/personal-finance-intelligence/img/social.png">
@@ -18,11 +18,11 @@
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  "name": "Personal Finance Intelligence",
+  "name": "Personal Finance",
   "alternateName": "PFI",
   "operatingSystem": "Windows 10, Windows 11, Android",
   "applicationCategory": "FinanceApplication",
-  "description": "Offline budget planner and expense tracker for Windows with an Android app: bank statement import, envelope budgets, debt payoff planner, investments and cash-flow forecast. No account and no PFI server; optional encrypted sync through your own OneDrive or Google Drive.",
+  "description": "Offline budget planner and expense tracker for Windows with an Android app: bank statement import, envelope budgets, debt payoff planner, investments and cash-flow forecast. No account and no Personal Finance server; optional encrypted sync through your own OneDrive or Google Drive.",
   "url": "https://mrblizo.github.io/personal-finance-intelligence/",
   "downloadUrl": "https://apps.microsoft.com/detail/9MZKW4H9F0J5",
   "softwareVersion": "1.0.0",
@@ -38,10 +38,10 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    { "@type": "Question", "name": "Is PFI free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PFI is free on the Microsoft Store and on GitHub, and its source code is public so anyone can check what it does. There are no ads, no subscription and no in-app purchases." } },
-    { "@type": "Question", "name": "Does PFI connect to my bank?", "acceptedAnswer": { "@type": "Answer", "text": "Only if you want. You can import statement files (CSV, OFX/QFX, QIF, CAMT.053), or turn on bank sync with access you set up yourself: SimpleFIN Bridge for US and Canadian banks, Enable Banking for European banks. PFI never asks for your bank password." } },
-    { "@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": { "@type": "Answer", "text": "In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a PFI server; backups go to a folder you choose and can be protected with a password." } },
-    { "@type": "Question", "name": "Is there a phone app?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The free PFI app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through your own OneDrive or Google Drive and is encrypted with your passphrase before it leaves the device." } },
+    { "@type": "Question", "name": "Is Personal Finance free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Personal Finance is free on the Microsoft Store and on GitHub, and its source code is public so anyone can check what it does. There are no ads, no subscription and no in-app purchases." } },
+    { "@type": "Question", "name": "Does Personal Finance connect to my bank?", "acceptedAnswer": { "@type": "Answer", "text": "Only if you want. You can import statement files (CSV, OFX/QFX, QIF, CAMT.053), or turn on bank sync with access you set up yourself: SimpleFIN Bridge for US and Canadian banks, Enable Banking for European banks. Personal Finance never asks for your bank password." } },
+    { "@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": { "@type": "Answer", "text": "In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a Personal Finance server; backups go to a folder you choose and can be protected with a password." } },
+    { "@type": "Question", "name": "Is there a phone app?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The free Personal Finance app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through your own OneDrive or Google Drive and is encrypted with your passphrase before it leaves the device." } },
     { "@type": "Question", "name": "Which Windows versions are supported?", "acceptedAnswer": { "@type": "Answer", "text": "Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs." } }
   ]
 }
@@ -51,17 +51,17 @@
 <div class="progress" aria-hidden="true"></div>
 <header class="bar" id="top">
   <div class="wrap bar-in">
-    <a class="brand" href="./"><img src="img/icon.svg" alt="" width="32" height="32">PFI</a>
+    <a class="brand" href="./"><img src="img/icon.svg" alt="" width="32" height="32">Personal Finance</a>
     <nav class="links" aria-label="Main">
       <span class="pill" aria-hidden="true"></span>
-      <div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-product">Product<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-product" role="menu"><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-download">Download<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel" id="m-download" role="menu"><a class="mi" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-res">Resources<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-res" role="menu"><a class="mi" href="guide.html"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z M12 6v14"/></svg></span><span><b>User guide</b><small>Every feature, step by step</small></span></a><a class="mi" href="guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" href="#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" href="privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" href="support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support PFI</b><small>Help one developer</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Public on GitHub, PolyForm Strict</small></span></a></div></div>
+      <div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-product">Product<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-product" role="menu"><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-download">Download<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel" id="m-download" role="menu"><a class="mi" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a></div></div><div class="mm"><button class="mt" type="button" aria-expanded="false" aria-controls="m-res">Resources<svg class="chev" viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3"/></svg></button><div class="panel wide" id="m-res" role="menu"><a class="mi" href="guide.html"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2z M12 6v14"/></svg></span><span><b>User guide</b><small>Every feature, step by step</small></span></a><a class="mi" href="guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" href="#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" href="privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" href="support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support Personal Finance</b><small>Help one developer</small></span></a><a class="mi" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Public on GitHub, PolyForm Strict</small></span></a></div></div>
       <a class="mt" href="#free">Free</a>
     </nav>
     <a class="btn primary small cta-dl" href="#download">Download</a>
     <button class="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="sheet"><span></span><span></span><span></span></button>
   </div>
-  <div class="sheet" id="sheet"><div class="wrap"><p class="sh-h" style="--i:0">Product</p><a class="mi" style="--i:1" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" style="--i:2" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" style="--i:3" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" style="--i:4" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a><p class="sh-h" style="--i:4">Download</p><a class="mi" style="--i:5" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" style="--i:6" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" style="--i:7" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a><p class="sh-h" style="--i:8">Resources</p><a class="mi" style="--i:9" href="guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" style="--i:10" href="#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" style="--i:11" href="privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" style="--i:12" href="support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support PFI</b><small>Help one developer</small></span></a><a class="mi" style="--i:13" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Public on GitHub, PolyForm Strict</small></span></a>
-    <a class="btn primary" style="--i:14" href="#download">Download PFI</a></div></div>
+  <div class="sheet" id="sheet"><div class="wrap"><p class="sh-h" style="--i:0">Product</p><a class="mi" style="--i:1" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z M4 10h16 M9 14h3"/></svg></span><span><b>Envelope budget</b><small>Give every dollar a job</small></span></a><a class="mi" style="--i:2" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 4v10 M8 10l4 4 4-4 M5 19h14"/></svg></span><span><b>Bank import</b><small>CSV, OFX/QFX, QIF, CAMT.053</small></span></a><a class="mi" style="--i:3" href="#features"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9 M15 6h5v5"/></svg></span><span><b>Plan ahead</b><small>Forecast, debts, investments</small></span></a><a class="mi" style="--i:4" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Phone and sync</b><small>Android, encrypted in your cloud</small></span></a><p class="sh-h" style="--i:4">Download</p><a class="mi" style="--i:5" href="https://apps.microsoft.com/detail/9MZKW4H9F0J5?mode=direct"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 5l7-1v7H4z M13 4l7-1v8h-7z M4 13h7v7l-7-1z M13 13h7v8l-7-1z"/></svg></span><span><b>Windows</b><small>Microsoft Store, auto-updates</small></span></a><a class="mi" style="--i:6" href="#android"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8v18H8z M11 18h2"/></svg></span><span><b>Android</b><small>Free APK, Android 8+</small></span></a><a class="mi" style="--i:7" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8"/></svg></span><span><b>Installer</b><small>PFI-Setup .exe for any PC</small></span></a><p class="sh-h" style="--i:8">Resources</p><a class="mi" style="--i:9" href="guides/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4z M9 4v12"/></svg></span><span><b>Guides</b><small>Budgeting how-tos</small></span></a><a class="mi" style="--i:10" href="#faq"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.7 M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span><b>FAQ</b><small>Quick answers</small></span></a><a class="mi" style="--i:11" href="privacy/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6z M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg></span><span><b>Privacy</b><small>Your data stays yours</small></span></a><a class="mi" style="--i:12" href="support/"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></span><span><b>Support Personal Finance</b><small>Help one developer</small></span></a><a class="mi" style="--i:13" href="https://github.com/MrBlizo/personal-finance-intelligence"><span class="mi-ico"><svg viewBox="0 0 24 24"><path d="M9 8l-4 4 4 4 M15 8l4 4-4 4"/></svg></span><span><b>Source code</b><small>Public on GitHub, PolyForm Strict</small></span></a>
+    <a class="btn primary" style="--i:14" href="#download">Download Personal Finance</a></div></div>
 </header>
 
 
@@ -69,8 +69,8 @@
 <section class="hero-ms">
   <div class="wrap hero-grid">
     <div class="hero-text">
-      <p class="eyebrow">Personal Finance Intelligence 1.0.0</p>
-      <h1>Download PFI</h1>
+      <p class="eyebrow">Personal Finance 1.0.0</p>
+      <h1>Download Personal Finance</h1>
       <p class="lead">The free budget app for Windows and Android. Plan every dollar, import your bank
         statements and see where your money goes, without an account and without a cloud server.</p>
       <div class="cta">
@@ -82,7 +82,7 @@
     </div>
     <div class="hero-art">
       <img src="img/m3-home.webp" width="1512" height="800"
-        alt="PFI home: net worth, income, expenses and charts in the violet Expressive look">
+        alt="Personal Finance home: net worth, income, expenses and charts in the violet Expressive look">
     </div>
   </div>
 </section>
@@ -99,11 +99,11 @@
       <article class="fcard"><img src="img/m3-f-budget.webp" width="1000" height="625" loading="lazy" alt="Envelope budget with groups, progress bars and a side panel">
         <h3>Budget with envelopes</h3><p>Assign your money to categories, see what is overspent or underfunded at a glance and fund your targets in one click.</p></article>
       <article class="fcard"><img src="img/m3-f-transactions.webp" width="1000" height="625" loading="lazy" alt="Transactions list with categories">
-        <h3>Import any bank statement</h3><p>CSV, OFX/QFX, QIF and CAMT.053. Chase, Bank of America, Wells Fargo, Citi, Capital One, Amex and more are recognised automatically, and PFI learns your categories.</p></article>
+        <h3>Import any bank statement</h3><p>CSV, OFX/QFX, QIF and CAMT.053. Chase, Bank of America, Wells Fargo, Citi, Capital One, Amex and more are recognised automatically, and Personal Finance learns your categories.</p></article>
       <article class="fcard"><img src="img/m3-f-forecast.webp" width="1000" height="625" loading="lazy" alt="What if planner: a car purchase with and without, and a verdict">
         <h3>Plan ahead</h3><p>Cash-flow forecast from your own history, a debt payoff planner, investments with returns, and bills that never surprise you.</p></article>
     </div>
-    <div class="new10" aria-label="New in PFI 1.0">
+    <div class="new10" aria-label="New in Personal Finance 1.0">
       <div><strong>Month by month</strong>What you earned, spent, paid and saved each month, and how it compares.</div>
       <div><strong>Scan receipts</strong>Drop a photo on the PC or take one on the phone: amount, date and shop are read offline.</div>
       <div><strong>What if…?</strong>Try a car, a raise or a rent increase and see if you can afford it.</div>
@@ -128,7 +128,7 @@
 <section id="download" class="tint">
   <div class="wrap">
     <h2 class="center">Download the app</h2>
-    <p class="sub center">Install PFI on your PC, then add your phone if you like. Both are free.</p>
+    <p class="sub center">Install Personal Finance on your PC, then add your phone if you like. Both are free.</p>
     <div class="dl">
       <div class="dl-card">
         <div class="dl-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="40" height="40"><path fill="currentColor" d="M3 5.5 10 4.5v7H3zm0 13 7 1v-7H3zm8 1.2 10 1.3V12.5H11zm0-15.4v7.2h10V3z"/></svg></div>
@@ -143,7 +143,7 @@
         <h3>Android</h3>
         <p>Android 8 or later. Keeps the same accounts, transactions and budgets as your PC through your own OneDrive or Google Drive.</p>
         <div class="qr-row">
-          <img class="qr" src="img/qr-android.svg" width="120" height="120" alt="QR code to the PFI download page">
+          <img class="qr" src="img/qr-android.svg" width="120" height="120" alt="QR code to the Personal Finance download page">
           <div><a class="btn primary" href="https://github.com/MrBlizo/personal-finance-intelligence/releases/latest">Download the APK</a>
             <p class="alt">Scan with your phone's camera, then open <code>PFI-1.0.0.apk</code>.</p></div>
         </div>
@@ -168,7 +168,7 @@
     <p class="sub center">No subscription, no ads, no in-app purchases. Every feature is for everyone.</p>
     <div class="plans">
       <div class="plan main">
-        <p class="plan-name">PFI</p>
+        <p class="plan-name">Personal Finance</p>
         <p class="price">Free <span>forever</span></p>
         <a class="btn primary" href="#download">Download</a>
         <ul class="ticks">
@@ -184,7 +184,7 @@
         <p class="plan-name">Private by design</p>
         <ul class="ticks">
           <li>No account and no sign-up</li>
-          <li>Your data is one file on your devices, never on a PFI server</li>
+          <li>Your data is one file on your devices, never on a Personal Finance server</li>
           <li>No tracking and no analytics</li>
           <li>Password-protected backups and Windows Hello lock</li>
           <li>Public source code: anyone can check what it does</li>
@@ -192,9 +192,9 @@
         <a class="link-arrow" href="guides/budget-app-without-account.html">Why a budget app without an account</a>
       </div>
       <div class="plan">
-        <p class="plan-name">Support PFI</p>
-        <p>PFI is made by one developer. If it helps you, a small donation keeps it going. It unlocks nothing; the app stays complete for everyone.</p>
-        <a class="btn" href="support/">Support PFI ♥</a>
+        <p class="plan-name">Support Personal Finance</p>
+        <p>Personal Finance is made by one developer. If it helps you, a small donation keeps it going. It unlocks nothing; the app stays complete for everyone.</p>
+        <a class="btn" href="support/">Support Personal Finance ♥</a>
       </div>
     </div>
   </div>
@@ -216,11 +216,11 @@
   <div class="wrap narrow">
     <div class="faq-head"><h2>Frequently asked questions</h2>
       <div><button type="button" data-faq="open">Expand all</button><button type="button" data-faq="close">Collapse all</button></div></div>
-    <details><summary><span class="n">01/</span>Is PFI free?</summary><p>Yes. PFI is free on the Microsoft Store and on GitHub, and its source code is public so anyone can check what it does. There are no ads, no subscription and no in-app purchases.</p></details>
-    <details><summary><span class="n">02/</span>Does PFI connect to my bank?</summary><p>Only if you want. Import statement files (CSV, OFX/QFX, QIF or CAMT.053), or turn on bank sync in Settings with access you set up yourself: <strong>SimpleFIN Bridge</strong> for US and Canadian banks ($15 a year, paid to SimpleFIN) or <strong>Enable Banking</strong> for European banks (free for your own accounts). New transactions then arrive every few hours. PFI never asks for your bank password. <a href="guides/import-camt053.html">How to import a CAMT.053 file</a>.</p></details>
-    <details><summary><span class="n">03/</span>Where is my data stored?</summary><p>In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a PFI server; backups go to a folder you choose and can be protected with a password.</p></details>
-    <details><summary><span class="n">04/</span>Is there a phone app?</summary><p>Yes. The free PFI app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through your own OneDrive or Google Drive and is encrypted with your passphrase before it leaves the device. See <a href="#download">Connect your phone in three steps</a>.</p></details>
-    <details><summary><span class="n">05/</span>Can I move to a new PC?</summary><p>Yes. Set up sync on the old PC (Settings › Sync), then install PFI on the new PC and set up sync with the same cloud drive and passphrase: everything comes over.</p></details>
+    <details><summary><span class="n">01/</span>Is Personal Finance free?</summary><p>Yes. Personal Finance is free on the Microsoft Store and on GitHub, and its source code is public so anyone can check what it does. There are no ads, no subscription and no in-app purchases.</p></details>
+    <details><summary><span class="n">02/</span>Does Personal Finance connect to my bank?</summary><p>Only if you want. Import statement files (CSV, OFX/QFX, QIF or CAMT.053), or turn on bank sync in Settings with access you set up yourself: <strong>SimpleFIN Bridge</strong> for US and Canadian banks ($15 a year, paid to SimpleFIN) or <strong>Enable Banking</strong> for European banks (free for your own accounts). New transactions then arrive every few hours. Personal Finance never asks for your bank password. <a href="guides/import-camt053.html">How to import a CAMT.053 file</a>.</p></details>
+    <details><summary><span class="n">03/</span>Where is my data stored?</summary><p>In a single SQLite file in your Windows user folder, and on your phone if you use the Android app. Nothing is sent to a Personal Finance server; backups go to a folder you choose and can be protected with a password.</p></details>
+    <details><summary><span class="n">04/</span>Is there a phone app?</summary><p>Yes. The free Personal Finance app for Android keeps the same accounts, transactions and budgets as the PC. Sync goes through your own OneDrive or Google Drive and is encrypted with your passphrase before it leaves the device. See <a href="#download">Connect your phone in three steps</a>.</p></details>
+    <details><summary><span class="n">05/</span>Can I move to a new PC?</summary><p>Yes. Set up sync on the old PC (Settings › Sync), then install Personal Finance on the new PC and set up sync with the same cloud drive and passphrase: everything comes over.</p></details>
     <details><summary><span class="n">06/</span>Which Windows versions are supported?</summary><p>Windows 10 version 2004 or later and Windows 11, on 64-bit x64 PCs.</p></details>
   </div>
 </section>
@@ -235,10 +235,10 @@
     <div><h4>Project</h4><a href="https://github.com/MrBlizo/personal-finance-intelligence">Source code</a>
       <a href="privacy/">Privacy</a>
       <a href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/LICENSE">License (PolyForm Strict)</a></div>
-    <div><h4>Support</h4><a href="support/">Support PFI ♥</a>
+    <div><h4>Support</h4><a href="support/">Support Personal Finance ♥</a>
       <a href="https://github.com/MrBlizo/personal-finance-intelligence/issues">Report a problem</a></div>
   </div>
-  <div class="wrap foot-legal">Personal Finance Intelligence · made by <a href="https://github.com/MrBlizo">Ibrahim</a></div>
+  <div class="wrap foot-legal">Personal Finance · made by <a href="https://github.com/MrBlizo">Ibrahim</a></div>
 </footer>
 <script>
 document.querySelectorAll("[data-faq]").forEach((b) => b.addEventListener("click", () => {

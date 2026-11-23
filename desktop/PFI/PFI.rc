@@ -13,11 +13,11 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Ibrahim"
-            VALUE "FileDescription", "Personal Finance Intelligence"
+            VALUE "FileDescription", "Personal Finance"
             VALUE "FileVersion", "1.0.0"
             VALUE "InternalName", "PFI"
             VALUE "OriginalFilename", "PFI.exe"
-            VALUE "ProductName", "Personal Finance Intelligence"
+            VALUE "ProductName", "Personal Finance"
             VALUE "ProductVersion", "1.0.0"
         END
     END

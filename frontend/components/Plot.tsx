@@ -77,13 +77,16 @@ function translateFigure(fig: PlotFigure, t: T): PlotFigure {
   return { data, layout };
 }
 
-/** The backend draws with the Okabe-Ito palette; repaint it with the app's
+/** Charts saved by older versions used the Okabe-Ito palette; repaint it with the app's
  *  chart colours (--chart-*), keeping each series' hue family and any
  *  transparency, so charts use the app's palette in light and dark. */
 const OKABE: Record<string, string> = {
   "0072b2": "--chart-blue", "009e73": "--chart-green", "d55e00": "--chart-verm",
   "e69f00": "--chart-orange", "56b4e9": "--chart-sky", "f0e442": "--chart-yellow",
   "cc79a7": "--chart-purple",
+  // Older default category colours.
+  "6b7280": "--chart-grey", "7c3aed": "--chart-purple",
+  "0f766e": "--chart-sky", "9a3412": "--chart-orange",
 };
 const RGB: Record<string, string> = Object.fromEntries(Object.keys(OKABE).map((h) => [
   [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(","), h]));

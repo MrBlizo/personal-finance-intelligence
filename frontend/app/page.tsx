@@ -232,7 +232,7 @@ export default function Home() {
           action={<div className="row">
             <Link href="/accounts/"><Button appearance="primary" size="small">{t("Add an account")}</Button></Link>
             <Link href="/settings/"><Button size="small">{t("Set up sync")}</Button></Link></div>}>
-          {t("Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.")}
+          {t("Add an account and import a bank statement. Already use Personal Finance on another device? Set up sync with the same cloud drive and passphrase.")}
         </Banner>)}
       {!s && dash.loading && <Spinner label={t("Loading…")} />}
       {s && (

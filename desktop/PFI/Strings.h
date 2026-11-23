@@ -19,16 +19,16 @@ namespace pfi
     {
         int l = lang == L"fr" ? 1 : lang == L"ar" ? 2 : 0;
         static wchar_t const* const table[][3] = {
-            { L"Personal Finance Intelligence is locked",
-              L"Personal Finance Intelligence est verrouillé",
-              L"تطبيق Personal Finance Intelligence مقفل" },
+            { L"Personal Finance is locked",
+              L"Personal Finance est verrouillé",
+              L"تطبيق Personal Finance مقفل" },
             { L"Unlock with Windows Hello to see your finances.",
               L"Déverrouillez avec Windows Hello pour voir vos finances.",
               L"افتح القفل باستخدام Windows Hello لعرض بياناتك المالية." },
             { L"Unlock", L"Déverrouiller", L"فتح القفل" },
-            { L"Unlock Personal Finance Intelligence",
-              L"Déverrouiller Personal Finance Intelligence",
-              L"فتح قفل Personal Finance Intelligence" },
+            { L"Unlock Personal Finance",
+              L"Déverrouiller Personal Finance",
+              L"فتح قفل Personal Finance" },
             { L"Verification was cancelled or failed. Try again.",
               L"La vérification a été annulée ou a échoué. Réessayez.",
               L"أُلغي التحقق أو فشل. حاول مرة أخرى." },

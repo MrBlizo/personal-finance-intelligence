@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/repo.dart';
 import '../state.dart';
 import '../updates.dart';
+import 'count_up.dart';
 import 'edit_transaction.dart';
 import 'import_csv.dart';
 import 'months.dart';
@@ -225,7 +226,7 @@ class HomePage extends StatelessWidget {
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                             leading: Icon(Icons.system_update_rounded, color: context.accents.onLimeContainer),
-                            title: Text(app.t('PFI {v} is available.', {'v': snap.data}),
+                            title: Text(app.t('Personal Finance {v} is available.', {'v': snap.data}),
                                 style: TextStyle(
                                     fontWeight: FontWeight.w700, color: context.accents.onLimeContainer)),
                             subtitle: Text(app.t('Tap to download the new APK from GitHub.'),
@@ -243,7 +244,7 @@ class HomePage extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     leading: Icon(Icons.sync_rounded, color: scheme.onTertiaryContainer),
-                    title: Text(app.t('Connect to PFI on my PC'),
+                    title: Text(app.t('Connect to Personal Finance on my PC'),
                         style: const TextStyle(fontWeight: FontWeight.w700)),
                     subtitle: Text(app.t('Use the same OneDrive account and passphrase as on your PC.')),
                     trailing: const Icon(Icons.chevron_right),
@@ -275,31 +276,28 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final a = dark ? Color.lerp(scheme.primary, Colors.black, 0.45)! : scheme.primary;
-    final b = Color.lerp(a, Colors.black, 0.35)!;
+    final acc = context.accents;
+    final fg = acc.onLavenderContainer;
     return Container(
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-            begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [a, b]),
-        boxShadow: [
-          BoxShadow(color: a.withValues(alpha: 0.35), blurRadius: 24, offset: const Offset(0, 10)),
-        ],
+        color: acc.lavenderContainer,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label.toUpperCase(),
-            style: const TextStyle(
-                color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
+            style: TextStyle(
+                color: fg.withValues(alpha: 0.75),
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6)),
         const SizedBox(height: 6),
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: AlignmentDirectional.centerStart,
-          child: Text(value,
-              style: const TextStyle(
-                  color: Colors.white, fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+          child: CountUpText(value,
+              style: TextStyle(
+                  color: fg, fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
         ),
         const SizedBox(height: 20),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: actions),
@@ -315,26 +313,28 @@ class _QuickAction extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(4),
-          child: Column(children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18), shape: BoxShape.circle),
-              child: Icon(icon, color: Colors.white),
-            ),
-            const SizedBox(height: 6),
-            Text(label,
-                style: const TextStyle(
-                    color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final fg = context.accents.onLavenderContainer;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Column(children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+                color: fg.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: fg),
+          ),
+          const SizedBox(height: 6),
+          Text(label,
+              style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w600)),
+        ]),
+      ),
+    );
+  }
 }
 
 void _openMonths(BuildContext context) => Navigator.of(context)
@@ -367,7 +367,7 @@ class _Pill extends StatelessWidget {
                 FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: AlignmentDirectional.centerStart,
-                    child: Text(value,
+                    child: CountUpText(value,
                         style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16))),
               ]),
             ),

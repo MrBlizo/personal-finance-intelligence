@@ -21,14 +21,15 @@ RETIRED = "pgdata-0.3"
 CONVERTER_URL = ("https://github.com/MrBlizo/personal-finance-intelligence/"
                  "releases/tag/v0.4.0")
 UNMOVED_MESSAGE = (
-    "This PC still has data from PFI 0.3 that was never moved to the new "
-    "format. PFI 0.5 can no longer read it. Install PFI 0.4.0 once "
-    f"({CONVERTER_URL}), open it so it moves your data, then install the "
-    "current version again. Your data has not been changed.")
+    "This PC still has data from Personal Finance 0.3 that was never moved to "
+    "the new format. Personal Finance 0.5 can no longer read it. Install "
+    f"Personal Finance 0.4.0 once ({CONVERTER_URL}), open it so it moves your "
+    "data, then install the current version again. Your data has not been "
+    "changed.")
 DUMP_MESSAGE = (
-    "This is a backup from PFI 0.3 (.dump). PFI 0.5 can no longer read it. "
-    f"Install PFI 0.4.0 ({CONVERTER_URL}), restore the backup there, then "
-    "update again.")
+    "This is a backup from Personal Finance 0.3 (.dump). Personal Finance "
+    "0.5 can no longer read it. Install Personal Finance 0.4.0 "
+    f"({CONVERTER_URL}), restore the backup there, then update again.")
 
 
 def has_cluster(data_dir: Path) -> bool:

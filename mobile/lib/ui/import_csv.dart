@@ -1,5 +1,5 @@
 // Import a bank statement (CSV) on the phone: choose the file, check the
-// columns PFI guessed, see the first rows, import. Rows imported before are
+// columns Personal Finance guessed, see the first rows, import. Rows imported before are
 // skipped, and new rows wait in the review list as on the PC.
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +64,7 @@ class _ImportCsvPageState extends State<ImportCsvPage> {
           icon: const Icon(Icons.task_alt_rounded),
           title: Text(app.t('{n} transactions imported', {'n': r.added})),
           content: Text(r.duplicates > 0
-              ? app.t('{n} were already in PFI and were skipped. New rows are in the review list.', {'n': r.duplicates})
+              ? app.t('{n} were already in Personal Finance and were skipped. New rows are in the review list.', {'n': r.duplicates})
               : app.t('New rows are in the review list.')),
           actions: [FilledButton(onPressed: () => Navigator.pop(ctx), child: Text(app.t('Done')))],
         ),

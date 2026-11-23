@@ -43,7 +43,7 @@ Future<Map<String, dynamic>> unseal(
       data[1] != fileMagic[1] ||
       data[2] != fileMagic[2] ||
       data[3] != fileMagic[3]) {
-    throw SyncException('$aad is not a PFI sync file.');
+    throw SyncException('$aad is not a Personal Finance sync file.');
   }
   final nonce = data.sublist(4, 16);
   final body = data.sublist(16);

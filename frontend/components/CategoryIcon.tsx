@@ -77,11 +77,19 @@ export function guessIcon(name: string): string {
   return GUESS.find(([re]) => re.test(n))?.[1] ?? "tag";
 }
 
-/** A deterministic soft colour for categories without their own colour. */
-const PALETTE = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#56B4E9",
-  "#CC79A7", "#6750A4", "#00796B", "#AD1457", "#827717"];
+/** The chart palette (same in light and dark): categories without their own
+ *  colour get one by name. */
+const PALETTE = ["#4C6EF5", "#F2994A", "#7CB518", "#EC5F9E", "#1FB5D8",
+  "#9775FA", "#C99A06", "#8A8F98"];
+/** Default colours of earlier versions, shown in today's palette. */
+const OLD: Record<string, string> = {
+  "0072b2": "#4C6EF5", "e69f00": "#F2994A", "009e73": "#7CB518",
+  "d55e00": "#EC5F9E", "56b4e9": "#1FB5D8", "cc79a7": "#9775FA",
+  "f0e442": "#C99A06", "be1818": "#EC5F9E", "6b7280": "#8A8F98",
+  "7c3aed": "#9775FA", "0f766e": "#1FB5D8", "9a3412": "#F2994A",
+};
 export function categoryColor(name: string, color?: string | null) {
-  if (color) return color;
+  if (color) return OLD[color.replace("#", "").toLowerCase()] ?? color;
   let h = 0;
   for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return PALETTE[h % PALETTE.length];

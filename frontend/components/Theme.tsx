@@ -15,7 +15,7 @@ import { useT } from "@/lib/i18n";
 import { cssVars, primaryRamp, schemeFor, SEED } from "@/lib/m3";
 import { notifyTheme } from "@/lib/shell";
 
-/** The PFI seed colour, used when no accent is chosen. */
+/** The Personal Finance seed colour, used when no accent is chosen. */
 export const DEFAULT_ACCENT = SEED;
 /** Seed colours offered in Settings; each yields a full Material 3 scheme. */
 export const ACCENTS = [

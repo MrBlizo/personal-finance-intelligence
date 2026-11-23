@@ -53,7 +53,7 @@ class PfiApp extends StatelessWidget {
     final app = appOf(context);
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'PFI',
+      title: 'Personal Finance',
       debugShowCheckedModeBanner: false,
       theme: buildTheme(app.accent, Brightness.light),
       darkTheme: buildTheme(app.accent, Brightness.dark),
@@ -96,7 +96,7 @@ class _WelcomePageState extends State<WelcomePage> {
               ),
             ),
             const SizedBox(height: 24),
-            Text(app.t('Welcome to PFI'),
+            Text(app.t('Welcome to Personal Finance'),
                 style: Theme.of(context).textTheme.headlineLarge),
             const SizedBox(height: 8),
             Text(app.t('Your budget, investments and plans — private, on your devices.'),
@@ -104,7 +104,7 @@ class _WelcomePageState extends State<WelcomePage> {
             const Spacer(),
             FilledButton.icon(
               icon: const Icon(Icons.computer_outlined),
-              label: Text(app.t('Connect to PFI on my PC')),
+              label: Text(app.t('Connect to Personal Finance on my PC')),
               onPressed: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (_) => const SyncSetupPage())),
             ),

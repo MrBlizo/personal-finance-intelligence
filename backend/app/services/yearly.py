@@ -196,9 +196,9 @@ LABELS = {
            "cats": "Where the money went", "category": "Category",
            "amount": "Amount", "share": "Share", "payees": "Top payees",
            "payee": "Payee", "tax": "Tax groups", "group": "Group",
-           "tax_note": "Totals of the categories you tagged. PFI does not "
-                       "know tax rules; check with your tax office or "
-                       "accountant.",
+           "tax_note": "Totals of the categories you tagged. Personal "
+                       "Finance does not know tax rules; check with your tax "
+                       "office or accountant.",
            "none": "None.", "generated": "Generated"},
     "fr": {"title": "Bilan de l'année", "income": "Revenus",
            "expenses": "Dépenses", "net": "Épargné",
@@ -209,9 +209,9 @@ LABELS = {
            "amount": "Montant", "share": "Part",
            "payees": "Principaux bénéficiaires", "payee": "Bénéficiaire",
            "tax": "Groupes fiscaux", "group": "Groupe",
-           "tax_note": "Totaux des catégories que vous avez marquées. PFI "
-                       "ne connaît pas les règles fiscales ; vérifiez "
-                       "auprès de votre administration ou comptable.",
+           "tax_note": "Totaux des catégories que vous avez marquées. "
+                       "Personal Finance ne connaît pas les règles fiscales ; "
+                       "vérifiez auprès de votre administration ou comptable.",
            "none": "Aucun.", "generated": "Généré le"},
 }
 
@@ -240,7 +240,7 @@ def render_year_pdf(data: dict, lang: str = "en") -> bytes:
 
     L = LABELS.get(lang, LABELS["en"])
     cur = data["currency"]
-    violet = colors.HexColor("#740FFF")
+    violet = colors.HexColor("#1A41FF")
     lime = colors.HexColor("#C5F331")
     ink, muted = colors.HexColor("#1D1A24"), colors.HexColor("#625B71")
     line = colors.HexColor("#E7E0EC")
@@ -266,8 +266,9 @@ def render_year_pdf(data: dict, lang: str = "en") -> bytes:
         return t
 
     story = [Paragraph(f"{L['title']} {data['year']}", h1),
-             Paragraph(f"{L['generated']} {datetime.now():%Y-%m-%d} · {cur} "
-                       f"· PFI {__version__}", small), Spacer(1, 6 * mm)]
+             Paragraph(f"{L['generated']} {datetime.now():%Y-%m-%d} · {cur} · "
+                       "Personal Finance "
+                       f"{__version__}", small), Spacer(1, 6 * mm)]
     kpis = [(L["income"], _money(data["income"], cur)),
             (L["expenses"], _money(data["expenses"], cur)),
             (L["net"], _money(data["net"], cur)),
@@ -319,5 +320,5 @@ def render_year_pdf(data: dict, lang: str = "en") -> bytes:
                       rightMargin=18 * mm, topMargin=16 * mm,
                       bottomMargin=16 * mm,
                       title=f"{L['title']} {data['year']}",
-                      author="Personal Finance Intelligence").build(story)
+                      author="Personal Finance").build(story)
     return buf.getvalue()

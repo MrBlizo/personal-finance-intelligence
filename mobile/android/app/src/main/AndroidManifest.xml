@@ -5,7 +5,7 @@
     <!-- Keeps scheduled bill reminders after the phone restarts. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
-        android:label="PFI"
+        android:label="Personal Finance"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false">

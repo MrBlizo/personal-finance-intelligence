@@ -1,4 +1,4 @@
-// Typed client for the PFI backend. In production the UI is served by the
+// Typed client for the Personal Finance backend. In production the UI is served by the
 // backend itself (same origin); with `next dev` on port 3000 it calls the
 // API on 127.0.0.1:8765.
 
@@ -403,8 +403,8 @@ export async function api<T>(path: string, init: RequestInit & {
       body: json !== undefined ? JSON.stringify(json) : rest.body,
     });
   } catch {
-    throw new ApiError(0, "Cannot reach the PFI backend. If you are " +
-      "developing, start it with `python run.py`; otherwise restart PFI.");
+    throw new ApiError(0, "Cannot reach the Personal Finance backend. If you are " +
+      "developing, start it with `python run.py`; otherwise restart Personal Finance.");
   }
   if (res.status === 204) return undefined as T;
   const body = await res.json().catch(() => null);

@@ -1,4 +1,4 @@
-; Inno Setup script for Personal Finance Intelligence.
+; Inno Setup script for Personal Finance.
 ; Built by scripts\build.ps1:  ISCC /DAppVersion=x /DSourceDir=dist\PFI /DOutputDir=dist PFI.iss
 
 #ifndef AppVersion
@@ -13,12 +13,12 @@
 
 [Setup]
 AppId={{3AD51315-839A-4B92-A567-7DCF6605A5C1}
-AppName=Personal Finance Intelligence
+AppName=Personal Finance
 AppVersion={#AppVersion}
-AppVerName=Personal Finance Intelligence {#AppVersion}
+AppVerName=Personal Finance {#AppVersion}
 AppPublisher=Ibrahim
-DefaultDirName={autopf}\Personal Finance Intelligence
-DefaultGroupName=Personal Finance Intelligence
+DefaultDirName={autopf}\Personal Finance
+DefaultGroupName=Personal Finance
 DisableProgramGroupPage=yes
 ; Per-user install by default (no administrator prompt); user may choose all users.
 PrivilegesRequired=lowest
@@ -48,16 +48,19 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Type: filesandordirs; Name: "{app}\pgsql"
 Type: filesandordirs; Name: "{app}\backend"
 Type: filesandordirs; Name: "{app}\web"
+; Shortcuts from before 1.0.1, when the app was Personal Finance Intelligence.
+Type: files; Name: "{autoprograms}\Personal Finance Intelligence.lnk"
+Type: files; Name: "{autodesktop}\Personal Finance Intelligence.lnk"
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\Personal Finance Intelligence"; Filename: "{app}\PFI.exe"
-Name: "{autodesktop}\Personal Finance Intelligence"; Filename: "{app}\PFI.exe"; Tasks: desktopicon
+Name: "{autoprograms}\Personal Finance"; Filename: "{app}\PFI.exe"
+Name: "{autodesktop}\Personal Finance"; Filename: "{app}\PFI.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\PFI.exe"; Description: "{cm:LaunchProgram,Personal Finance Intelligence}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\PFI.exe"; Description: "{cm:LaunchProgram,Personal Finance}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; Your financial data in %LOCALAPPDATA%\PersonalFinanceIntelligence is kept.

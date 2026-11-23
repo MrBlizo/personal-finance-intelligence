@@ -151,5 +151,6 @@ def test_restore_rejects_foreign_files(api, tmp_path):
     with zipfile.ZipFile(path, "w") as zf:
         zf.writestr("hello.txt", "not a backup")
     r = api.post(f"/api/backups/{path.name}/restore")
-    assert r.status_code == 422 and "not a PFI backup" in r.json()["detail"]
+    assert r.status_code == 422
+    assert "not a Personal Finance backup" in r.json()["detail"]
     path.unlink()

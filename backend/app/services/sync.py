@@ -113,7 +113,7 @@ def unseal(key: bytes, aad: str, data: bytes) -> dict:
         If the file is not a PFI change file or the key does not match.
     """
     if data[:4] != MAGIC or len(data) < 4 + 12 + 16:
-        raise SyncError(f"{aad} is not a PFI sync file.")
+        raise SyncError(f"{aad} is not a Personal Finance sync file.")
     try:
         raw = AESGCM(key).decrypt(data[4:16], data[16:], aad.encode())
     except InvalidTag:
@@ -520,12 +520,13 @@ def setup(db: Session, data_dir: Path, folder: str, passphrase: str,
             store.write_manifest(manifest)
         else:
             if manifest.get("app") != "PFI" or "kdf" not in manifest:
-                raise SyncError(f"{MANIFEST} in {root} is not a PFI sync "
-                                "folder.")
+                raise SyncError(f"{MANIFEST} in {root} is not a Personal "
+                                "Finance sync folder.")
             if int(manifest.get("format", 0)) > FORMAT:
                 raise SyncError(
                     "This sync folder was created by a newer version of "
-                    "PFI. Update PFI on this PC first.")
+                    "Personal Finance. Update Personal Finance on this PC "
+                    "first.")
             kdf = manifest["kdf"]
             key = derive_key(passphrase, base64.b64decode(kdf["salt"]),
                              int(kdf["iterations"]))
@@ -964,8 +965,8 @@ def _run(db: Session, data_dir: Path) -> SyncResult:
             payload = unseal(key, _aad(dev, number), store.read(dev, number))
             if int(payload.get("format", 1)) > FORMAT:
                 raise SyncError(
-                    "Another device uses a newer version of PFI. Update "
-                    "PFI on this PC to keep syncing.")
+                    "Another device uses a newer version of Personal Finance. "
+                    "Update Personal Finance on this PC to keep syncing.")
             records.extend(payload.get("changes", []))
             applied[dev] = number
             _set(conn, f"device:{dev}", json.dumps({

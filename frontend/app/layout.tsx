@@ -9,7 +9,7 @@ import "./shapes.css";
 import "./expressive.css";
 
 export const metadata: Metadata = {
-  title: "Personal Finance Intelligence",
+  title: "Personal Finance",
   description: "Track, forecast and analyse your personal finances.",
 };
 

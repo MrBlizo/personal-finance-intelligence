@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/repo.dart';
+import 'count_up.dart';
 import 'theme.dart';
 import 'widgets.dart';
 
@@ -101,8 +102,8 @@ class _MonthsPageState extends State<MonthsPage> {
                 children: [
                   _Tile(app.t('Earned'), money(context, s.income, base), acc.limeContainer, acc.onLimeContainer,
                       Icons.south_west_rounded),
-                  _Tile(app.t('Paid'), money(context, s.paid, base), scheme.primaryContainer,
-                      scheme.onPrimaryContainer, Icons.receipt_long_rounded,
+                  _Tile(app.t('Paid'), money(context, s.paid, base), acc.lavenderContainer,
+                      acc.onLavenderContainer, Icons.receipt_long_rounded,
                       sub: app.t('Bills {b} · debts {d}', {
                         'b': money(context, s.bills, base),
                         'd': money(context, s.debtPayments, base)
@@ -126,10 +127,12 @@ class _MonthsPageState extends State<MonthsPage> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(children: [
-                      for (final e in (s.categories.entries.toList()
+                      for (final (i, e) in (s.categories.entries.toList()
                             ..sort((a, b) => b.value.compareTo(a.value)))
-                          .take(8))
+                          .take(8)
+                          .indexed)
                         _CategoryBar(
+                          color: chartColors[i % chartColors.length],
                           name: e.key.isEmpty ? app.t('Uncategorised') : e.key,
                           amount: money(context, e.value, base),
                           share: e.value / s.spent,
@@ -154,14 +157,14 @@ class _MonthsPageState extends State<MonthsPage> {
                           s.daily,
                           prev.daily,
                           upTo: month == now ? DateTime.now().day : s.daily.length,
-                          line: scheme.primary,
+                          line: chartColors[0],
                           ghost: scheme.outline,
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Wrap(spacing: 16, children: [
-                      _Legend(scheme.primary, name),
+                      _Legend(chartColors[0], name),
                       _Legend(scheme.outline, app.t('Month before'), dashed: true),
                     ]),
                   ]),
@@ -275,22 +278,12 @@ class _HeroTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final acc = context.accents;
-    final neon = context.neon;
-    final fg = neon ? Colors.white : acc.onPinkContainer;
+    final fg = acc.onLavenderContainer;
     return Container(
       padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        color: neon ? null : acc.pinkContainer,
-        gradient: neon
-            ? const LinearGradient(
-                colors: [Color(0xFF2A0F4F), Color(0xFF5B1270)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight)
-            : null,
-        boxShadow: neon
-            ? [BoxShadow(color: const Color(0xFFFF5AD9).withValues(alpha: 0.35), blurRadius: 28)]
-            : null,
+        color: acc.lavenderContainer,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label, style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
@@ -298,12 +291,8 @@ class _HeroTile extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: AlignmentDirectional.centerStart,
-          child: Text(value,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: fg,
-                  shadows: neon
-                      ? const [Shadow(color: Color(0xCCFF5AD9), blurRadius: 14)]
-                      : null)),
+          child: CountUpText(value,
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(color: fg)),
         ),
         if (sub != null) ...[
           const SizedBox(height: 4),
@@ -325,14 +314,11 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final neon = context.neon;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: neon ? Colors.transparent : bg,
+        color: bg,
         borderRadius: BorderRadius.circular(24),
-        border: neon ? Border.all(color: fg.withValues(alpha: 0.7)) : null,
-        boxShadow: neon ? [BoxShadow(color: fg.withValues(alpha: 0.25), blurRadius: 18)] : null,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -348,7 +334,7 @@ class _Tile extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: AlignmentDirectional.centerStart,
-          child: Text(value,
+          child: CountUpText(value,
               style: TextStyle(color: fg, fontSize: 22, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
         ),
         if (sub != null)
@@ -368,12 +354,14 @@ class _CategoryBar extends StatelessWidget {
     required this.share,
     required this.change,
     required this.currency,
+    required this.color,
   });
   final String name;
   final String amount;
   final double share;
   final int? change;
   final String currency;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -408,6 +396,7 @@ class _CategoryBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: v.clamp(0.0, 1.0),
               minHeight: 10,
+              color: color,
               backgroundColor: scheme.surfaceContainerHighest,
             ),
           ),

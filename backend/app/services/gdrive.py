@@ -2,10 +2,10 @@
 
 Unlike OneDrive and Dropbox, Google Drive for desktop cannot share a
 folder with the phone app (Google only lets an app see the files it
-created itself). PFI therefore keeps the sync files in the hidden
+created itself). Personal Finance therefore keeps the sync files in the hidden
 "app data" folder of the user's Drive, which both PFI on Windows and the
 phone app reach with the ``drive.appdata`` permission. Nothing else in
-the Drive is visible to PFI.
+the Drive is visible to Personal Finance.
 
 File names in the app data folder are flat:
 ``pfi-sync.json`` and ``<device>-<00000001>.pfisync``.
@@ -129,8 +129,9 @@ def start(redirect_uri: str) -> str:
     c = client()
     if c is None:
         raise DriveError(
-            "Google Drive sync is not available in this build of PFI. Use "
-            "OneDrive, or a build that includes google-oauth.json.")
+            "Google Drive sync is not available in this build of Personal "
+            "Finance. Use OneDrive, or a build that includes "
+            "google-oauth.json.")
     verifier = secrets.token_urlsafe(64)
     state = secrets.token_urlsafe(24)
     challenge = base64.urlsafe_b64encode(
@@ -168,7 +169,7 @@ def finish(data_dir: Path, state: str, code: str) -> None:
         entry = _pending.pop(state, None)
     if entry is None:
         raise DriveError("This sign-in is unknown or expired. Start it "
-                         "again from Settings › Sync in PFI.")
+                         "again from Settings › Sync in Personal Finance.")
     verifier, redirect_uri, _ = entry
     c = client()
     if c is None:
@@ -179,8 +180,8 @@ def finish(data_dir: Path, state: str, code: str) -> None:
         "client_id": c[0], "client_secret": c[1]})
     refresh = data.get("refresh_token")
     if not refresh:
-        raise DriveError("Google did not grant offline access. Sign in "
-                         "again and allow PFI to keep its sync files.")
+        raise DriveError("Google did not grant offline access. Sign in again "
+                         "and allow Personal Finance to keep its sync files.")
     secret_store.save(_token_path(data_dir), refresh)
 
 

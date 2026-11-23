@@ -9,13 +9,15 @@ from datetime import date
 import pandas as pd
 import plotly.graph_objects as go
 
-ORANGE = "#E69F00"
-SKYBLUE = "#56B4E9"
-GREEN = "#009E73"
-YELLOW = "#F0E442"
-BLUE = "#0072B2"
-VERM = "#D55E00"
-PURPLE = "#CC79A7"
+# The app's chart palette (scripts/m3/gen-tokens.mjs, CHART): soft, not
+# neon, and the same in light and dark mode.
+ORANGE = "#F2994A"
+SKYBLUE = "#1FB5D8"
+GREEN = "#7CB518"
+YELLOW = "#C99A06"
+BLUE = "#4C6EF5"
+VERM = "#EC5F9E"
+PURPLE = "#9775FA"
 RED = "#BE1818"
 GREY = "#8A8F98"
 ASSET_LABELS = {"stock": "Stocks", "etf": "ETFs", "bond": "Bonds",

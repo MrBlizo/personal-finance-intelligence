@@ -1,4 +1,4 @@
-// Settings: look, language, currency and sync with PFI on the PC.
+// Settings: look, language, currency and sync with Personal Finance on the PC.
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:url_launcher/url_launcher.dart';
@@ -29,7 +29,7 @@ class SettingsPage extends StatelessWidget {
             ListTile(
               leading: Icon(app.syncEnabled ? Icons.cloud_done_outlined : Icons.cloud_outlined,
                   color: scheme.primary),
-              title: Text(app.t('Sync with PFI on your PC')),
+              title: Text(app.t('Sync with Personal Finance on your PC')),
               subtitle: Text(app.syncEnabled
                   ? '${app.provider!.title} · ${app.t('Last sync: {w}', {'w': _when(last['at'], app.lang)})}'
                   : app.t('Not set up')),
@@ -89,7 +89,7 @@ class SettingsPage extends StatelessWidget {
                     message: app.t(e.key),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      onTap: () => app.setPref('accent', e.key),
+                      onTap: () => app.setPref('accent2', e.key),
                       child: CircleAvatar(
                         radius: 18,
                         backgroundColor: e.value,
@@ -173,7 +173,7 @@ class SettingsPage extends StatelessWidget {
         Card(
           child: Column(children: [
             ListTile(
-              title: Text('Personal Finance Intelligence $appVersion'),
+              title: Text('Personal Finance $appVersion'),
               subtitle: Text(app.t(
                   'Everything is stored on this phone. Sync files are encrypted with your passphrase before they reach your cloud drive.')),
             ),
@@ -192,8 +192,8 @@ class SettingsPage extends StatelessWidget {
                 final v = await newerVersion(app, force: true);
                 messenger.showSnackBar(SnackBar(
                   content: Text(v == null
-                      ? app.t('PFI is up to date.')
-                      : app.t('PFI {v} is available.', {'v': v})),
+                      ? app.t('Personal Finance is up to date.')
+                      : app.t('Personal Finance {v} is available.', {'v': v})),
                   action: v == null
                       ? null
                       : SnackBarAction(
@@ -206,7 +206,7 @@ class SettingsPage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.gavel_outlined),
               title: Text(app.t('License')),
-              subtitle: Text(app.t('Free to use. PFI may not be sold, redistributed or published in changed versions (PolyForm Strict).')),
+              subtitle: Text(app.t('Free to use. Personal Finance may not be sold, redistributed or published in changed versions (PolyForm Strict).')),
             ),
           ]),
         ),
@@ -271,7 +271,7 @@ class _SyncSetupPageState extends State<SyncSetupPage> {
         Text(app.t('Choose your cloud drive'),
             style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
-        Text(app.t('Use the same cloud drive as PFI on your PC. On the PC, the folder is {f}.',
+        Text(app.t('Use the same cloud drive as Personal Finance on your PC. On the PC, the folder is {f}.',
             {'f': provider.pcFolder})),
         const SizedBox(height: 16),
         SegmentedButton<CloudProvider>(

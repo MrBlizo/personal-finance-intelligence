@@ -62,7 +62,7 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
     const r = await post<Status>("/api/banksync/simplefin", { token });
     setToken(""); setDialog(null); st.reload();
     onMessage({ kind: r.warnings?.length ? "warning" : "success",
-      text: t("SimpleFIN is connected: {n} accounts found. Choose which PFI account each one fills.",
+      text: t("SimpleFIN is connected: {n} accounts found. Choose which Personal Finance account each one fills.",
         { n: r.links.filter((l) => l.provider === "simplefin").length })
         + (r.warnings?.length ? " " + r.warnings.join(" ") : "") });
   });
@@ -95,7 +95,7 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
     st.reload();
     const res = r.result!;
     onMessage({ kind: res.errors.length ? "warning" : "success",
-      text: t("Bank sync: {n} new transactions, {d} already in PFI.",
+      text: t("Bank sync: {n} new transactions, {d} already in Personal Finance.",
         { n: res.imported, d: res.duplicates })
         + (res.errors.length ? " " + res.errors.join(" ") : "") });
   });
@@ -107,8 +107,8 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
   return (<>
     <SettingRow icon={I.syncAlt} title={t("Bank sync")}
       description={linked.length
-        ? t("{n} bank accounts update automatically every 6 hours while PFI is open.", { n: linked.length })
-        : t("Let PFI fetch new transactions from your bank, like YNAB, through access you set up yourself. US and Canada: SimpleFIN Bridge ($15 a year, paid to SimpleFIN). Europe: Enable Banking (free for your own accounts).")}>
+        ? t("{n} bank accounts update automatically every 6 hours while Personal Finance is open.", { n: linked.length })
+        : t("Let Personal Finance fetch new transactions from your bank, like YNAB, through access you set up yourself. US and Canada: SimpleFIN Bridge ($15 a year, paid to SimpleFIN). Europe: Enable Banking (free for your own accounts).")}>
       {linked.length > 0 && <Button icon={<ArrowSync20Regular />} disabled={busy} onClick={runNow}>
         {busy ? t("Fetching…") : t("Fetch now")}</Button>}
       <Button appearance={linked.length ? "secondary" : "primary"} icon={<BuildingBank20Regular />}
@@ -128,9 +128,9 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
           ? <span className="neg">{l.last_error}</span>
           : [l.balance != null ? t("Bank balance {b}", { b: money(l.balance, l.currency) }) : "",
             l.last_synced_on ? t("Last fetched {d}", { d: date(l.last_synced_on) })
-              : l.account_id ? t("Not fetched yet") : t("Not used: choose a PFI account to fill")]
+              : l.account_id ? t("Not fetched yet") : t("Not used: choose a Personal Finance account to fill")]
             .filter(Boolean).join(" · ")}>
-        <Select value={l.account_id ? String(l.account_id) : ""} aria-label={t("PFI account")}
+        <Select value={l.account_id ? String(l.account_id) : ""} aria-label={t("Personal Finance account")}
           onChange={(_, d) => link(l, d.value)}>
           <option value="">{t("Do not import")}</option>
           {(accounts.data ?? []).filter((a) => !a.is_archived || a.id === l.account_id).map((a) => (
@@ -165,7 +165,7 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
         <FField label={t("Setup token")}>
           <Textarea value={token} rows={3} onChange={(_, d) => setToken(d.value)} />
         </FField>
-        <p className="caption">{t("PFI keeps the access encrypted on this PC and talks to SimpleFIN directly; your bank password never reaches PFI.")}</p>
+        <p className="caption">{t("Personal Finance keeps the access encrypted on this PC and talks to SimpleFIN directly; your bank password never reaches Personal Finance.")}</p>
       </Modal>)}
 
     {dialog === "enablebanking" && (
@@ -191,7 +191,7 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
           <Button appearance="primary" disabled={busy || !appId.trim() || pem.length < 100} onClick={saveEb}>
             {busy ? t("Checking…") : t("Save")}</Button>
         </>) : (<>
-          <p>{t("Choose your bank. Its sign-in page opens in the browser; after you approve, PFI lists the accounts here.")}</p>
+          <p>{t("Choose your bank. Its sign-in page opens in the browser; after you approve, Personal Finance lists the accounts here.")}</p>
           <div className="row" style={{ gap: 8, alignItems: "end" }}>
             <FField label={t("Country")}>
               <Select value={country} onChange={(_, d) => loadBanks(d.value)}>
@@ -210,17 +210,17 @@ export function BankSyncPanel({ onMessage }: { onMessage: (m: Msg) => void }) {
               {busy ? t("Waiting for the bank…") : t("Connect bank")}</Button>
           </div>
           <details style={{ marginTop: 12 }}>
-            <summary>{t("The browser showed a code instead of returning to PFI?")}</summary>
+            <summary>{t("The browser showed a code instead of returning to Personal Finance?")}</summary>
             <div className="row" style={{ gap: 8, marginTop: 8 }}>
               <Input value={code} placeholder={t("Paste the code")} onChange={(_, d) => setCode(d.value)} style={{ flex: 1 }} />
               <Button disabled={busy || code.length < 4} onClick={pasteCode}>{t("Finish")}</Button>
             </div>
           </details>
-          <p className="caption">{t("Bank consents last up to 180 days; PFI tells you when one has to be renewed.")}</p>
+          <p className="caption">{t("Bank consents last up to 180 days; Personal Finance tells you when one has to be renewed.")}</p>
         </>)}
       </Modal>)}
     {off && (
-      <Confirm text={t("PFI forgets this access and stops fetching from these banks. Transactions already imported stay.")}
+      <Confirm text={t("Personal Finance forgets this access and stops fetching from these banks. Transactions already imported stay.")}
         yesLabel={t("Disconnect")} onYes={async () => { await del(`/api/banksync/${off}`); setOff(null); st.reload(); }}
         onClose={() => setOff(null)} />)}
   </>);

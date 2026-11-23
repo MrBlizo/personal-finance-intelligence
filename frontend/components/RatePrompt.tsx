@@ -34,13 +34,13 @@ export function RatePrompt() {
     answer("rated");
   };
   return (
-    <Modal title={t("Enjoying PFI?")} onClose={() => answer("later")} actions={<>
+    <Modal title={t("Enjoying Personal Finance?")} onClose={() => answer("later")} actions={<>
       <Button appearance="primary" icon={<Star20Regular />} disabled={busy} onClick={rate}>
-        {t("Rate PFI")}</Button>
+        {t("Rate Personal Finance")}</Button>
       <Button onClick={() => answer("later")}>{t("Not now")}</Button>
       <Button appearance="subtle" onClick={() => answer("declined")}>{t("No thanks")}</Button></>}>
-      <p>{t("PFI is free and made by one developer. A rating in the Microsoft Store helps other people find it, and it takes a few seconds.")}</p>
-      <p className="caption">{t("“No thanks” and “Rate PFI” are final. With “Not now”, PFI asks once more in a month.")}</p>
+      <p>{t("Personal Finance is free and made by one developer. A rating in the Microsoft Store helps other people find it, and it takes a few seconds.")}</p>
+      <p className="caption">{t("“No thanks” and “Rate Personal Finance” are final. With “Not now”, Personal Finance asks once more in a month.")}</p>
     </Modal>
   );
 }

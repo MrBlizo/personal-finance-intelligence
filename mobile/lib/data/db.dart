@@ -1,14 +1,15 @@
-// The phone's SQLite database: same tables as PFI on Windows.
+// The phone's SQLite database: same tables as Personal Finance on Windows.
 import 'package:sqlite3/sqlite3.dart';
 
 import 'schema.dart';
 
+// The chart palette, the same as on the PC and in light and dark mode.
 const _palette = [
-  '#0072B2', '#E69F00', '#009E73', '#D55E00', '#56B4E9', '#CC79A7',
-  '#F0E442', '#BE1818', '#6B7280', '#7C3AED', '#0F766E', '#9A3412'
+  '#4C6EF5', '#F2994A', '#7CB518', '#EC5F9E', '#1FB5D8', '#9775FA',
+  '#C99A06', '#8A8F98'
 ];
 
-/// Default categories, as PFI on Windows creates them (same names, so the
+/// Default categories, as the Windows app creates them (same names, so the
 /// two lists merge when the phone and the PC sync).
 const defaultCategories = <String, Map<String, List<String>>>{
   'income': {

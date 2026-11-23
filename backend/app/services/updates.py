@@ -1,4 +1,4 @@
-"""Tell users of the GitHub installer when a newer PFI is out.
+"""Tell users of the GitHub installer when a newer Personal Finance is out.
 
 Store installs update themselves, so the check is skipped there. The only
 request is an anonymous GET of the public "latest release" page of the PFI

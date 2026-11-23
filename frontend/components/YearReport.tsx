@@ -137,7 +137,7 @@ export function YearReport() {
                 </label>))}
               <p className="caption">{t("Subcategories follow their parent unless you mark them separately.")}</p>
             </div>)}
-          <p className="caption">{t("PFI is not tax advice. Check what is deductible where you live.")}</p>
+          <p className="caption">{t("Personal Finance is not tax advice. Check what is deductible where you live.")}</p>
         </Section>
       </>)}
     </>

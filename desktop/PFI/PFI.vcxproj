@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  WinUI 3 (Windows App SDK) desktop shell for Personal Finance Intelligence.
+  WinUI 3 (Windows App SDK) desktop shell for Personal Finance.
   Unpackaged + self-contained: produces a plain PFI.exe with the Windows App
   SDK runtime next to it (no MSIX install needed).
 

@@ -146,8 +146,8 @@ def set_link(link_id: int, body: LinkIn, db: Session = Depends(get_db)):
                             "Refresh the list and try again.")
     if body.account_id is not None and \
             db.get(Account, body.account_id) is None:
-        raise HTTPException(422, "The PFI account does not exist. Choose "
-                            "another account.")
+        raise HTTPException(422, "The Personal Finance account does not "
+                                 "exist. Choose another account.")
     if body.account_id != link.account_id:
         link.last_synced_on = None
     link.account_id = body.account_id
@@ -171,7 +171,7 @@ def disconnect(provider: str, db: Session = Depends(get_db)):
     return _out(db)
 
 
-_PAGE = """<!doctype html><meta charset="utf-8"><title>PFI</title>
+_PAGE = """<!doctype html><meta charset="utf-8"><title>Personal Finance</title>
 <body style="font:16px system-ui;margin:15vh auto;max-width:520px;
 text-align:center"><h1 style="font-size:24px">{title}</h1><p>{text}</p>"""
 
@@ -183,7 +183,7 @@ def eb_callback(state: str = "", code: str = "", error: str = "",
         return _PAGE.format(
             title="Bank connection cancelled",
             text="Nothing was connected. You can close this tab and try "
-                 "again in PFI.")
+                 "again in Personal Finance.")
     try:
         accounts = banksync.eb_finish(_dir(), code, state)
         banksync.refresh_links(db, _dir(), banksync.ENABLEBANKING)
@@ -192,5 +192,6 @@ def eb_callback(state: str = "", code: str = "", error: str = "",
                                          text=str(exc)), status_code=400)
     return _PAGE.format(
         title="Your bank is connected",
-        text=f"PFI can now read {len(accounts)} account(s). Close this tab "
-             "and choose, in PFI, which PFI account each one fills.")
+        text=f"Personal Finance can now read {len(accounts)} account(s). "
+             "Close this tab and choose, in Personal Finance, which Personal "
+             "Finance account each one fills.")

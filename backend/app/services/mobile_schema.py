@@ -1,4 +1,4 @@
-"""Generate the database schema the PFI phone app uses.
+"""Generate the database schema the Personal Finance phone app uses.
 
 The phone app keeps the same SQLite tables as the PC, so sync can exchange
 raw column values. This module writes, from the ORM models:

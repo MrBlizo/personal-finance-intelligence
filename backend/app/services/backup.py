@@ -12,7 +12,7 @@ another PC) and ``uploaded``. Only automatic backups are ever deleted by
 the app. Backups go to the folder chosen in Settings, or to
 ``<data_dir>/backups`` when none is chosen or it is unavailable.
 ``.dump`` files from PFI 0.3 are still listed, but since 0.5 they can only
-be restored with PFI 0.4.0.
+be restored with Personal Finance 0.4.0.
 """
 import json
 import logging
@@ -121,7 +121,8 @@ def _check_folder(folder: Path) -> str | None:
         probe.write_bytes(b"ok")
         probe.unlink()
     except OSError as exc:
-        return f"PFI cannot write to {folder} ({exc.strerror or exc})."
+        return (f"Personal Finance cannot write to {folder} "
+                f"({exc.strerror or exc}).")
     return None
 
 
@@ -159,7 +160,8 @@ def save_config(data_dir: Path, folder: str | None, encrypt: bool,
         if not target.is_absolute():
             raise BackupError(
                 f"'{folder}' is not a full folder path. Choose the folder "
-                "with Browse, e.g. C:\\Users\\you\\OneDrive\\PFI backups.")
+                "with Browse, e.g. C:\\Users\\you\\OneDrive\\Personal "
+                "Finance backups.")
         problem = _check_folder(target)
         if problem:
             raise BackupError(problem + " Choose another folder or connect "
@@ -321,7 +323,8 @@ def decrypt_file(src: Path, dst: Path, password: str) -> None:
     with open(src, "rb") as fin, open(dst, "wb") as fout:
         head = fin.read(len(MAGIC) + 16 + 1 + 8)
         if len(head) < len(MAGIC) + 25 or not head.startswith(MAGIC):
-            raise BackupError("This is not an encrypted PFI backup.")
+            raise BackupError("This is not an encrypted Personal Finance "
+                              "backup.")
         salt = head[8:24]
         log_n, prefix = head[24], head[25:33]
         aead = AESGCM(_key(password, salt, log_n))
@@ -381,7 +384,7 @@ def write_archive(db_path: Path, attachments: Path, out: Path,
         archive = Path(tmp) / "backup.zip"
         with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zf:
             zf.writestr("manifest.json", json.dumps({
-                "app": "Personal Finance Intelligence", "format": 1,
+                "app": "Personal Finance", "format": 1,
                 "version": __version__,
                 "created": datetime.now().isoformat(timespec="seconds")}))
             zf.write(snap, DB_ENTRY)
@@ -464,8 +467,8 @@ def _extract(path: Path, work: Path, password: str | None,
             names = zf.namelist()
             if DB_ENTRY not in names or "manifest.json" not in names:
                 raise BackupError(
-                    "This file is not a PFI backup (no database inside). "
-                    "Choose a file made with 'Back up now'.")
+                    "This file is not a Personal Finance backup (no database "
+                    "inside). Choose a file made with 'Back up now'.")
             for name in names:
                 target = (work / "out" / name).resolve()
                 if not str(target).startswith(str((work / "out").resolve())):
@@ -473,8 +476,8 @@ def _extract(path: Path, work: Path, password: str | None,
             zf.extractall(work / "out")
     except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
         raise BackupError(
-            "This file is not a PFI backup or it is damaged. Choose a file "
-            "made with 'Back up now'.") from exc
+            "This file is not a Personal Finance backup or it is damaged. "
+            "Choose a file made with 'Back up now'.") from exc
     db = work / "out" / DB_ENTRY
     _check_sqlite(db)
     return db, work / "out" / "attachments"
@@ -494,8 +497,8 @@ def _check_sqlite(db: Path) -> None:
                           ) from exc
     if ok != "ok" or "transactions" not in tables:
         raise BackupError(
-            "The database in the backup is damaged or not from PFI. Choose "
-            "another backup.")
+            "The database in the backup is damaged or not from Personal "
+            "Finance. Choose another backup.")
 
 
 def install_database(new_db: Path, new_files: Path | None, db_path: Path,
@@ -526,9 +529,10 @@ def install_database(new_db: Path, new_files: Path | None, db_path: Path,
     except OSError as exc:
         staged.unlink(missing_ok=True)
         raise BackupError(
-            f"The database file could not be replaced ({exc}). Your data "
-            "was not changed. Close other programs that may use the PFI "
-            "folder (e.g. a virus scan), restart PFI and try again.") from exc
+            f"The database file could not be replaced ({exc}). Your data was "
+            "not changed. Close other programs that may use the Personal "
+            "Finance folder (e.g. a virus scan), restart Personal Finance and "
+            "try again.") from exc
     live = Path(data_dir) / "attachments"
     old = Path(data_dir) / "attachments.old"
     shutil.rmtree(old, ignore_errors=True)
@@ -544,7 +548,7 @@ def install_database(new_db: Path, new_files: Path | None, db_path: Path,
         raise BackupError(
             f"The data was restored, but the receipts could not be copied "
             f"({exc}). The previous receipts were kept. Restore again after "
-            "restarting PFI.") from exc
+            "restarting Personal Finance.") from exc
     shutil.rmtree(old, ignore_errors=True)
 
 

@@ -198,7 +198,7 @@ namespace pfi
         if (nul != INVALID_HANDLE_VALUE) CloseHandle(nul);
         if (!ok)
             return L"Could not start the backend (" + LastErrorText(err) + L").\nCommand: " + cmd +
-                   L"\nAn antivirus program may be blocking it; allow PFI and try again.";
+                   L"\nAn antivirus program may be blocking it; allow Personal Finance and try again.";
         AssignProcessToJobObject(m_job, pi.hProcess);
         ResumeThread(pi.hThread);
         CloseHandle(pi.hThread);

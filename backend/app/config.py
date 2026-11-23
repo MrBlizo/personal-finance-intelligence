@@ -19,7 +19,7 @@ def _default_data_dir() -> Path:
 
 
 class Settings(BaseSettings):
-    """Runtime settings for the Personal Finance Intelligence backend.
+    """Runtime settings for the Personal Finance backend.
 
     Attributes
     ----------
@@ -71,11 +71,11 @@ class Settings(BaseSettings):
         if self.database_url:
             if not self.database_url.startswith("sqlite:///"):
                 raise ValueError(
-                    f"PFI_DATABASE_URL must be a SQLite URL "
-                    f"(sqlite:///C:/path/pfi.sqlite), not "
-                    f"'{self.database_url.split(':')[0]}'. Since 0.4 PFI "
-                    "stores its data in SQLite; remove the setting to use "
-                    "the default file in the data folder.")
+                    "PFI_DATABASE_URL must be a SQLite URL "
+                    "(sqlite:///C:/path/pfi.sqlite), not "
+                    f"'{self.database_url.split(':')[0]}'. Since 0.4 Personal "
+                    "Finance stores its data in SQLite; remove the setting to "
+                    "use the default file in the data folder.")
             return Path(self.database_url.removeprefix("sqlite:///"))
         return self.data_dir / "pfi.sqlite"
 

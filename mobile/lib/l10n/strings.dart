@@ -1,4 +1,4 @@
-// Translations: English text is the key (as in PFI on Windows).
+// Translations: English text is the key (as in Personal Finance on Windows).
 const _fr = <String, String>{
   'Home': 'Accueil',
   'Transactions': 'Transactions',
@@ -51,8 +51,8 @@ const _fr = <String, String>{
   'Assign to {c}': 'Attribuer à {c}',
   'Needs {a} this month': 'Besoin de {a} ce mois-ci',
   'Overspent': 'Dépassé',
-  'Some amounts are missing an exchange rate ({c}). Update the rates in PFI on your PC.':
-      'Des montants n\'ont pas de taux de change ({c}). Mettez à jour les taux dans PFI sur votre PC.',
+  'Some amounts are missing an exchange rate ({c}). Update the rates in Personal Finance on your PC.':
+      'Des montants n\'ont pas de taux de change ({c}). Mettez à jour les taux dans Personal Finance sur votre PC.',
   'Appearance': 'Apparence',
   'Accent colour': "Couleur d'accent",
   'Theme': 'Thème',
@@ -62,7 +62,7 @@ const _fr = <String, String>{
   'Language': 'Langue',
   'Budget currency': 'Devise du budget',
   'Sync': 'Synchronisation',
-  'Sync with PFI on your PC': 'Synchroniser avec PFI sur votre PC',
+  'Sync with Personal Finance on your PC': 'Synchroniser avec Personal Finance sur votre PC',
   'Not set up': 'Non configurée',
   'Last sync: {w}': 'Dernière synchronisation : {w}',
   'Sync now': 'Synchroniser maintenant',
@@ -71,8 +71,8 @@ const _fr = <String, String>{
   'Set up sync': 'Configurer la synchronisation',
   'Synced: {s} sent, {r} received.': 'Synchronisé : {s} envoyées, {r} reçues.',
   'Choose your cloud drive': 'Choisissez votre stockage en ligne',
-  'Use the same cloud drive as PFI on your PC. On the PC, the folder is {f}.':
-      'Utilisez le même stockage en ligne que PFI sur votre PC. Sur le PC, le dossier est {f}.',
+  'Use the same cloud drive as Personal Finance on your PC. On the PC, the folder is {f}.':
+      'Utilisez le même stockage en ligne que Personal Finance sur votre PC. Sur le PC, le dossier est {f}.',
   'Sign in to {p}': 'Se connecter à {p}',
   'Signed in to {p}': 'Connecté à {p}',
   'Not available in this build yet.': 'Pas encore disponible dans cette version.',
@@ -82,10 +82,10 @@ const _fr = <String, String>{
   'Name of this phone': 'Nom de ce téléphone',
   'Start syncing': 'Démarrer la synchronisation',
   'Checking the passphrase…': 'Vérification de la phrase secrète…',
-  'Welcome to PFI': 'Bienvenue dans PFI',
+  'Welcome to Personal Finance': 'Bienvenue dans Personal Finance',
   'Your budget, investments and plans — private, on your devices.':
       'Votre budget, vos placements et vos projets — privés, sur vos appareils.',
-  'Connect to PFI on my PC': 'Me connecter à PFI sur mon PC',
+  'Connect to Personal Finance on my PC': 'Me connecter à Personal Finance sur mon PC',
   'Start fresh on this phone': 'Commencer sur ce téléphone',
   'Choose your main currency': 'Choisissez votre devise principale',
   'Continue': 'Continuer',
@@ -132,7 +132,7 @@ const _fr = <String, String>{
   'A goal sets money aside for something: a trip, a car, an emergency fund.': 'Un objectif met de l\'argent de côté pour quelque chose : un voyage, une voiture, une réserve de secours.',
   'Add holdings on your PC': 'Ajoutez des placements sur votre PC',
   'Add rent, subscriptions and salary to see them coming.': 'Ajoutez le loyer, les abonnements et le salaire pour les voir venir.',
-  'Add stocks, funds and crypto in PFI on your PC; they appear here after a sync.': 'Ajoutez actions, fonds et cryptos dans PFI sur votre PC ; ils apparaissent ici après une synchronisation.',
+  'Add stocks, funds and crypto in Personal Finance on your PC; they appear here after a sync.': 'Ajoutez actions, fonds et cryptos dans Personal Finance sur votre PC ; ils apparaissent ici après une synchronisation.',
   'All bills and income': 'Toutes les factures et revenus',
   'Bill': 'Facture',
   'Bills': 'Factures',
@@ -162,7 +162,7 @@ const _fr = <String, String>{
   'Paid off around {d} at the minimum': 'Remboursée vers {d} au minimum',
   'Plan': 'Plan',
   'Portfolio value': 'Valeur du portefeuille',
-  'Prices and trades are updated in PFI on your PC.': 'Les cours et les opérations se mettent à jour dans PFI sur votre PC.',
+  'Prices and trades are updated in Personal Finance on your PC.': 'Les cours et les opérations se mettent à jour dans Personal Finance sur votre PC.',
   'Quarterly': 'Trimestriel',
   'Repeats': 'Répétition',
   'Save for something': 'Épargnez pour un projet',
@@ -202,7 +202,7 @@ const _fr = <String, String>{
   'Earned': 'Gagné',
   'Export the statement from your bank app as CSV. The file stays on this phone.': 'Exportez le relevé depuis l\'app de votre banque au format CSV. Le fichier reste sur ce téléphone.',
   'Flip signs (spending is shown as positive)': 'Inverser les signes (les dépenses sont positives)',
-  'Free to use. PFI may not be sold, redistributed or published in changed versions (PolyForm Strict).': 'Gratuit. PFI ne peut être ni vendu, ni redistribué, ni publié dans une version modifiée (PolyForm Strict).',
+  'Free to use. Personal Finance may not be sold, redistributed or published in changed versions (PolyForm Strict).': 'Gratuit. Personal Finance ne peut être ni vendu, ni redistribué, ni publié dans une version modifiée (PolyForm Strict).',
   'Highest spending': 'Dépenses les plus élevées',
   'Import a bank statement': 'Importer un relevé bancaire',
   'Import {n} rows': 'Importer {n} lignes',
@@ -224,8 +224,8 @@ const _fr = <String, String>{
   'Once a day, asks GitHub whether a newer version is out. Nothing about you or your data is sent.': 'Une fois par jour, demande à GitHub si une nouvelle version existe. Rien sur vous ni sur vos données n\'est envoyé.',
   'Over by {v} this month. Move money from another category to cover it.': 'Dépassement de {v} ce mois-ci. Déplacez de l\'argent d\'une autre catégorie pour le couvrir.',
   'Over-budget alerts': 'Alertes de dépassement',
-  'PFI is up to date.': 'PFI est à jour.',
-  'PFI {v} is available.': 'PFI {v} est disponible.',
+  'Personal Finance is up to date.': 'Personal Finance est à jour.',
+  'Personal Finance {v} is available.': 'Personal Finance {v} est disponible.',
   'Paid': 'Payé',
   'Paid this month': 'Payé ce mois-ci',
   'Preview': 'Aperçu',
@@ -255,7 +255,7 @@ const _fr = <String, String>{
   '{n} rows can be imported.': '{n} lignes peuvent être importées.',
   '{n} rows could not be read (lines {l}).': '{n} lignes n\'ont pas pu être lues (lignes {l}).',
   '{n} transactions imported': '{n} transactions importées',
-  '{n} were already in PFI and were skipped. New rows are in the review list.': '{n} étaient déjà dans PFI et ont été ignorées. Les nouvelles lignes sont dans la liste à vérifier.',
+  '{n} were already in Personal Finance and were skipped. New rows are in the review list.': '{n} étaient déjà dans Personal Finance et ont été ignorées. Les nouvelles lignes sont dans la liste à vérifier.',
   '{v} less than the month before': '{v} de moins que le mois précédent',
   '{v} more than the month before': '{v} de plus que le mois précédent',
   '{y} so far': '{y} jusqu\'ici',
@@ -270,6 +270,8 @@ const _fr = <String, String>{
   'Pink': 'Rose',
   'Brown': 'Marron',
   'Slate': 'Ardoise',
+  'The receipt could not be read. Take the photo again with the receipt flat, in good light.':
+      'Le ticket n\'a pas pu être lu. Reprenez la photo avec le ticket bien à plat et un bon éclairage.',
 };
 
 const _ar = <String, String>{
@@ -324,8 +326,8 @@ const _ar = <String, String>{
   'Assign to {c}': 'تخصيص لـ {c}',
   'Needs {a} this month': 'يحتاج {a} هذا الشهر',
   'Overspent': 'تجاوز',
-  'Some amounts are missing an exchange rate ({c}). Update the rates in PFI on your PC.':
-      'بعض المبالغ بلا سعر صرف ({c}). حدّث الأسعار في PFI على حاسوبك.',
+  'Some amounts are missing an exchange rate ({c}). Update the rates in Personal Finance on your PC.':
+      'بعض المبالغ بلا سعر صرف ({c}). حدّث الأسعار في Personal Finance على حاسوبك.',
   'Appearance': 'المظهر',
   'Accent colour': 'لون التمييز',
   'Theme': 'السمة',
@@ -335,7 +337,7 @@ const _ar = <String, String>{
   'Language': 'اللغة',
   'Budget currency': 'عملة الميزانية',
   'Sync': 'المزامنة',
-  'Sync with PFI on your PC': 'المزامنة مع PFI على حاسوبك',
+  'Sync with Personal Finance on your PC': 'المزامنة مع Personal Finance على حاسوبك',
   'Not set up': 'غير مُعدّة',
   'Last sync: {w}': 'آخر مزامنة: {w}',
   'Sync now': 'زامِن الآن',
@@ -344,8 +346,8 @@ const _ar = <String, String>{
   'Set up sync': 'إعداد المزامنة',
   'Synced: {s} sent, {r} received.': 'تمت المزامنة: أُرسل {s} واستُلم {r}.',
   'Choose your cloud drive': 'اختر تخزينك السحابي',
-  'Use the same cloud drive as PFI on your PC. On the PC, the folder is {f}.':
-      'استخدم التخزين السحابي نفسه الذي يستخدمه PFI على حاسوبك. المجلد على الحاسوب هو {f}.',
+  'Use the same cloud drive as Personal Finance on your PC. On the PC, the folder is {f}.':
+      'استخدم التخزين السحابي نفسه الذي يستخدمه Personal Finance على حاسوبك. المجلد على الحاسوب هو {f}.',
   'Sign in to {p}': 'تسجيل الدخول إلى {p}',
   'Signed in to {p}': 'تم تسجيل الدخول إلى {p}',
   'Not available in this build yet.': 'غير متاح في هذا الإصدار بعد.',
@@ -355,10 +357,10 @@ const _ar = <String, String>{
   'Name of this phone': 'اسم هذا الهاتف',
   'Start syncing': 'بدء المزامنة',
   'Checking the passphrase…': 'جارٍ التحقق من عبارة المرور…',
-  'Welcome to PFI': 'مرحبًا بك في PFI',
+  'Welcome to Personal Finance': 'مرحبًا بك في Personal Finance',
   'Your budget, investments and plans — private, on your devices.':
       'ميزانيتك واستثماراتك وخططك — خاصة، على أجهزتك.',
-  'Connect to PFI on my PC': 'الاتصال بـ PFI على حاسوبي',
+  'Connect to Personal Finance on my PC': 'الاتصال بـ Personal Finance على حاسوبي',
   'Start fresh on this phone': 'البدء من جديد على هذا الهاتف',
   'Choose your main currency': 'اختر عملتك الرئيسية',
   'Continue': 'متابعة',
@@ -405,7 +407,7 @@ const _ar = <String, String>{
   'A goal sets money aside for something: a trip, a car, an emergency fund.': 'الهدف يدّخر المال لشيء ما: رحلة، سيارة، صندوق طوارئ.',
   'Add holdings on your PC': 'أضف الاستثمارات على حاسوبك',
   'Add rent, subscriptions and salary to see them coming.': 'أضف الإيجار والاشتراكات والراتب لتراها قبل موعدها.',
-  'Add stocks, funds and crypto in PFI on your PC; they appear here after a sync.': 'أضف الأسهم والصناديق والعملات المشفرة في PFI على حاسوبك؛ تظهر هنا بعد المزامنة.',
+  'Add stocks, funds and crypto in Personal Finance on your PC; they appear here after a sync.': 'أضف الأسهم والصناديق والعملات المشفرة في Personal Finance على حاسوبك؛ تظهر هنا بعد المزامنة.',
   'All bills and income': 'كل الفواتير والمداخيل',
   'Bill': 'فاتورة',
   'Bills': 'الفواتير',
@@ -435,7 +437,7 @@ const _ar = <String, String>{
   'Paid off around {d} at the minimum': 'تُسدَّد نحو {d} بالحد الأدنى',
   'Plan': 'التخطيط',
   'Portfolio value': 'قيمة المحفظة',
-  'Prices and trades are updated in PFI on your PC.': 'تُحدَّث الأسعار والعمليات في PFI على حاسوبك.',
+  'Prices and trades are updated in Personal Finance on your PC.': 'تُحدَّث الأسعار والعمليات في Personal Finance على حاسوبك.',
   'Quarterly': 'ربع سنوي',
   'Repeats': 'التكرار',
   'Save for something': 'ادّخر لشيء ما',
@@ -475,7 +477,7 @@ const _ar = <String, String>{
   'Earned': 'المكتسب',
   'Export the statement from your bank app as CSV. The file stays on this phone.': 'صدّر الكشف من تطبيق بنكك بصيغة CSV. يبقى الملف على هذا الهاتف.',
   'Flip signs (spending is shown as positive)': 'عكس الإشارات (المصاريف تظهر موجبة)',
-  'Free to use. PFI may not be sold, redistributed or published in changed versions (PolyForm Strict).': 'مجاني الاستخدام. لا يجوز بيع PFI أو إعادة توزيعه أو نشره بنسخ معدّلة (PolyForm Strict).',
+  'Free to use. Personal Finance may not be sold, redistributed or published in changed versions (PolyForm Strict).': 'مجاني الاستخدام. لا يجوز بيع Personal Finance أو إعادة توزيعه أو نشره بنسخ معدّلة (PolyForm Strict).',
   'Highest spending': 'أعلى إنفاق',
   'Import a bank statement': 'استيراد كشف بنكي',
   'Import {n} rows': 'استيراد {n} سطرًا',
@@ -497,8 +499,8 @@ const _ar = <String, String>{
   'Once a day, asks GitHub whether a newer version is out. Nothing about you or your data is sent.': 'مرة في اليوم، يسأل GitHub عن وجود إصدار أحدث. لا يُرسل أي شيء عنك أو عن بياناتك.',
   'Over by {v} this month. Move money from another category to cover it.': 'تجاوز بمقدار {v} هذا الشهر. انقل مالًا من فئة أخرى لتغطيته.',
   'Over-budget alerts': 'تنبيهات تجاوز الميزانية',
-  'PFI is up to date.': 'PFI محدّث.',
-  'PFI {v} is available.': 'PFI {v} متاح.',
+  'Personal Finance is up to date.': 'Personal Finance محدّث.',
+  'Personal Finance {v} is available.': 'Personal Finance {v} متاح.',
   'Paid': 'المدفوع',
   'Paid this month': 'المدفوع هذا الشهر',
   'Preview': 'معاينة',
@@ -528,7 +530,7 @@ const _ar = <String, String>{
   '{n} rows can be imported.': 'يمكن استيراد {n} سطرًا.',
   '{n} rows could not be read (lines {l}).': 'تعذّرت قراءة {n} سطرًا (الأسطر {l}).',
   '{n} transactions imported': 'تم استيراد {n} معاملة',
-  '{n} were already in PFI and were skipped. New rows are in the review list.': '{n} موجودة مسبقًا في PFI وتم تخطيها. الأسطر الجديدة في قائمة المراجعة.',
+  '{n} were already in Personal Finance and were skipped. New rows are in the review list.': '{n} موجودة مسبقًا في Personal Finance وتم تخطيها. الأسطر الجديدة في قائمة المراجعة.',
   '{v} less than the month before': 'أقل بـ {v} من الشهر السابق',
   '{v} more than the month before': 'أكثر بـ {v} من الشهر السابق',
   '{y} so far': '{y} حتى الآن',
@@ -543,6 +545,8 @@ const _ar = <String, String>{
   'Pink': 'وردي',
   'Brown': 'بني',
   'Slate': 'رمادي أزرق',
+  'The receipt could not be read. Take the photo again with the receipt flat, in good light.':
+      'تعذّرت قراءة الإيصال. التقط الصورة مجددًا والإيصال مسطّح وفي إضاءة جيدة.',
 };
 
 String translate(String lang, String text, [Map<String, Object?> args = const {}]) {

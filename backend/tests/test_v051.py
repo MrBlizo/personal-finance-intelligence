@@ -89,7 +89,7 @@ def test_damaged_backup_is_rejected(api):
     path.write_bytes(bytes(data))
     r = api.post(f"/api/backups/{b['name']}/test")
     assert r.status_code == 422
-    assert "damaged" in r.json()["detail"] or "not a PFI" in \
+    assert "damaged" in r.json()["detail"] or "not a Personal Finance" in \
         r.json()["detail"]
     assert api.post("/api/backups/pfi-manual-20990101-000000.pfibak/test"
                     ).status_code == 404

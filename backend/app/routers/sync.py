@@ -102,7 +102,7 @@ def google_signout(db: Session = Depends(get_db)):
     return _out(db)
 
 
-_PAGE = """<!doctype html><meta charset="utf-8"><title>PFI</title>
+_PAGE = """<!doctype html><meta charset="utf-8"><title>Personal Finance</title>
 <body style="font:16px system-ui;margin:15vh auto;max-width:520px;
 text-align:center"><h1 style="font-size:24px">{title}</h1><p>{text}</p>"""
 
@@ -113,7 +113,7 @@ def google_callback(state: str = "", code: str = "", error: str = ""):
         return _PAGE.format(
             title="Sign-in cancelled",
             text="Google Drive was not connected. You can close this tab "
-                 "and try again in PFI.")
+                 "and try again in Personal Finance.")
     try:
         gdrive.finish(get_settings().data_dir, state, code)
     except gdrive.DriveError as exc:
@@ -121,4 +121,4 @@ def google_callback(state: str = "", code: str = "", error: str = ""):
                                          text=str(exc)), status_code=400)
     return _PAGE.format(
         title="Google Drive is connected",
-        text="You can close this tab and go back to PFI.")
+        text="You can close this tab and go back to Personal Finance.")

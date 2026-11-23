@@ -1,6 +1,6 @@
 # Microsoft Store submission kit
 
-Everything to paste into Partner Center for **Personal Finance Intelligence**.
+Everything to paste into Partner Center for **Personal Finance**.
 
 ## 1. Before the first build for the Store
 
@@ -73,19 +73,19 @@ Version 1.0.0
 
 ## 3. Store listing: English
 
-**Product name:** Personal Finance Intelligence
+**Product name:** Personal Finance
 
 **Short description (≤ 100):** Budgets, investments and cash-flow forecasts.
 Private: your data stays on your PC.
 
 **Description:**
 
-Personal Finance Intelligence brings all your money together in one native
+Personal Finance brings all your money together in one native
 Windows 11 app, without an account and without the cloud.
 
 • Accounts in any currency: checking, savings, cash, cards, investments and
 loans, converted to the currency you report in.
-• Import bank statements (CSV) from any bank. PFI remembers each format and
+• Import bank statements (CSV) from any bank. Personal Finance remembers each format and
 learns your categories from the transactions you categorise yourself.
 • Bills & recurring payments: rent, salary and subscriptions post themselves
 on the due date, and Windows reminds you before they are due.
@@ -99,7 +99,7 @@ time-weighted returns, dividends and target allocation.
 • Windows Hello app lock, automatic backups, light and dark mode.
 • English, French and Arabic.
 
-Your data is stored in a private database on your PC. PFI has no ads, no
+Your data is stored in a private database on your PC. Personal Finance has no ads, no
 tracking and no account. Source code: github.com/MrBlizo/personal-finance-intelligence
 
 **Features (up to 20):**
@@ -131,12 +131,12 @@ Privé : vos données restent sur votre PC.
 
 **Description :**
 
-Personal Finance Intelligence réunit tout votre argent dans une application
+Personal Finance réunit tout votre argent dans une application
 Windows 11 native, sans compte et sans cloud.
 
 • Comptes dans toutes les devises : courant, épargne, espèces, cartes,
 placements et prêts, convertis dans votre devise de référence.
-• Import des relevés bancaires (CSV) de n'importe quelle banque. PFI retient
+• Import des relevés bancaires (CSV) de n'importe quelle banque. Personal Finance retient
 chaque format et apprend vos catégories à partir de celles que vous
 attribuez vous-même.
 • Factures et paiements récurrents : loyer, salaire et abonnements se
@@ -164,12 +164,12 @@ placements, trésorerie, patrimoine, gestion d'argent
 
 **الوصف:**
 
-يجمع Personal Finance Intelligence كل أموالك في تطبيق Windows 11 أصلي، بلا
+يجمع Personal Finance كل أموالك في تطبيق Windows 11 أصلي، بلا
 حساب وبلا سحابة.
 
 • حسابات بأي عملة: جارية، ادخار، نقد، بطاقات، استثمارات وقروض، محوّلة إلى
 عملة التقارير التي تختارها.
-• استيراد كشوف الحسابات البنكية (CSV) من أي بنك. يتذكر PFI صيغة كل ملف
+• استيراد كشوف الحسابات البنكية (CSV) من أي بنك. يتذكر Personal Finance صيغة كل ملف
 ويتعلم فئاتك من المعاملات التي تصنفها بنفسك.
 • الفواتير والدفعات المتكررة: الإيجار والراتب والاشتراكات تُسجَّل تلقائياً
 في موعدها، ويذكّرك Windows قبل استحقاقها.

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button, Tooltip } from "@fluentui/react-components";
 import { ChevronLeft20Regular, ChevronRight20Regular } from "@fluentui/react-icons";
-import { CategoryIcon } from "@/components/CategoryIcon";
+import { CategoryIcon, categoryColor } from "@/components/CategoryIcon";
 import { Empty, Kpi, PageHead, Section, Spinner, useLoad } from "@/components/ui";
 import { get } from "@/lib/api";
 import { date, locale, money, pct } from "@/lib/format";
@@ -128,7 +128,7 @@ export default function Months() {
                 sub={t("Bills {a} · Cards & loans {b}", { a: money(d.totals.bills, cur, 0), b: money(d.totals.debt_payments, cur, 0) })} />
               <Kpi tone="cyan" label={t("Saved")} value={money(d.totals.saved, cur)}
                 sub={t("Moved to savings and investments")} />
-              <Kpi label={t("Savings rate")} value={d.totals.income > 0 ? pct(d.totals.net / d.totals.income) : "—"}
+              <Kpi tone="pink" label={t("Savings rate")} value={d.totals.income > 0 ? pct(d.totals.net / d.totals.income) : "—"}
                 sub={t("(income − expenses) / income")} />
             </div>
           </div>
@@ -147,7 +147,8 @@ export default function Months() {
                             <span className="num">{money(c.amount, cur)}</span>
                           </div>
                           <div className="cat-bar-track" aria-hidden>
-                            <span style={{ width: `${Math.max(2, c.share * 100)}%` }} />
+                            <span style={{ width: `${Math.max(2, c.share * 100)}%`,
+                              background: categoryColor(c.category) }} />
                           </div>
                           <div className="caption">
                             {pct(c.share, 0)} · {c.previous === 0 ? t("new this month")

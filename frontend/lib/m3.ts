@@ -11,7 +11,7 @@ import tokens from "./m3-tokens.json";
 
 export type Roles = Record<string, string>;
 
-/** The PFI seed colour the static tokens were generated from. */
+/** The Personal Finance seed colour the static tokens were generated from. */
 export const SEED = tokens.seed;
 
 const ROLES = Object.keys(tokens.light).filter((k) =>

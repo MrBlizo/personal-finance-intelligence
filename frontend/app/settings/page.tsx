@@ -96,7 +96,7 @@ export default function SettingsPage() {
                 </Select>
               </SettingRow>
               <SettingRow icon={I.palette} title={t("Accent colour")}
-                description={t("Seeds the whole colour scheme: buttons, surfaces, highlights and charts. PFI violet matches the phone app and the website, and turns dark mode neon.")}>
+                description={t("Colours buttons, highlights and menus. Indigo matches the phone app and the website. Tiles and charts keep the same calm colours in light and dark mode.")}>
                 <div className="swatches">
                   {ACCENTS.map((a) => (
                     <Tooltip key={a.id || "default"} content={t(a.label)} relationship="label">
@@ -123,7 +123,7 @@ export default function SettingsPage() {
               <SettingRow icon={I.lock} title={t("App lock with Windows Hello")}
                 description={!shell ? t("Only available in the desktop app.")
                   : hello === false ? t("Windows Hello is not set up on this PC. Set up a PIN, fingerprint or face in Windows Settings › Accounts › Sign-in options.")
-                  : t("Ask for your face, fingerprint or Windows PIN when PFI opens and after it has been idle.")}>
+                  : t("Ask for your face, fingerprint or Windows PIN when Personal Finance opens and after it has been idle.")}>
                 {s.app_lock === "hello" && shell && (
                   <Button icon={<LockClosed20Regular />} onClick={() => requestLock()}>{t("Lock now")}</Button>)}
                 <Switch checked={s.app_lock === "hello"} disabled={!shell || hello === false}
@@ -156,7 +156,7 @@ export default function SettingsPage() {
             <div className="group-title">{t("Smart categories")}</div>
             <div className="settings-group">
               <SettingRow icon={I.autoAwesome} title={t("Categorise imports automatically")}
-                description={t("Uses what PFI learned from the transactions you categorised yourself. Rules always come first.")}>
+                description={t("Uses what Personal Finance learned from the transactions you categorised yourself. Rules always come first.")}>
                 <Switch checked={s.auto_categorize} onChange={(_, d) => run(async () => {
                   await save({ auto_categorize: d.checked });
                   return d.checked ? t("Automatic categorisation is on.") : t("Automatic categorisation is off.");
@@ -344,7 +344,7 @@ export default function SettingsPage() {
               </SettingRow>
 {refs.data?.accounts.some((a) => a.is_demo) && (
                 <SettingRow icon={I.science} title={t("Demo data")}
-                  description={t("Demo data from an earlier version of PFI is still here. Remove it to keep only your own data.")}>
+                  description={t("Demo data from an earlier version of Personal Finance is still here. Remove it to keep only your own data.")}>
                   <Button onClick={() => setConfirm({ danger: true,
                     text: t("Remove all demo accounts, transactions, goals, budgets and demo rates?"),
                     run: async () => { await del("/api/demo"); refs.reload(); rates.reload();
@@ -367,14 +367,14 @@ export default function SettingsPage() {
                 <a className="link" href="https://github.com/MrBlizo/personal-finance-intelligence"
                   target="_blank" rel="noreferrer">GitHub</a>
               </SettingRow>
-              <SettingRow icon={I.volunteerActivism} title={t("Support PFI")}
-                description={t("PFI is free and stays free. If it helps you, you can support its development. A donation unlocks nothing; every feature is for everyone.")}>
+              <SettingRow icon={I.volunteerActivism} title={t("Support Personal Finance")}
+                description={t("Personal Finance is free and stays free. If it helps you, you can support its development. A donation unlocks nothing; every feature is for everyone.")}>
                 <a className="link" href="https://mrblizo.github.io/personal-finance-intelligence/support/"
-                  target="_blank" rel="noreferrer">{t("Support PFI")} ♥</a>
+                  target="_blank" rel="noreferrer">{t("Support Personal Finance")} ♥</a>
               </SettingRow>
               <UpdateRow onMessage={setMsg} />
               <SettingRow icon={I.lock} title={t("License")}
-                description={t("Free to use. The source code is public so anyone can check it, but PFI may not be sold, redistributed or published in changed versions.")}>
+                description={t("Free to use. The source code is public so anyone can check it, but Personal Finance may not be sold, redistributed or published in changed versions.")}>
                 <a className="link" href="https://github.com/MrBlizo/personal-finance-intelligence/blob/main/LICENSE"
                   target="_blank" rel="noreferrer">PolyForm Strict</a>
               </SettingRow>

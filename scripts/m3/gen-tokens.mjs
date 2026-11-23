@@ -1,4 +1,4 @@
-// Material 3 colour tokens for every PFI surface, from one seed colour.
+// Material 3 colour tokens for every Personal Finance surface, from one seed colour.
 //
 //   node --import ./scripts/m3/resolve-js.mjs scripts/m3/gen-tokens.mjs [#3949AB]
 //
@@ -7,7 +7,7 @@
 // phone app.
 //
 // One look in light and dark: Material 3 Expressive, SchemeVibrant from the
-// PFI indigo seed (#3949AB) at standard contrast. The bright tiles (lavender, lime, pink,
+// Personal Finance indigo seed (#3949AB) at standard contrast. The bright tiles (lavender, lime, pink,
 // cyan) keep the SAME light colours in dark mode, so the app looks like
 // itself in both; only surfaces and text change. Money colours are
 // harmonized toward the seed. Charts use one mid-tone palette in both modes
@@ -179,7 +179,7 @@ const dartMoney = (o) => Object.keys(MONEY).flatMap((n) => [
 write("mobile/lib/ui/m3_tokens.dart", `${header("//")}
 import 'package:flutter/material.dart';
 
-/// The PFI seed colour, shared with the Windows app and the website.
+/// The Personal Finance seed colour, shared with the Windows app and the website.
 const pfiSeed = ${dartColor(tokens.seed)};
 
 /// The light and dark schemes for [pfiSeed], identical to the PC's.

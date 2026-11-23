@@ -680,7 +680,7 @@ namespace winrt::PFI::implementation
                            static_cast<int>(items.Size() - shown));
                 AppNotifications::Builder::AppNotificationBuilder builder;
                 builder.AddArgument(L"page", L"/recurring/");
-                builder.AddText(L"Personal Finance Intelligence");
+                builder.AddText(L"Personal Finance");
                 builder.AddText(buf);
                 AppNotifications::AppNotificationManager::Default().Show(builder.BuildNotification());
             }
