@@ -16,4 +16,4 @@ const googleServerClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID',
 
 const oauthScheme = 'io.github.mrblizo.pfi';
 const oauthRedirect = '$oauthScheme://auth';
-const appVersion = '1.0.0';
+const appVersion = '1.0.1';

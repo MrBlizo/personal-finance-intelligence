@@ -39,37 +39,37 @@ account (Accounts › Add account) and a few transactions (Ctrl+N), or import
 any bank CSV file under Import. First start takes a few seconds while the
 private database is created."
 
-## What's new in 1.0.0 (paste into "What's new in this version")
+## What's new in 1.0.1 (paste into "What's new in this version")
 
 **English**
 
-Version 1.0.0
-• New look: Material 3 Expressive in violet, with a neon dark mode.
-• Month by month: what you earned, spent, paid and saved each month.
-• Scan receipts: drop a photo on Quick add; amount, date and shop are read on your PC.
-• What if…? planner, financial independence calculator, year report PDF and tax export.
-• Move in from Cashew or Mint; Moroccan bank statements recognised.
-• Ctrl+K to jump anywhere, a setup assistant, Check my data and a review of sync conflicts.
+Version 1.0.1
+• New name: Personal Finance.
+• One calm indigo look in light and dark mode, the same on the phone, with softer chart colours.
+• Shorter menu: pages are grouped under Money, Planning and Reports & insights.
+• Figures count up and charts move smoothly when they change.
+• The user guide is now in Settings › About.
+• Android: scanning a receipt works again.
 
 **Français**
 
-Version 1.0.0
-• Nouveau look : Material 3 Expressive en violet, avec un mode sombre néon.
-• Mois par mois : ce que vous avez gagné, dépensé, payé et épargné chaque mois.
-• Scan de tickets : déposez une photo dans Ajout rapide ; montant, date et magasin sont lus sur votre PC.
-• Planificateur « Et si… ? », calcul de l'indépendance financière, rapport annuel PDF et export fiscal.
-• Import depuis Cashew ou Mint ; relevés des banques marocaines reconnus.
-• Ctrl+K pour aller partout, un assistant de démarrage, Vérifier mes données et la revue des conflits de synchro.
+Version 1.0.1
+• Nouveau nom : Personal Finance.
+• Un seul look indigo, calme, en mode clair et sombre, le même sur le téléphone, avec des graphiques aux couleurs plus douces.
+• Menu plus court : les pages sont regroupées sous Argent, Planification et Rapports et analyses.
+• Les montants s'animent et les graphiques changent en douceur.
+• Le guide d'utilisation se trouve maintenant dans Paramètres › À propos.
+• Android : le scan des tickets fonctionne de nouveau.
 
 **العربية**
 
-الإصدار 1.0.0
-• مظهر جديد: Material 3 Expressive باللون البنفسجي مع وضع داكن نيون.
-• شهرًا بشهر: ما كسبته وأنفقته ودفعته وادّخرته كل شهر.
-• مسح الإيصالات: أسقط صورة في الإضافة السريعة فيُقرأ المبلغ والتاريخ والمتجر على حاسوبك.
-• مخطط «ماذا لو…؟» وحاسبة الاستقلال المالي وتقرير سنوي PDF وتصدير ضريبي.
-• الانتقال من Cashew أو Mint؛ والتعرّف على كشوف البنوك المغربية.
-• Ctrl+K للانتقال إلى أي مكان، ومساعد البدء، وفحص بياناتي، ومراجعة تعارضات المزامنة.
+الإصدار 1.0.1
+• اسم جديد: Personal Finance.
+• مظهر نيلي هادئ واحد في الوضعين الفاتح والداكن، وهو نفسه على الهاتف، مع ألوان أهدأ للرسوم البيانية.
+• قائمة أقصر: الصفحات مجمّعة تحت المال والتخطيط والتقارير والتحليلات.
+• الأرقام تتحرك عند ظهورها والرسوم البيانية تتغير بسلاسة.
+• دليل الاستخدام موجود الآن في الإعدادات › حول.
+• أندرويد: مسح الإيصالات يعمل من جديد.
 
 ## 3. Store listing: English
 
