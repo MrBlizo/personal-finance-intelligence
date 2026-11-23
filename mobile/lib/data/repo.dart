@@ -1,6 +1,6 @@
 // Queries and edits the screens use. Money is handled in minor units
 // (cents): the database stores amounts as integers scaled by 100, the same
-// as PFI on Windows.
+// as Personal Finance on Windows.
 import 'package:sqlite3/sqlite3.dart';
 
 import 'csv_import.dart';
@@ -87,7 +87,7 @@ class EnvelopeMonth {
   int get available => rows.fold<int>(0, (s, r) => s + r.available);
 }
 
-/// Currency conversion with the exchange rates PFI on Windows downloads
+/// Currency conversion with the exchange rates Personal Finance on Windows downloads
 /// (synced): the latest rate on or before the date, direct or inverse.
 class Fx {
   Fx(Database db) {

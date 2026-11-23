@@ -1,14 +1,14 @@
-# Personal Finance Intelligence
+# Personal Finance
 
 **The offline budget app for Windows, with an Android app that stays in
 sync:** budgets, bank statement import, debt payoff plans and investments,
-with no account and no PFI server.
+with no account and no Personal Finance server.
 [Website and guides](https://mrblizo.github.io/personal-finance-intelligence/)
 
 A Windows desktop app to track income, expenses, investments and savings
 goals, forecast cash flow and analyse spending. Everything runs and stays on
 your devices: the data lives in one local SQLite file, there is no account
-and no PFI server. The optional Android app syncs through a folder in your
+and no Personal Finance server. The optional Android app syncs through a folder in your
 own OneDrive, encrypted with your passphrase.
 
 **English · Français · العربية**, base currency of your choice (USD, EUR,
@@ -114,11 +114,11 @@ Shown with synthetic sample data (no real finances).
 - **Security & data:** optional app lock with Windows Hello; weekly automatic
   backups to a folder you choose (e.g. OneDrive), optionally encrypted with
   a password (AES-256); move to a new PC through sync.
-- **Phone app and sync (0.7):** the PFI app for Android keeps the same data
+- **Phone app and sync (0.7):** the Personal Finance app for Android keeps the same data
   as the PC through a folder in your OneDrive, encrypted with your
-  passphrase (no PFI server). See [mobile/README.md](mobile/README.md) and
+  passphrase (no Personal Finance server). See [mobile/README.md](mobile/README.md) and
   [design/sync-protocol.md](design/sync-protocol.md).
-- **Look:** Material 3 Expressive in PFI violet, with a neon dark mode;
+- **Look:** Material 3 Expressive in Personal Finance violet, with a neon dark mode;
   light, dark or the same as Windows, switchable in every page header;
   eleven accent colours; icons and colours per category; a Home page whose
   cards you can reorder or hide; Ctrl+K to jump to any page or action.
@@ -143,7 +143,7 @@ WebView2. The data folder is `%LOCALAPPDATA%\PersonalFinanceIntelligence`
 Up to 0.3 the app ran a private PostgreSQL server. Version 0.4 moved that
 data into SQLite on its first start (and kept the old folder as
 `pgdata-0.3`); since 0.5 PostgreSQL is no longer part of the app.
-Settings › Old data from PFI 0.3 deletes what 0.4 left behind. Data from
+Settings › Old data from Personal Finance 0.3 deletes what 0.4 left behind. Data from
 0.3 that was never opened with 0.4 can still be moved with the
 [0.4.0 installer](https://github.com/MrBlizo/personal-finance-intelligence/releases/tag/v0.4.0);
 0.5 explains this instead of starting with an empty database.
@@ -158,8 +158,8 @@ Double-click **`build.bat`**. It runs the backend tests, builds the screens,
 packages the backend, builds `PFI.exe`, smoke-tests the packaged app and
 creates:
 
-- `dist\PFI-Setup-1.0.0.exe`: installer for direct download;
-- `dist\PFI-1.0.0.0-x64.msix`: package for the Microsoft Store (fill in
+- `dist\PFI-Setup-1.0.1.exe`: installer for direct download;
+- `dist\PFI-1.0.1.0-x64.msix`: package for the Microsoft Store (fill in
   `packaging\store.json` with the identity from Partner Center first).
 
 Progress: `dist\build.log`; result: `dist\build-status.txt`. Options:
@@ -201,17 +201,17 @@ Code contributions are not accepted for now; see
 
 ## License
 
-Free to use, not free to take. From 1.0.0, PFI is released under the
+Free to use, not free to take. From 1.0.0, Personal Finance is released under the
 [PolyForm Strict License 1.0.0](LICENSE) © 2026 Ibrahim Oulkhir (MrBlizo).
 
-- You may download PFI and use it for free, for personal and other
+- You may download Personal Finance and use it for free, for personal and other
   noncommercial purposes, and read its source code.
 - You may not sell it, redistribute it, or publish changed versions or apps
   built from its code.
 - For any other use (for example inside a company), ask first by opening an
   issue.
 
-The code stays visible so anyone can check what PFI does with their data.
+The code stays visible so anyone can check what Personal Finance does with their data.
 Earlier releases keep the licences they were published under: up to 0.7.0
 under MIT, and 0.7.1 to 0.9.0 under the GNU AGPL-3.0. Those copies remain
 available under those terms.

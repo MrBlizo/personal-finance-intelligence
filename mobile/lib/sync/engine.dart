@@ -121,11 +121,11 @@ class SyncEngine {
       });
     } else {
       if (manifest['app'] != 'PFI' || manifest['kdf'] == null) {
-        throw SyncException('This folder is not a PFI sync folder.');
+        throw SyncException('This folder is not a Personal Finance sync folder.');
       }
       if ((manifest['format'] as int? ?? 0) > syncFormat) {
         throw SyncException('This sync folder was created by a newer version '
-            'of PFI. Update the app first.');
+            'of Personal Finance. Update the app first.');
       }
       final kdf = manifest['kdf'] as Map<String, dynamic>;
       key = await deriveKey(passphrase, base64.decode(kdf['salt'] as String),
@@ -441,7 +441,7 @@ class SyncEngine {
         if (n <= last) continue;
         final payload = await unseal(key, _aad(dev, n), await store.read(dev, n));
         if ((payload['format'] as int? ?? 1) > syncFormat) {
-          throw SyncException('Another device uses a newer version of PFI. '
+          throw SyncException('Another device uses a newer version of Personal Finance. '
               'Update the app to keep syncing.');
         }
         records.addAll((payload['changes'] as List)

@@ -1,4 +1,4 @@
-// Once a day the phone asks GitHub whether a newer PFI is out (only the
+// Once a day the phone asks GitHub whether a newer Personal Finance is out (only the
 // version number is fetched; nothing about you or your data is sent).
 import 'dart:convert';
 

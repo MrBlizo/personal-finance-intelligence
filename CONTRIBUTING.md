@@ -1,6 +1,6 @@
 # Contributing
 
-PFI is source-available under the [PolyForm Strict License](LICENSE): the
+Personal Finance is source-available under the [PolyForm Strict License](LICENSE): the
 code is public so anyone can check it, but changed versions may not be
 published. Because of that, **pull requests with code are not accepted**.
 
@@ -8,7 +8,7 @@ What helps most:
 
 - **Bug reports:** open an
   [issue](https://github.com/MrBlizo/personal-finance-intelligence/issues)
-  with what you did, what you expected and what happened. Add your PFI
+  with what you did, what you expected and what happened. Add your Personal Finance
   version (Settings › About) and Windows or Android version.
 - **Ideas:** open an issue describing the problem you want solved.
 - **Translations:** suggest better wording for French or Arabic in an issue.

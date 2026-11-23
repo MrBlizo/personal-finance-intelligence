@@ -1,4 +1,4 @@
-// What the app knows about the tables it shares with PFI on Windows.
+// What the app knows about the tables it shares with Personal Finance on Windows.
 //
 // `assets/db/schema.json` and `assets/db/schema.sql` are generated from the
 // PC's models (backend/app/services/mobile_schema.py), so both sides store

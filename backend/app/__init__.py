@@ -1,2 +1,2 @@
-"""Personal Finance Intelligence backend."""
-__version__ = "1.0.0"
+"""Personal Finance backend."""
+__version__ = "1.0.1"

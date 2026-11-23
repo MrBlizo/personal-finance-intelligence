@@ -12,7 +12,7 @@ import {
   inShell, notifyLanguage, notifyRoute, onShellDownload, onShellNavigate,
   openLastDownload,
 } from "@/lib/shell";
-import { CommandPalette, GUIDE_URL, openPalette } from "./CommandPalette";
+import { CommandPalette, openPalette } from "./CommandPalette";
 import { openQuickAdd, QuickAddHotkey } from "./QuickAdd";
 import { SetupAssistant } from "./SetupAssistant";
 import { UpdateBanner } from "./TrustPanels";
@@ -20,43 +20,72 @@ import { RatePrompt } from "./RatePrompt";
 import { ThemePref, ThemeRoot } from "./Theme";
 import { I } from "./icons";
 
-export const NAV = [
+type NavLink = { href: string; label: string; glyph: string };
+type NavGroup = { id: string; label: string; glyph: string; children: NavLink[] };
+
+/** The drawer: a few top-level destinations, related pages grouped. */
+export const NAV_TREE: (NavLink | NavGroup)[] = [
   { href: "/", label: "Home", glyph: I.home },
   { href: "/months/", label: "Month by month", glyph: I.calendarViewMonth },
-  { href: "/transactions/", label: "Transactions", glyph: I.receiptLong },
-  { href: "/accounts/", label: "Accounts", glyph: I.accountBalance },
-  { href: "/import/", label: "Import", glyph: I.download },
-  { href: "/budgets/", label: "Budgets", glyph: I.accountBalanceWallet },
-  { href: "/goals/", label: "Goals", glyph: I.flag },
-  { href: "/debts/", label: "Debt payoff", glyph: I.creditCard },
-  { href: "/ious/", label: "Lent & borrowed", glyph: I.handshake },
-  { href: "/recurring/", label: "Bills & recurring", glyph: I.eventRepeat },
+  { id: "money", label: "Money", glyph: I.payments, children: [
+    { href: "/transactions/", label: "Transactions", glyph: I.receiptLong },
+    { href: "/accounts/", label: "Accounts", glyph: I.accountBalance },
+    { href: "/recurring/", label: "Bills & recurring", glyph: I.eventRepeat },
+    { href: "/import/", label: "Import", glyph: I.download },
+  ] },
+  { id: "plan", label: "Planning", glyph: I.savings, children: [
+    { href: "/budgets/", label: "Budgets", glyph: I.accountBalanceWallet },
+    { href: "/goals/", label: "Goals", glyph: I.flag },
+    { href: "/forecast/", label: "Forecast", glyph: I.timeline },
+    { href: "/debts/", label: "Debt payoff", glyph: I.creditCard },
+    { href: "/ious/", label: "Lent & borrowed", glyph: I.handshake },
+  ] },
   { href: "/investments/", label: "Investments", glyph: I.trendingUp },
-  { href: "/forecast/", label: "Forecast", glyph: I.timeline },
-  { href: "/insights/", label: "Insights", glyph: I.lightbulb },
-  { href: "/calendar/", label: "Calendar", glyph: I.calendarMonth },
-  { href: "/reports/", label: "Reports", glyph: I.summarize },
+  { id: "analysis", label: "Reports & insights", glyph: I.summarize, children: [
+    { href: "/reports/", label: "Reports", glyph: I.summarize },
+    { href: "/insights/", label: "Insights", glyph: I.lightbulb },
+    { href: "/calendar/", label: "Calendar", glyph: I.calendarMonth },
+  ] },
   { href: "/settings/", label: "Settings", glyph: I.settings },
 ];
+const isGroup = (n: NavLink | NavGroup): n is NavGroup => "children" in n;
+/** Every destination, flat (command palette, window titles). */
+export const NAV: NavLink[] = NAV_TREE.flatMap((n) => (isGroup(n) ? n.children : [n]));
 
 type Prefs = { lang: Lang; setLang: (l: Lang) => void };
 const PrefsCtx = createContext<Prefs>({ lang: "en", setLang: () => {} });
 export const usePrefs = () => useContext(PrefsCtx);
 
-/** Destinations that start a new group in the drawer (a divider above). */
-const GROUP_STARTS = new Set(["/budgets/", "/forecast/", "/settings/"]);
+const OPEN_KEY = "pfi.nav.open";
+const norm = (p: string) => (p.endsWith("/") ? p : p + "/");
 
 /** Material 3 navigation drawer; a navigation rail on narrow windows.
- *  The extended FAB above the destinations is the app's one primary
- *  action (add a transaction), kept apart from navigation. */
+ *  Related pages sit in groups that open in place; the group holding the
+ *  current page is always open. The extended FAB above is the app's one
+ *  primary action (add a transaction), kept apart from navigation. */
 function NavDrawer({ path }: { path: string }) {
   const t = useT();
-  const norm = (p: string) => (p.endsWith("/") ? p : p + "/");
+  const here = norm(path);
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    try { setOpen(JSON.parse(localStorage.getItem(OPEN_KEY) ?? "{}")); } catch { /* fresh */ }
+  }, []);
+  const toggle = (id: string) => setOpen((o) => {
+    const next = { ...o, [id]: !o[id] };
+    try { localStorage.setItem(OPEN_KEY, JSON.stringify(next)); } catch { /* private mode */ }
+    return next;
+  });
+  const link = (n: NavLink, child = false) => (
+    <Link key={n.href} href={n.href} title={t(n.label)}
+      aria-current={here === n.href ? "page" : undefined}
+      className={`nav-item${child ? " nav-child" : ""}`}>
+      <span className="nav-indicator" aria-hidden><span className="icon">{n.glyph}</span></span>
+      <span className="nav-label">{t(n.label)}</span>
+    </Link>);
   return (
     <aside className="nav-drawer">
       <div className="nav-brand">
-        <span className="nav-logo" aria-hidden>{I.accountBalanceWallet}</span>
-        <span className="nav-brand-text">Personal Finance Intelligence</span>
+        <span className="nav-brand-text">Personal Finance</span>
       </div>
       <button type="button" className="fab" onClick={openQuickAdd}
         title={t("Add transaction")}>
@@ -70,22 +99,24 @@ function NavDrawer({ path }: { path: string }) {
         <kbd className="nav-label">Ctrl K</kbd>
       </button>
       <nav className="nav" aria-label={t("Navigation")}>
-        {NAV.map((n) => {
-          const active = norm(path) === n.href;
+        {NAV_TREE.map((n) => {
+          if (!isGroup(n)) return link(n);
+          const inside = n.children.some((c) => c.href === here);
+          const expanded = inside || !!open[n.id];
           return (
-            <Link key={n.href} href={n.href} title={t(n.label)}
-              aria-current={active ? "page" : undefined}
-              className={`nav-item${GROUP_STARTS.has(n.href) ? " group-start" : ""}`}>
-              <span className="nav-indicator" aria-hidden>
-                <span className="icon">{n.glyph}</span>
-              </span>
-              <span className="nav-label">{t(n.label)}</span>
-            </Link>);
+            <div key={n.id} className={`nav-group${expanded ? " open" : ""}${inside ? " inside" : ""}`}>
+              <button type="button" className="nav-item nav-group-head" aria-expanded={expanded}
+                aria-controls={`nav-${n.id}`} title={t(n.label)}
+                onClick={() => (inside ? undefined : toggle(n.id))}>
+                <span className="nav-indicator" aria-hidden><span className="icon">{n.glyph}</span></span>
+                <span className="nav-label grow">{t(n.label)}</span>
+                <span className="icon nav-chevron" aria-hidden>{I.expandMore}</span>
+              </button>
+              <div id={`nav-${n.id}`} className="nav-children" hidden={!expanded}>
+                {n.children.map((c) => link(c, true))}
+              </div>
+            </div>);
         })}
-        <a href={GUIDE_URL} target="_blank" rel="noreferrer" className="nav-item" title={t("User guide")}>
-          <span className="nav-indicator" aria-hidden><span className="icon">{I.help}</span></span>
-          <span className="nav-label">{t("User guide")}</span>
-        </a>
       </nav>
     </aside>
   );

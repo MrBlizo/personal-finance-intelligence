@@ -17,9 +17,9 @@ import 'sync/engine.dart';
 import 'ui/m3_tokens.dart' show pfiSeed;
 
 const accentColors = <String, Color>{
-  'Violet': pfiSeed, // shared with the PC and the website; neon dark mode
+  'Indigo': pfiSeed, // shared with the PC and the website
+  'Violet': Color(0xFF8E5CF7),
   'Blue': Color(0xFF2F6FE4),
-  'Indigo': Color(0xFF3F51B5),
   'Teal': Color(0xFF00897B),
   'Green': Color(0xFF2E7D32),
   'Olive': Color(0xFF827717),
@@ -57,11 +57,14 @@ class AppState extends ChangeNotifier with WidgetsBindingObserver {
 
   Color get accent => accentColors[accentName] ?? pfiSeed;
   String get accentName {
-    final name = prefs.getString('accent');
-    // 'Purple' was replaced by PFI violet in 1.0.
-    return name == null || name == 'Purple' || !accentColors.containsKey(name)
-        ? 'Violet'
-        : name;
+    // 1.0.1 keeps the choice under 'accent2'. Before, the default was
+    // called 'Violet' (0.x: 'Purple'); both become the shared Indigo.
+    final name = prefs.getString('accent2') ??
+        switch (prefs.getString('accent')) {
+          null || 'Violet' || 'Purple' => 'Indigo',
+          final old => old,
+        };
+    return accentColors.containsKey(name) ? name : 'Indigo';
   }
   ThemeMode get themeMode => switch (prefs.getString('theme')) {
         'light' => ThemeMode.light,

@@ -9,7 +9,7 @@
     registration, which requires Developer Mode:
     Settings > System > For developers > Developer Mode = On.
 
-    The test package is installed side by side with the normal PFI; it has
+    The test package is installed side by side with the normal Personal Finance; it has
     its own private data folder, so your real data is not touched.
 
 .EXAMPLE
@@ -37,4 +37,4 @@ if (-not $dev -or $dev.AllowDevelopmentWithoutDevLicense -ne 1) {
     exit 1
 }
 Add-AppxPackage -Register $manifest -ForceUpdateFromAnyVersion
-Write-Host "Installed $name. Start 'Personal Finance Intelligence' from the Start menu (the packaged test version)." -ForegroundColor Green
+Write-Host "Installed $name. Start 'Personal Finance : Budget Planner' from the Start menu (the packaged test version)." -ForegroundColor Green

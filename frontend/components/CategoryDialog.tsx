@@ -71,7 +71,7 @@ export function CategoryDialog({ category, all, onClose, onSaved }: {
             style={{ background: "conic-gradient(#0072B2, #E69F00, #009E73, #CC79A7, #0072B2)" }} />
         </div>
       </Field>
-      <Field label={t("Icon")} hint={icon ? undefined : t("None chosen: PFI picks one from the name.")}>
+      <Field label={t("Icon")} hint={icon ? undefined : t("None chosen: Personal Finance picks one from the name.")}>
         <IconPicker value={icon} color={color} onChange={setIcon} />
       </Field>
     </Modal>

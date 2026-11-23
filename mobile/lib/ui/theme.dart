@@ -1,32 +1,34 @@
-// Material 3 Expressive, shared with the Windows app and the website: the
-// light scheme comes from the chosen seed with the vibrant variant (PFI violet
-// by default); with PFI violet, dark mode is the hand-tuned Neon scheme. Loud
-// accents (lime, pink, cyan) and money colours come from m3_tokens.dart,
-// which scripts/m3/gen-tokens.mjs writes.
+// Material 3 Expressive, shared with the Windows app and the website. The
+// default Indigo seed uses the generated schemes from m3_tokens.dart; other
+// seeds use the vibrant variant. Tiles (lavender, lime, pink, cyan), filled
+// buttons and chart colours stay the same in light and dark mode.
 import 'package:flutter/material.dart';
 
 import 'm3_tokens.dart';
 
-export 'm3_tokens.dart' show AccentColors, MoneyColors, pfiSeed;
+export 'm3_tokens.dart' show AccentColors, MoneyColors, chartColors, pfiSeed;
 
 // Shape scale (same values as --md-sys-shape-corner-* on the PC).
 const _extraSmall = 4.0;
 const _large = 20.0;
 const _extraLarge = 28.0;
 
-/// True when dark mode uses the Neon scheme (PFI violet accent).
-bool isNeon(Color seed, Brightness brightness) =>
-    brightness == Brightness.dark && seed.toARGB32() == pfiSeed.toARGB32();
+ColorScheme _scheme(Color seed, Brightness brightness) {
+  if (seed.toARGB32() == pfiSeed.toARGB32()) {
+    return brightness == Brightness.dark ? pfiDarkScheme : pfiLightScheme;
+  }
+  return ColorScheme.fromSeed(
+    seedColor: seed,
+    brightness: brightness,
+    dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
+  );
+}
 
 ThemeData buildTheme(Color seed, Brightness brightness) {
   final dark = brightness == Brightness.dark;
-  final scheme = isNeon(seed, brightness)
-      ? neonDarkScheme
-      : ColorScheme.fromSeed(
-          seedColor: seed,
-          brightness: brightness,
-          dynamicSchemeVariant: DynamicSchemeVariant.vibrant,
-        );
+  final scheme = _scheme(seed, brightness);
+  // Filled buttons and the FAB keep the light primary in both modes.
+  final brand = _scheme(seed, Brightness.light);
   final base = ThemeData(colorScheme: scheme, useMaterial3: true);
   final text = base.textTheme;
   return base.copyWith(
@@ -63,8 +65,8 @@ ThemeData buildTheme(Color seed, Brightness brightness) {
       margin: EdgeInsets.zero,
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: scheme.primaryContainer,
-      foregroundColor: scheme.onPrimaryContainer,
+      backgroundColor: brand.primary,
+      foregroundColor: brand.onPrimary,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(_large)),
     ),
@@ -82,7 +84,10 @@ ThemeData buildTheme(Color seed, Brightness brightness) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-          minimumSize: const Size(64, 48), shape: const StadiumBorder()),
+          backgroundColor: brand.primary,
+          foregroundColor: brand.onPrimary,
+          minimumSize: const Size(64, 48),
+          shape: const StadiumBorder()),
     ),
     chipTheme: const ChipThemeData(shape: StadiumBorder()),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -107,10 +112,4 @@ extension MoneyTheme on BuildContext {
   AccentColors get accents =>
       Theme.of(this).extension<AccentColors>() ?? AccentColors.light;
 
-  /// True in the Neon dark look (glows instead of flat tones).
-  bool get neon {
-    final s = Theme.of(this).colorScheme;
-    return s.brightness == Brightness.dark &&
-        s.primary.toARGB32() == neonDarkScheme.primary.toARGB32();
-  }
 }

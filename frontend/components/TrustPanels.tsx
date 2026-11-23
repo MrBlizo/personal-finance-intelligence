@@ -95,7 +95,7 @@ export function UpdateBanner() {
     <div className="update-banner" role="status">
       <span className="icon" aria-hidden>{I.systemUpdate}</span>
       <div className="update-text">
-        <b>{t("PFI {v} is available", { v: s.latest ?? "" })}</b>
+        <b>{t("Personal Finance {v} is available", { v: s.latest ?? "" })}</b>
         <span className="caption">{t("You have {v}. Your data stays as it is when you update.", { v: s.current })}</span>
       </div>
       <Button as="a" appearance="primary" size="small" href={s.url} target="_blank"
@@ -117,7 +117,7 @@ export function UpdateRow({ onMessage }: { onMessage: Msg }) {
   if (s.store) {
     return (
       <SettingRow icon={I.systemUpdate} title={t("Updates")}
-        description={t("Installed from the Microsoft Store, which keeps PFI up to date.")} />);
+        description={t("Installed from the Microsoft Store, which keeps Personal Finance up to date.")} />);
   }
   const checkNow = async () => {
     setBusy(true);
@@ -125,7 +125,7 @@ export function UpdateRow({ onMessage }: { onMessage: Msg }) {
       const r = await get<UpdateStatus>("/api/system/update", { force: true });
       st.reload();
       onMessage(r.error ? { kind: "warning", text: r.error } : {
-        kind: "success", text: r.newer ? t("PFI {v} is available.", { v: r.latest ?? "" })
+        kind: "success", text: r.newer ? t("Personal Finance {v} is available.", { v: r.latest ?? "" })
           : t("You have the latest version.") });
     } finally { setBusy(false); }
   };
@@ -175,7 +175,7 @@ export function ConflictsRow() {
   return (
     <>
       <SettingRow icon={I.syncProblem} title={t("Changed on two devices")}
-        description={t("{n} items were edited on this PC and another device before they synced. PFI kept the newer edit; you can switch to the other one.", { n: items.length })}>
+        description={t("{n} items were edited on this PC and another device before they synced. Personal Finance kept the newer edit; you can switch to the other one.", { n: items.length })}>
         <Button appearance="primary" onClick={() => setOpen(true)}>{t("Review")}</Button>
       </SettingRow>
       {open && (

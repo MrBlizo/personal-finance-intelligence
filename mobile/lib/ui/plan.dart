@@ -524,7 +524,7 @@ class InvestmentsPage extends StatelessWidget {
         const SizedBox(height: 12),
         if (holdings.isEmpty)
           _EmptyHint(app.t('No holdings'),
-              app.t('Add stocks, funds and crypto in PFI on your PC; they appear here after a sync.'))
+              app.t('Add stocks, funds and crypto in Personal Finance on your PC; they appear here after a sync.'))
         else
           Card(
             child: Column(children: [
@@ -560,7 +560,7 @@ class InvestmentsPage extends StatelessWidget {
           ),
         Padding(
           padding: const EdgeInsets.all(12),
-          child: Text(app.t('Prices and trades are updated in PFI on your PC.'),
+          child: Text(app.t('Prices and trades are updated in Personal Finance on your PC.'),
               style: Theme.of(context).textTheme.bodySmall),
         ),
       ],

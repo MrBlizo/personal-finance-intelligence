@@ -67,7 +67,7 @@ namespace winrt::PFI::implementation
             L"Local\\PersonalFinanceIntelligence.SingleInstance");
         if (GetLastError() == ERROR_ALREADY_EXISTS)
         {
-            if (HWND existing = FindWindowW(nullptr, L"Personal Finance Intelligence"))
+            if (HWND existing = FindWindowW(nullptr, L"Personal Finance"))
             {
                 ShowWindow(existing, SW_RESTORE);
                 SetForegroundWindow(existing);
@@ -93,7 +93,7 @@ namespace winrt::PFI::implementation
                     std::wstring icon = (pfi::ExeDir() / L"Assets" / L"pfi-32.png").generic_wstring();
                     std::wstring uri = L"file:///";
                     for (wchar_t c : icon) uri += (c == L' ') ? std::wstring(L"%20") : std::wstring(1, c);
-                    manager.Register(L"Personal Finance Intelligence", winrt::Windows::Foundation::Uri(uri));
+                    manager.Register(L"Personal Finance", winrt::Windows::Foundation::Uri(uri));
                     named = true;
                 }
                 catch (...)

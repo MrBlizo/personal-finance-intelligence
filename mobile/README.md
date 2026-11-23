@@ -1,6 +1,6 @@
-# PFI for Android and iOS
+# Personal Finance for Android and iOS
 
-The phone app keeps its own SQLite database with the **same tables** as PFI
+The phone app keeps its own SQLite database with the **same tables** as Personal Finance
 on Windows (`assets/db/schema.sql`, generated from the PC's models) and syncs
 with the PC through a folder in your cloud drive. Format and merge rules:
 [design/sync-protocol.md](../design/sync-protocol.md).
@@ -43,7 +43,7 @@ cd backend && python -m app.services.mobile_schema ../mobile/assets/db
 
 ## Signing
 
-Release APKs are signed in GitHub Actions with the PFI key (repository
+Release APKs are signed in GitHub Actions with the Personal Finance key (repository
 secrets `PFI_KEYSTORE_BASE64` and `PFI_KEYSTORE_PASSWORD`, alias `pfi`).
 Android only installs an update over an app signed with the same key, so
 keep a backup of `pfi-upload.jks` and its password.

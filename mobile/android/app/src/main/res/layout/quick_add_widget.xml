@@ -11,7 +11,7 @@
         android:id="@+id/widget_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="PFI"
+        android:text="Personal Finance"
         android:textAllCaps="true"
         android:textColor="#CCFFFFFF"
         android:textSize="11sp"
@@ -42,7 +42,7 @@
             android:gravity="center"
             android:maxLines="1"
             android:text="+  Expense"
-            android:textColor="#FF1E3FA8"
+            android:textColor="#FF1A41FF"
             android:textSize="14sp"
             android:textStyle="bold" />
 

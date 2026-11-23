@@ -218,8 +218,8 @@ async def upload_backup(file: UploadFile = File(...)):
         raise HTTPException(422, legacy.DUMP_MESSAGE)
     if not (raw.startswith(b"PK") or raw.startswith(bk.MAGIC)):
         raise HTTPException(
-            422, "This file is not a PFI backup. Choose a .pfibak file made "
-            "with 'Back up now'.")
+            422, "This file is not a Personal Finance backup. Choose a "
+                 ".pfibak file made with 'Back up now'.")
     path = bk.new_path(bk.default_dir(get_settings().data_dir), "uploaded",
                        "pfibak")
     path.write_bytes(raw)
@@ -244,7 +244,7 @@ def _leftovers_out(data_dir) -> dict:
 
 @router.get("/legacy-data")
 def legacy_data():
-    """Report the unused files left from PFI 0.3."""
+    """Report the unused files left from Personal Finance 0.3."""
     return _leftovers_out(get_settings().data_dir)
 
 
@@ -258,7 +258,8 @@ def delete_legacy_data(body: CleanupIn | None = None):
     except OSError as exc:
         raise HTTPException(
             409, f"Some old files could not be deleted ({exc}). Close any "
-            "window that shows the PFI data folder and try again.") from exc
+                 "window that shows the Personal Finance data folder and try "
+                 "again.") from exc
     return {"freed": freed, **_leftovers_out(data_dir)}
 
 

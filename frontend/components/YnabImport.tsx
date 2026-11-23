@@ -73,7 +73,7 @@ export function YnabImport({ baseCurrency, onDone }: { baseCurrency: string; onD
               <summary>{t("{n} categories would differ from YNAB", { n: report.differences.length })}</summary>
               <table><tbody>{report.differences.map((d) => (
                 <tr key={d.category}><td>{d.category}</td><td className="num">YNAB {money(d.ynab)}</td>
-                  <td className="num">PFI {money(d.pfi)}</td></tr>))}</tbody></table>
+                  <td className="num">Personal Finance {money(d.pfi)}</td></tr>))}</tbody></table>
             </details>)}
           <div className="row" style={{ marginTop: 12 }}>
             <Button appearance="primary" disabled={busy} onClick={() => send(false)}>{t("Import")}</Button>

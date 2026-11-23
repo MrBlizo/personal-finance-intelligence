@@ -247,7 +247,7 @@ export function BackupPanel({ onMessage, onRestored }: {
                   <Button appearance="subtle" size="small" disabled={tester.busy === b.name}
                     onClick={() => tester.test(b.name)}>{tester.busy === b.name ? t("Testing…") : t("Test")}</Button></Tooltip>}
                 {!b.legacy && <Button appearance="subtle" size="small" onClick={() => setConfirm(b)}>{t("Restore")}</Button>}
-                {b.legacy && <Tooltip content={t("Backups from PFI 0.3 can only be restored with PFI 0.4.0.")} relationship="label">
+                {b.legacy && <Tooltip content={t("Backups from Personal Finance 0.3 can only be restored with Personal Finance 0.4.0.")} relationship="label">
                   <Button appearance="subtle" size="small" disabledFocusable>{t("Restore")}</Button></Tooltip>}</td></tr>))}
           </tbody></table>)}
     </div>

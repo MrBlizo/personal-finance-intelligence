@@ -1,9 +1,9 @@
 // Cloud drives the phone syncs through: OneDrive and Dropbox, through
-// their web APIs. The folder is the one PFI on Windows uses through the
+// their web APIs. The folder is the one Personal Finance on Windows uses through the
 // drive's desktop app:
 //   OneDrive: OneDrive/Apps/PFI Sync
 //   Dropbox:  Dropbox/Apps/PFI Sync (the app folder of the "PFI Sync" app)
-// Google Drive: the hidden app data folder, which PFI on Windows reaches
+// Google Drive: the hidden app data folder, which Personal Finance on Windows reaches
 // through the Drive API too (backend/app/services/gdrive.py); flat names
 // "pfi-sync.json" and "<device>-<00000001>.pfisync".
 import 'dart:convert';
@@ -118,7 +118,7 @@ class CloudAuth {
     }
     if (_clientId.isEmpty) {
       throw SyncException('${provider.title} is not available in this build '
-          'of PFI yet.');
+          'of Personal Finance yet.');
     }
     final verifier = _random(64);
     final state = _random(24);
@@ -178,7 +178,7 @@ class CloudAuth {
     final refresh = json['refresh_token'] as String?;
     if (refresh == null && body['grant_type'] == 'authorization_code') {
       throw SyncException('${provider.title} did not allow offline access. '
-          'Sign in again and allow PFI to keep its sync files.');
+          'Sign in again and allow Personal Finance to keep its sync files.');
     }
     if (refresh != null) await _storage.write(key: _refreshKey, value: refresh);
   }

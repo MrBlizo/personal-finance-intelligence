@@ -1,4 +1,4 @@
-"""Switch to PFI from Cashew or Mint in one step.
+"""Switch to Personal Finance from Cashew or Mint in one step.
 
 Both apps export one CSV with every transaction. Accounts and categories
 are found by name or created; re-importing the same file adds nothing

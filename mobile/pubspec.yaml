@@ -1,7 +1,7 @@
 name: pfi
-description: Personal Finance Intelligence for Android and iOS, in sync with PFI on Windows.
+description: Personal Finance for Android and iOS, in sync with Personal Finance on Windows.
 publish_to: "none"
-version: 1.0.0+5
+version: 1.0.1+6
 
 environment:
   sdk: ">=3.6.0 <4.0.0"

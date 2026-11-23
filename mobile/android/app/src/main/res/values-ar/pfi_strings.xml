@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_label">PFI إضافة سريعة</string>
+    <string name="widget_label">Personal Finance: إضافة سريعة</string>
     <string name="widget_description">المال المتاح وإضافة مصروف أو دخل بلمسة واحدة.</string>
     <string name="shortcut_expense">إضافة مصروف</string>
     <string name="shortcut_income">إضافة دخل</string>

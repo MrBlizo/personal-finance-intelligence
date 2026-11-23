@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="Personal Finance Intelligence">
+    Title="Personal Finance">
 
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -23,7 +23,7 @@
         <Grid x:Name="AppTitleBar" Padding="16,0,0,0">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
                 <Image Source="ms-appx:///Assets/pfi-16.png" Width="16" Height="16" />
-                <TextBlock Text="Personal Finance Intelligence" VerticalAlignment="Center"
+                <TextBlock Text="Personal Finance" VerticalAlignment="Center"
                            Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Grid>
@@ -103,7 +103,7 @@
 
                 <InfoBar x:Name="ErrorBar" VerticalAlignment="Top" Margin="24"
                          Severity="Error" IsClosable="False" IsOpen="False"
-                         Title="Personal Finance Intelligence could not start">
+                         Title="Personal Finance could not start">
                     <InfoBar.ActionButton>
                         <Button Content="Open log folder" Click="OpenLogs_Click" />
                     </InfoBar.ActionButton>
@@ -118,7 +118,7 @@
                         Spacing="12" MaxWidth="460">
                 <FontIcon Glyph="&#xE72E;" FontSize="48" HorizontalAlignment="Center"
                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                <TextBlock x:Name="LockTitle" Text="Personal Finance Intelligence is locked"
+                <TextBlock x:Name="LockTitle" Text="Personal Finance is locked"
                            HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"
                            Style="{StaticResource SubtitleTextBlockStyle}" />
                 <TextBlock x:Name="LockBody" Text="Unlock with Windows Hello to see your finances."

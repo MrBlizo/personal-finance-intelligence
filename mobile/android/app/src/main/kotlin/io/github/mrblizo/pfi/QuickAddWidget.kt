@@ -43,7 +43,7 @@ class QuickAddWidget : AppWidgetProvider() {
         private fun views(context: Context): RemoteViews {
             val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             return RemoteViews(context.packageName, R.layout.quick_add_widget).apply {
-                setTextViewText(R.id.widget_title, p.getString("title", "PFI"))
+                setTextViewText(R.id.widget_title, p.getString("title", "Personal Finance"))
                 setTextViewText(R.id.widget_value, p.getString("value", ""))
                 setTextViewText(R.id.widget_add, "+  " + p.getString("add", "Expense"))
                 setTextViewText(R.id.widget_income, "+  " + p.getString("income", "Income"))

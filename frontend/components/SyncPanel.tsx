@@ -69,7 +69,7 @@ export function SyncPanel({ onMessage, onSynced }: {
       await post<SyncStatus>("/api/sync/setup", {
         folder: place === "google" ? GOOGLE : folder.trim(), passphrase: pass, device_name: name.trim() || null });
       setSetup(false); st.reload(); onSynced?.();
-      onMessage({ kind: "success", text: t("Sync is on. Use the same folder and passphrase in the PFI phone app.") });
+      onMessage({ kind: "success", text: t("Sync is on. Use the same folder and passphrase in the Personal Finance phone app.") });
     } catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   };
@@ -93,7 +93,7 @@ export function SyncPanel({ onMessage, onSynced }: {
       description={s?.enabled
         ? t("Through {folder}. Last sync: {when}.", {
           folder: s.folder_label ?? s.folder ?? "", when: when(s.last_sync) || t("not yet") })
-        : t("Keep PFI on this PC and the PFI phone app in step through your OneDrive, Dropbox or Google Drive. Everything is encrypted with your passphrase; there is no PFI server.")}>
+        : t("Keep Personal Finance on this PC and the Personal Finance phone app in step through your OneDrive, Dropbox or Google Drive. Everything is encrypted with your passphrase; there is no Personal Finance server.")}>
       {s?.enabled ? (<>
         <Button icon={<ArrowSync20Regular />} disabled={busy} onClick={now}>
           {busy ? t("Syncing…") : t("Sync now")}</Button>
@@ -111,7 +111,7 @@ export function SyncPanel({ onMessage, onSynced }: {
       <SettingRow title={t("Devices")}
         description={s.devices.length
           ? s.devices.map((d) => `${d.name} (${when(d.seen)})`).join(" · ")
-          : t("No phone has synced yet. On the phone: PFI › Settings (gear) › Set up sync › OneDrive, sign in with the same Microsoft account as this PC's OneDrive, then enter the same passphrase.")}>
+          : t("No phone has synced yet. On the phone: Personal Finance › Settings (gear) › Set up sync › OneDrive, sign in with the same Microsoft account as this PC's OneDrive, then enter the same passphrase.")}>
         {s.pending > 0 && <Badge appearance="tint" color="warning">
           {t("{n} changes waiting", { n: s.pending })}</Badge>}
       </SettingRow>)}
@@ -132,7 +132,7 @@ export function SyncPanel({ onMessage, onSynced }: {
             </RadioGroup>
           </FField>)}
         {place === "google" ? (<>
-          <p>{t("PFI keeps its encrypted sync files in a hidden app folder of your Google Drive and cannot see your other files. Sign in here, then choose Google Drive in the phone app with the same Google account.")}</p>
+          <p>{t("Personal Finance keeps its encrypted sync files in a hidden app folder of your Google Drive and cannot see your other files. Sign in here, then choose Google Drive in the phone app with the same Google account.")}</p>
           <FField label="Google Drive">
             {s?.google_signed_in
               ? <div className="row"><Badge appearance="tint" color="success">{t("Signed in")}</Badge>
@@ -159,7 +159,7 @@ export function SyncPanel({ onMessage, onSynced }: {
           </div>
         </FField>
         </>)}
-        <FField label={t("Sync passphrase")} hint={t("At least 8 characters. PFI cannot recover it; without it the synced data cannot be read.")}>
+        <FField label={t("Sync passphrase")} hint={t("At least 8 characters. Personal Finance cannot recover it; without it the synced data cannot be read.")}>
           <Input type="password" value={pass} onChange={(_, d) => setPass(d.value)} />
         </FField>
         <FField label={t("Repeat the passphrase")}>

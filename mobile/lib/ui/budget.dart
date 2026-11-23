@@ -197,7 +197,7 @@ class _BudgetPageState extends State<BudgetPage> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Text(app.t(
-                  'Some amounts are missing an exchange rate ({c}). Update the rates in PFI on your PC.',
+                  'Some amounts are missing an exchange rate ({c}). Update the rates in Personal Finance on your PC.',
                   {'c': env.missingFx.join(', ')})),
             ),
           if (shown.isEmpty)

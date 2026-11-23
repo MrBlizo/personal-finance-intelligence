@@ -14,6 +14,7 @@ import {
 import { date, locale, money, pct, signClass } from "@/lib/format";
 import { useI18n, useT } from "@/lib/i18n";
 import { I } from "@/components/icons";
+import { CountUp } from "@/components/CountUp";
 
 const PERIODS: Record<string, string> = {
   this_month: "This month", last_3_months: "3 months",
@@ -231,7 +232,7 @@ export default function Home() {
           action={<div className="row">
             <Link href="/accounts/"><Button appearance="primary" size="small">{t("Add an account")}</Button></Link>
             <Link href="/settings/"><Button size="small">{t("Set up sync")}</Button></Link></div>}>
-          {t("Add an account and import a bank statement. Already use PFI on another device? Set up sync with the same cloud drive and passphrase.")}
+          {t("Add an account and import a bank statement. Already use Personal Finance on another device? Set up sync with the same cloud drive and passphrase.")}
         </Banner>)}
       {!s && dash.loading && <Spinner label={t("Loading…")} />}
       {s && (
@@ -239,7 +240,7 @@ export default function Home() {
           <div className="home-top">
             <div className="home-hero">
               <div className="home-hero-label">{t("Net worth")}</div>
-              <div className="home-hero-value">{money(s.net_worth, cur)}</div>
+              <div className="home-hero-value"><CountUp value={money(s.net_worth, cur)} /></div>
               <div className="home-hero-sub">
                 {t("Liquid")} {money(s.liquid, undefined, 0)} · {t("Invested")} {money(s.investments, undefined, 0)}
               </div>

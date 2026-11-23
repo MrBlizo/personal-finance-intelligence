@@ -51,7 +51,7 @@ function DuplicateReview({ items, skipped, setSkipped, currency }: {
           <div key={d.line} className={`dup-row card${skip ? " dup-skip" : ""}`}>
             <div className="dup-meta"><strong>{date(d.txn_date)}</strong><span className="num">{money(d.amount, currency)}</span></div>
             <div className="dup-sides">
-              <div><div className="caption">{t("Already in PFI")}</div>
+              <div><div className="caption">{t("Already in Personal Finance")}</div>
                 <div><Diff text={d.existing.description} other={d.description} /></div></div>
               <div><div className="caption">{t("In this file (line {n})", { n: d.line })}</div>
                 <div><Diff text={d.description} other={d.existing.description} /></div></div>

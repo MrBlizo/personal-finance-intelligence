@@ -1,18 +1,17 @@
-// Material 3 colour tokens for every PFI surface, from one seed colour.
+// Material 3 colour tokens for every Personal Finance surface, from one seed colour.
 //
-//   node --import ./scripts/m3/resolve-js.mjs scripts/m3/gen-tokens.mjs [#2F6FE4]
+//   node --import ./scripts/m3/resolve-js.mjs scripts/m3/gen-tokens.mjs [#3949AB]
 //
 // Writes design/m3-tokens.json (the source of truth), the CSS custom
 // properties for the Windows app and the website, and the colours for the
 // phone app.
 //
-// Light: Material 3 Expressive, SchemeVibrant from the PFI violet seed at
-// standard contrast, plus two loud accents (lime and pink) that are NOT
-// harmonized, so they pop against the violet like the M3 Expressive
-// showcase. Money colours are harmonized toward the seed.
-// Dark: "Neon" - a hand-tuned synthwave palette (deep indigo surfaces, neon
-// pink primary, electric violet, cyan, mint and sun-gold). Every text pair is
-// checked for 4.5:1 contrast when this script runs.
+// One look in light and dark: Material 3 Expressive, SchemeVibrant from the
+// Personal Finance indigo seed (#3949AB) at standard contrast. The bright tiles (lavender, lime, pink,
+// cyan) keep the SAME light colours in dark mode, so the app looks like
+// itself in both; only surfaces and text change. Money colours are
+// harmonized toward the seed. Charts use one mid-tone palette in both modes
+// (CHART below). Every text pair is checked for 4.5:1 contrast.
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
@@ -25,7 +24,7 @@ const mcu = await import(
 const { argbFromHex, hexFromArgb, Hct, SchemeVibrant, MaterialDynamicColors,
   Blend, TonalPalette } = mcu;
 
-const SEED = process.argv[2] || "#8E5CF7";
+const SEED = process.argv[2] || "#3949AB";
 const ROLES = [
   "primary", "onPrimary", "primaryContainer", "onPrimaryContainer",
   "secondary", "onSecondary", "secondaryContainer", "onSecondaryContainer",
@@ -41,36 +40,13 @@ export const MONEY = { positive: "#1E8E3E", negative: "#D93025", warning: "#E8A3
 // Loud accents for the Expressive look; deliberately not harmonized.
 export const ACCENTS = { lime: "#C6F432", pink: "#FF5AB4", cyan: "#24D3F2" };
 
-// Neon synthwave dark palette, hand-tuned.
-export const NEON = {
-  primary: "#FF5AD9", onPrimary: "#3B0030",
-  primaryContainer: "#7A1FA2", onPrimaryContainer: "#FFD8F6",
-  secondary: "#B69CFF", onSecondary: "#2A0E6B",
-  secondaryContainer: "#3D2A7A", onSecondaryContainer: "#E6DCFF",
-  tertiary: "#4DE8FF", onTertiary: "#00363F",
-  tertiaryContainer: "#005A68", onTertiaryContainer: "#B8F3FF",
-  error: "#FF7A9A", onError: "#4A0018",
-  errorContainer: "#6E1030", onErrorContainer: "#FFD9E0",
-  surface: "#120B24", onSurface: "#F4ECFF", onSurfaceVariant: "#C3B3E6",
-  surfaceDim: "#0D081A", surfaceBright: "#2A1F45",
-  surfaceContainerLowest: "#0B0717", surfaceContainerLow: "#17102E",
-  surfaceContainer: "#1C1436", surfaceContainerHigh: "#241A44",
-  surfaceContainerHighest: "#2D2152", outline: "#9A88C4",
-  outlineVariant: "#3E3163", inverseSurface: "#F4ECFF",
-  inverseOnSurface: "#241A44", inversePrimary: "#A0158A",
-  scrim: "#000000", shadow: "#000000", surfaceTint: "#FF5AD9",
-  positive: "#5CFFB0", onPositive: "#003822",
-  positiveContainer: "#0B5A3A", onPositiveContainer: "#B6FFD9",
-  negative: "#FF7A9A", onNegative: "#4A0018",
-  negativeContainer: "#6E1030", onNegativeContainer: "#FFD9E0",
-  warning: "#FFC857", onWarning: "#3F2A00",
-  warningContainer: "#6A4500", onWarningContainer: "#FFE2A8",
-  lime: "#D4FF4F", onLime: "#283300",
-  limeContainer: "#3E5200", onLimeContainer: "#E9FFB0",
-  pink: "#FF5AD9", onPink: "#3B0030",
-  pinkContainer: "#7A1FA2", onPinkContainer: "#FFD8F6",
-  cyan: "#4DE8FF", onCyan: "#00363F",
-  cyanContainer: "#005A68", onCyanContainer: "#B8F3FF",
+// Chart series colours, the same in light and dark: mid-tones from the tile
+// family (blue, pink, lime, cyan, orange, violet, amber), checked with the
+// dataviz palette validator (lightness band, CVD separation). Keys are the
+// Okabe-Ito names the backend figures use; Plot.tsx repaints them.
+export const CHART = {
+  blue: "#4C6EF5", verm: "#EC5F9E", green: "#7CB518", sky: "#1FB5D8",
+  orange: "#F2994A", purple: "#9775FA", yellow: "#C99A06", grey: "#8A8F98",
 };
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -88,13 +64,23 @@ function scheme(seedHex, dark) {
     out[name + "Container"] = hexFromArgb(p.tone(dark ? 30 : 90));
     out["on" + cap(name) + "Container"] = hexFromArgb(p.tone(dark ? 90 : 10));
   }
+  // Tiles: the same light containers in both modes.
   for (const [name, hex] of Object.entries(ACCENTS)) {
     const p = TonalPalette.fromInt(argbFromHex(hex));
     out[name] = hexFromArgb(p.tone(dark ? 80 : 40));
     out["on" + cap(name)] = hexFromArgb(p.tone(dark ? 20 : 100));
-    out[name + "Container"] = hexFromArgb(p.tone(dark ? 30 : 90));
-    out["on" + cap(name) + "Container"] = hexFromArgb(p.tone(dark ? 90 : 10));
+    out[name + "Container"] = hexFromArgb(p.tone(90));
+    out["on" + cap(name) + "Container"] = hexFromArgb(p.tone(10));
   }
+  const light = new SchemeVibrant(Hct.fromInt(seed), false, 0.0);
+  out.lavenderContainer = hexFromArgb(
+    MaterialDynamicColors.primaryContainer.getArgb(light));
+  out.onLavenderContainer = hexFromArgb(
+    MaterialDynamicColors.onPrimaryContainer.getArgb(light));
+  // Filled buttons and the FAB: the vivid light primary in both modes.
+  out.brand = hexFromArgb(MaterialDynamicColors.primary.getArgb(light));
+  out.onBrand = hexFromArgb(MaterialDynamicColors.onPrimary.getArgb(light));
+  for (const [name, hex] of Object.entries(CHART)) out["chart" + cap(name)] = hex;
   return out;
 }
 
@@ -122,6 +108,7 @@ const PAIRS = [
   ["onWarningContainer", "warningContainer"],
   ["onLimeContainer", "limeContainer"], ["onPinkContainer", "pinkContainer"],
   ["onCyanContainer", "cyanContainer"],
+  ["onLavenderContainer", "lavenderContainer"], ["onBrand", "brand"],
 ];
 function audit(name, roles) {
   const bad = PAIRS.map(([a, b]) => [a, b, contrast(roles[a], roles[b])])
@@ -129,16 +116,16 @@ function audit(name, roles) {
   for (const [a, b, r] of bad) console.error(`${name}: ${a} on ${b} is ${r.toFixed(2)}:1`);
   if (bad.length) {
     throw new Error(`${name} has text pairs under 4.5:1 (listed above). `
-      + "Adjust the seed or the NEON palette, then run this script again.");
+      + "Adjust the seed or the accents, then run this script again.");
   }
 }
 
 const tokens = { seed: SEED.toUpperCase(), variant: "vibrant", contrast: 0,
-  light: scheme(SEED, false), dark: { ...scheme(SEED, true), ...NEON } };
+  light: scheme(SEED, false), dark: scheme(SEED, true) };
 audit("light", tokens.light);
-audit("dark (neon)", tokens.dark);
+audit("dark", tokens.dark);
 const header = (c) => `${c} Generated by scripts/m3/gen-tokens.mjs from seed ${tokens.seed}`
-  + ` (SchemeVibrant light, Neon dark). Do not edit by hand.`;
+  + ` (SchemeVibrant, one look in light and dark). Do not edit by hand.`;
 const vars = (o) => Object.entries(o)
   .map(([k, v]) => `  --md-sys-color-${kebab(k)}: ${v};`).join("\n");
 const write = (rel, text) => {
@@ -184,6 +171,7 @@ const dartScheme = (o) => FLUTTER_ROLES
   + `\n  onInverseSurface: ${dartColor(o.inverseOnSurface)},`;
 const dartAccents = (o) => Object.keys(ACCENTS).flatMap((n) => [
   n, "on" + cap(n), n + "Container", "on" + cap(n) + "Container"])
+  .concat(["lavenderContainer", "onLavenderContainer"])
   .map((k) => `    ${k}: ${dartColor(o[k])},`).join("\n");
 const dartMoney = (o) => Object.keys(MONEY).flatMap((n) => [
   n, "on" + cap(n), n + "Container", "on" + cap(n) + "Container"])
@@ -191,16 +179,28 @@ const dartMoney = (o) => Object.keys(MONEY).flatMap((n) => [
 write("mobile/lib/ui/m3_tokens.dart", `${header("//")}
 import 'package:flutter/material.dart';
 
-/// The PFI seed colour, shared with the Windows app and the website.
+/// The Personal Finance seed colour, shared with the Windows app and the website.
 const pfiSeed = ${dartColor(tokens.seed)};
 
-/// The "Neon" dark scheme used with [pfiSeed] (synthwave, hand-tuned).
-const neonDarkScheme = ColorScheme(
+/// The light and dark schemes for [pfiSeed], identical to the PC's.
+const pfiLightScheme = ColorScheme(
+  brightness: Brightness.light,
+${dartScheme(tokens.light)}
+);
+
+const pfiDarkScheme = ColorScheme(
   brightness: Brightness.dark,
 ${dartScheme(tokens.dark)}
 );
 
-/// Loud Expressive accents (lime, pink), not harmonized on purpose.
+/// Chart series colours, the same in light and dark (see CHART in
+/// scripts/m3/gen-tokens.mjs).
+const chartColors = <Color>[
+${Object.values(CHART).slice(0, 7).map((h) => "  " + dartColor(h) + ",").join("\n")}
+];
+
+/// Expressive tile colours (lavender, lime, pink, cyan): the same light
+/// containers in light and dark mode.
 class AccentColors extends ThemeExtension<AccentColors> {
   const AccentColors({
     required this.lime,
@@ -215,8 +215,11 @@ class AccentColors extends ThemeExtension<AccentColors> {
     required this.onCyan,
     required this.cyanContainer,
     required this.onCyanContainer,
+    required this.lavenderContainer,
+    required this.onLavenderContainer,
   });
 
+  final Color lavenderContainer, onLavenderContainer;
   final Color lime, onLime, limeContainer, onLimeContainer;
   final Color pink, onPink, pinkContainer, onPinkContainer;
   final Color cyan, onCyan, cyanContainer, onCyanContainer;
@@ -249,6 +252,8 @@ ${dartAccents(tokens.dark)}
       onCyan: l(onCyan, other.onCyan),
       cyanContainer: l(cyanContainer, other.cyanContainer),
       onCyanContainer: l(onCyanContainer, other.onCyanContainer),
+      lavenderContainer: l(lavenderContainer, other.lavenderContainer),
+      onLavenderContainer: l(onLavenderContainer, other.onLavenderContainer),
     );
   }
 }

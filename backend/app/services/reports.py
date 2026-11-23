@@ -40,7 +40,7 @@ LABELS = {
         "uncat": "uncategorised expenses totalling",
         "missing_fx": "No exchange rate for", "none": "None.",
         "ok": "on track", "at_risk": "at risk", "over": "over budget",
-        "footer": "Personal Finance Intelligence",
+        "footer": "Personal Finance",
     },
     "fr": {
         "title": "Rapport mensuel", "generated": "Généré le",
@@ -61,7 +61,7 @@ LABELS = {
         "uncat": "dépenses non catégorisées pour un total de",
         "missing_fx": "Aucun taux de change pour", "none": "Aucune.",
         "ok": "dans les clous", "at_risk": "à risque",
-        "over": "dépassé", "footer": "Personal Finance Intelligence",
+        "over": "dépassé", "footer": "Personal Finance",
     },
 }
 MONTHS = {
@@ -211,7 +211,7 @@ def render_pdf(data: dict, lang: str = "en") -> bytes:
     L = LABELS.get(lang, LABELS["en"])
     months = MONTHS.get(lang, MONTHS["en"])
     cur = data["currency"]
-    accent = colors.HexColor("#005FB8")
+    accent = colors.HexColor("#1A41FF")
     ink, muted = colors.HexColor("#1B1B1B"), colors.HexColor("#616161")
     line = colors.HexColor("#E0E0E0")
     h1 = ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=20,
@@ -243,7 +243,7 @@ def render_pdf(data: dict, lang: str = "en") -> bytes:
     story = [
         Paragraph(f"{L['title']} — {months[m.month - 1]} {m.year}", h1),
         Paragraph(f"{L['generated']} {datetime.now():%Y-%m-%d %H:%M} · "
-                  f"{cur} · PFI {__version__}", small),
+                  f"{cur} · Personal Finance {__version__}", small),
         Spacer(1, 6 * mm)]
     kpis = [(L["income"], _money(data["income"], cur)),
             (L["expenses"], _money(data["expenses"], cur)),
@@ -346,7 +346,7 @@ def render_pdf(data: dict, lang: str = "en") -> bytes:
                       rightMargin=18 * mm, topMargin=16 * mm,
                       bottomMargin=16 * mm,
                       title=f"{L['title']} {m:%Y-%m}",
-                      author="Personal Finance Intelligence").build(
+                      author="Personal Finance").build(
         story, onFirstPage=footer, onLaterPages=footer)
     return buf.getvalue()
 
@@ -492,7 +492,7 @@ def workbook(db: Session, fx: FxConverter, base: str,
             b["status"]] for b in status["items"]], (2, 3, 4),
           [24, 13, 13, 13, 10])
     info = wb.create_sheet("About")
-    info.append(["Exported from Personal Finance Intelligence",
+    info.append(["Exported from Personal Finance",
                  __version__])
     info.append(["Exported at", datetime.now().strftime("%Y-%m-%d %H:%M")])
     info.append(["Base currency", base])

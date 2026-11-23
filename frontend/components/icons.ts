@@ -23,6 +23,7 @@ export const I = {
   documentScanner: "\ue5fa", // document_scanner
   download: "\ue171", // download
   eventRepeat: "\ueb7b", // event_repeat
+  expandMore: "\ue5cf", // expand_more
   factCheck: "\uf0c5", // fact_check
   fileSave: "\uf17f", // file_save
   flag: "\ue153", // flag

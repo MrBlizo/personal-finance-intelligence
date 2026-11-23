@@ -178,17 +178,17 @@ def _blocked_page(message: str) -> str:
     text = html.escape(message)
     link = html.escape(legacy.CONVERTER_URL)
     text = text.replace(link, f'<a href="{link}">{link}</a>')
-    return ("<!doctype html><meta charset=utf-8><title>PFI</title>"
-            "<body style='font:15px Segoe UI,sans-serif;max-width:560px;"
-            "margin:15vh auto;padding:0 24px;line-height:1.5'>"
-            "<h2>Your data needs one more step</h2>"
-            f"<p>{text}</p></body>")
+    return ("<!doctype html><meta charset=utf-8><title>Personal "
+            "Finance</title><body style='font:15px Segoe "
+            "UI,sans-serif;max-width:560px;margin:15vh auto;padding:0 "
+            "24px;line-height:1.5'><h2>Your data needs one more "
+            f"step</h2><p>{text}</p></body>")
 
 
 def create_app() -> FastAPI:
     """Build the FastAPI application with all routers and the static UI."""
     settings = get_settings()
-    app = FastAPI(title="Personal Finance Intelligence API",
+    app = FastAPI(title="Personal Finance API",
                   version=__version__, lifespan=lifespan)
     app.add_middleware(TokenMiddleware, token=settings.api_token)
     if not settings.api_token:

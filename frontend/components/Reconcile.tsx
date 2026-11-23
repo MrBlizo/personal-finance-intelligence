@@ -90,7 +90,7 @@ export function ReconcileDialog({ account, onClose, onDone }: {
               </table>
             </div>)}
           <div className="caption" style={{ marginTop: 8 }}>
-            {t("{n} ticked, {s}. Balance in PFI on that date: {b}.", {
+            {t("{n} ticked, {s}. Balance in Personal Finance on that date: {b}.", {
               n: ticked.size, s: money(tickedSum / 100, cur), b: money(d.balance, cur) })}
           </div>
         </>)}

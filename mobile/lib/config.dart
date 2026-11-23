@@ -1,6 +1,6 @@
 // Build-time settings. The OAuth client ids are public (PKCE, no secret);
 // a --dart-define overrides them (see mobile/README.md).
-// Entra app "PFI Sync" (Default Directory of the PFI publisher account):
+// Entra app "PFI Sync" (Default Directory of the Personal Finance publisher account):
 // any Microsoft account, public client, redirect io.github.mrblizo.pfi://auth,
 // delegated Files.ReadWrite.
 const oneDriveClientId = String.fromEnvironment('ONEDRIVE_CLIENT_ID',
@@ -16,4 +16,4 @@ const googleServerClientId = String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID',
 
 const oauthScheme = 'io.github.mrblizo.pfi';
 const oauthRedirect = '$oauthScheme://auth';
-const appVersion = '1.0.0';
+const appVersion = '1.0.1';

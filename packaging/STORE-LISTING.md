@@ -1,6 +1,6 @@
 # Microsoft Store submission kit
 
-Everything to paste into Partner Center for **Personal Finance Intelligence**.
+Everything to paste into Partner Center for **Personal Finance**.
 
 ## 1. Before the first build for the Store
 
@@ -39,53 +39,53 @@ account (Accounts › Add account) and a few transactions (Ctrl+N), or import
 any bank CSV file under Import. First start takes a few seconds while the
 private database is created."
 
-## What's new in 1.0.0 (paste into "What's new in this version")
+## What's new in 1.0.1 (paste into "What's new in this version")
 
 **English**
 
-Version 1.0.0
-• New look: Material 3 Expressive in violet, with a neon dark mode.
-• Month by month: what you earned, spent, paid and saved each month.
-• Scan receipts: drop a photo on Quick add; amount, date and shop are read on your PC.
-• What if…? planner, financial independence calculator, year report PDF and tax export.
-• Move in from Cashew or Mint; Moroccan bank statements recognised.
-• Ctrl+K to jump anywhere, a setup assistant, Check my data and a review of sync conflicts.
+Version 1.0.1
+• New name: Personal Finance.
+• One calm indigo look in light and dark mode, the same on the phone, with softer chart colours.
+• Shorter menu: pages are grouped under Money, Planning and Reports & insights.
+• Figures count up and charts move smoothly when they change.
+• The user guide is now in Settings › About.
+• Android: scanning a receipt works again.
 
 **Français**
 
-Version 1.0.0
-• Nouveau look : Material 3 Expressive en violet, avec un mode sombre néon.
-• Mois par mois : ce que vous avez gagné, dépensé, payé et épargné chaque mois.
-• Scan de tickets : déposez une photo dans Ajout rapide ; montant, date et magasin sont lus sur votre PC.
-• Planificateur « Et si… ? », calcul de l'indépendance financière, rapport annuel PDF et export fiscal.
-• Import depuis Cashew ou Mint ; relevés des banques marocaines reconnus.
-• Ctrl+K pour aller partout, un assistant de démarrage, Vérifier mes données et la revue des conflits de synchro.
+Version 1.0.1
+• Nouveau nom : Personal Finance.
+• Un seul look indigo, calme, en mode clair et sombre, le même sur le téléphone, avec des graphiques aux couleurs plus douces.
+• Menu plus court : les pages sont regroupées sous Argent, Planification et Rapports et analyses.
+• Les montants s'animent et les graphiques changent en douceur.
+• Le guide d'utilisation se trouve maintenant dans Paramètres › À propos.
+• Android : le scan des tickets fonctionne de nouveau.
 
 **العربية**
 
-الإصدار 1.0.0
-• مظهر جديد: Material 3 Expressive باللون البنفسجي مع وضع داكن نيون.
-• شهرًا بشهر: ما كسبته وأنفقته ودفعته وادّخرته كل شهر.
-• مسح الإيصالات: أسقط صورة في الإضافة السريعة فيُقرأ المبلغ والتاريخ والمتجر على حاسوبك.
-• مخطط «ماذا لو…؟» وحاسبة الاستقلال المالي وتقرير سنوي PDF وتصدير ضريبي.
-• الانتقال من Cashew أو Mint؛ والتعرّف على كشوف البنوك المغربية.
-• Ctrl+K للانتقال إلى أي مكان، ومساعد البدء، وفحص بياناتي، ومراجعة تعارضات المزامنة.
+الإصدار 1.0.1
+• اسم جديد: Personal Finance.
+• مظهر نيلي هادئ واحد في الوضعين الفاتح والداكن، وهو نفسه على الهاتف، مع ألوان أهدأ للرسوم البيانية.
+• قائمة أقصر: الصفحات مجمّعة تحت المال والتخطيط والتقارير والتحليلات.
+• الأرقام تتحرك عند ظهورها والرسوم البيانية تتغير بسلاسة.
+• دليل الاستخدام موجود الآن في الإعدادات › حول.
+• أندرويد: مسح الإيصالات يعمل من جديد.
 
 ## 3. Store listing: English
 
-**Product name:** Personal Finance Intelligence
+**Product name:** Personal Finance : Budget Planner (reserved in Partner Center; "Personal Finance" alone is taken)
 
 **Short description (≤ 100):** Budgets, investments and cash-flow forecasts.
 Private: your data stays on your PC.
 
 **Description:**
 
-Personal Finance Intelligence brings all your money together in one native
+Personal Finance brings all your money together in one native
 Windows 11 app, without an account and without the cloud.
 
 • Accounts in any currency: checking, savings, cash, cards, investments and
 loans, converted to the currency you report in.
-• Import bank statements (CSV) from any bank. PFI remembers each format and
+• Import bank statements (CSV) from any bank. Personal Finance remembers each format and
 learns your categories from the transactions you categorise yourself.
 • Bills & recurring payments: rent, salary and subscriptions post themselves
 on the due date, and Windows reminds you before they are due.
@@ -99,7 +99,7 @@ time-weighted returns, dividends and target allocation.
 • Windows Hello app lock, automatic backups, light and dark mode.
 • English, French and Arabic.
 
-Your data is stored in a private database on your PC. PFI has no ads, no
+Your data is stored in a private database on your PC. Personal Finance has no ads, no
 tracking and no account. Source code: github.com/MrBlizo/personal-finance-intelligence
 
 **Features (up to 20):**
@@ -131,12 +131,12 @@ Privé : vos données restent sur votre PC.
 
 **Description :**
 
-Personal Finance Intelligence réunit tout votre argent dans une application
+Personal Finance réunit tout votre argent dans une application
 Windows 11 native, sans compte et sans cloud.
 
 • Comptes dans toutes les devises : courant, épargne, espèces, cartes,
 placements et prêts, convertis dans votre devise de référence.
-• Import des relevés bancaires (CSV) de n'importe quelle banque. PFI retient
+• Import des relevés bancaires (CSV) de n'importe quelle banque. Personal Finance retient
 chaque format et apprend vos catégories à partir de celles que vous
 attribuez vous-même.
 • Factures et paiements récurrents : loyer, salaire et abonnements se
@@ -164,12 +164,12 @@ placements, trésorerie, patrimoine, gestion d'argent
 
 **الوصف:**
 
-يجمع Personal Finance Intelligence كل أموالك في تطبيق Windows 11 أصلي، بلا
+يجمع Personal Finance كل أموالك في تطبيق Windows 11 أصلي، بلا
 حساب وبلا سحابة.
 
 • حسابات بأي عملة: جارية، ادخار، نقد، بطاقات، استثمارات وقروض، محوّلة إلى
 عملة التقارير التي تختارها.
-• استيراد كشوف الحسابات البنكية (CSV) من أي بنك. يتذكر PFI صيغة كل ملف
+• استيراد كشوف الحسابات البنكية (CSV) من أي بنك. يتذكر Personal Finance صيغة كل ملف
 ويتعلم فئاتك من المعاملات التي تصنفها بنفسك.
 • الفواتير والدفعات المتكررة: الإيجار والراتب والاشتراكات تُسجَّل تلقائياً
 في موعدها، ويذكّرك Windows قبل استحقاقها.

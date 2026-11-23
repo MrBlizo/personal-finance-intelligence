@@ -80,7 +80,8 @@ def test_unmoved_cluster_blocks_start(tmp_path, monkeypatch):
         assert health.json()["status"] == "blocked"
         assert c.get("/api/accounts").status_code == 503
         page = c.get("/")
-        assert page.status_code == 503 and "PFI 0.4.0" in page.text
+        assert page.status_code == 503
+        assert "Personal Finance 0.4.0" in page.text
     assert not (tmp_path / "pfi.sqlite").exists()
     assert (tmp_path / "pgdata" / "PG_VERSION").exists()
 

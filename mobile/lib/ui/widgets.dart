@@ -24,9 +24,18 @@ int? parseMinor(String text) {
   return v == null ? null : (v * 100).round();
 }
 
+/// Default colours of earlier versions, shown in today's chart palette.
+const _oldColours = {
+  '0072B2': '4C6EF5', 'E69F00': 'F2994A', '009E73': '7CB518',
+  'D55E00': 'EC5F9E', '56B4E9': '1FB5D8', 'CC79A7': '9775FA',
+  'F0E442': 'C99A06', 'BE1818': 'EC5F9E', '6B7280': '8A8F98',
+  '7C3AED': '9775FA', '0F766E': '1FB5D8', '9A3412': 'F2994A',
+};
+
 Color hexColor(String? hex, Color fallback) {
   if (hex == null || hex.length < 7) return fallback;
-  final v = int.tryParse(hex.substring(1, 7), radix: 16);
+  final raw = hex.substring(1, 7).toUpperCase();
+  final v = int.tryParse(_oldColours[raw] ?? raw, radix: 16);
   return v == null ? fallback : Color(0xFF000000 | v);
 }
 

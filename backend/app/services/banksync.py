@@ -102,8 +102,8 @@ def _money(text) -> Decimal:
     try:
         return Decimal(str(text)).quantize(Decimal("0.01"))
     except (InvalidOperation, ValueError) as exc:
-        raise BankSyncError(f"The bank sent an amount PFI cannot read: "
-                            f"{text!r}.") from exc
+        raise BankSyncError("The bank sent an amount Personal Finance cannot "
+                            f"read: {text!r}.") from exc
 
 
 # --- SimpleFIN ---------------------------------------------------------
@@ -117,7 +117,7 @@ def simplefin_connect(data_dir: Path, setup_token: str) -> None:
     Parameters
     ----------
     data_dir : Path
-        The PFI data folder that holds the secrets.
+        The Personal Finance data folder that holds the secrets.
     setup_token : str
         The setup token copied from the SimpleFIN Bridge website.
 
@@ -330,16 +330,16 @@ def eb_start(data_dir: Path, bank: str, country: str, redirect_url: str,
     Parameters
     ----------
     data_dir : Path
-        The PFI data folder that holds the secrets.
+        The Personal Finance data folder that holds the secrets.
     bank : str
         The bank name as listed by ``eb_banks``.
     country : str
         The two-letter country code of the bank.
     redirect_url : str
         The HTTPS page registered in the Enable Banking application; it
-        passes the code back to PFI on this PC.
+        passes the code back to Personal Finance on this PC.
     port : int
-        The port PFI listens on, carried in the state.
+        The port Personal Finance listens on, carried in the state.
 
     Returns
     -------
@@ -365,8 +365,9 @@ def eb_finish(data_dir: Path, code: str, state: str | None = None
     st = _eb_state(data_dir)
     if state is not None and state != st.get("pending_state"):
         raise BankSyncError(
-            "This bank answer does not belong to the connection PFI started. "
-            "Start the connection again from Settings › Bank sync.")
+            "This bank answer does not belong to the connection Personal "
+            "Finance started. Start the connection again from Settings › Bank "
+            "sync.")
     data = _eb(data_dir, "POST", "/sessions", json={"code": code.strip()})
     sessions = st.get("sessions", [])
     sessions.append({"id": data["session_id"],
@@ -546,7 +547,7 @@ def run(db: Session, data_dir: Path) -> RunResult:
     db : Session
         The open database session.
     data_dir : Path
-        The PFI data folder that holds the secrets.
+        The Personal Finance data folder that holds the secrets.
 
     Returns
     -------

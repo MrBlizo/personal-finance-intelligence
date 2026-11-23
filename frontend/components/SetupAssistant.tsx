@@ -91,7 +91,7 @@ export function SetupAssistant({ base, lang, onLang, onDone }: {
         </ol>
         {step === 0 && (<>
           <span className="icon setup-icon" aria-hidden>{I.wavingHand}</span>
-          <h1 id="setup-title">{t("Welcome to PFI")}</h1>
+          <h1 id="setup-title">{t("Welcome to Personal Finance")}</h1>
           <p className="caption">{t("Four quick steps and your money has a home. Everything stays on this PC; there is no account to create.")}</p>
           <div className="form-grid">
             <Field label={t("Language")}>
@@ -108,7 +108,7 @@ export function SetupAssistant({ base, lang, onLang, onDone }: {
           <div className="setup-actions">
             <Button appearance="primary" size="large" disabled={busy} onClick={saveCurrency}>{t("Start")}</Button>
             <Button appearance="subtle" onClick={() => finish("/settings/#sync")}>
-              {t("I already use PFI on another device")}</Button>
+              {t("I already use Personal Finance on another device")}</Button>
           </div>
         </>)}
         {step === 1 && (<>
@@ -140,7 +140,7 @@ export function SetupAssistant({ base, lang, onLang, onDone }: {
         {step === 2 && (<>
           <span className="icon setup-icon" aria-hidden>{I.accountBalanceWallet}</span>
           <h1 id="setup-title">{t("A starter budget")}</h1>
-          <p className="caption">{t("Enter what you earn per month after tax. PFI suggests a monthly limit per category and leaves 20 % for savings. Untick anything you don't need; you can change every amount later.")}</p>
+          <p className="caption">{t("Enter what you earn per month after tax. Personal Finance suggests a monthly limit per category and leaves 20 % for savings. Untick anything you don't need; you can change every amount later.")}</p>
           <Field label={t("Monthly take-home pay")}>
             <Input value={income} inputMode="decimal" contentAfter={currency}
               onChange={(_, d) => setIncome(d.value)} />

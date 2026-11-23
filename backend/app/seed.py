@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 
 from .models import Category, Setting
 
-PALETTE = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#56B4E9",
-           "#CC79A7", "#F0E442", "#BE1818", "#6B7280", "#7C3AED",
-           "#0F766E", "#9A3412"]
+# The app's chart palette, the same in light and dark mode.
+PALETTE = ["#4C6EF5", "#F2994A", "#7CB518", "#EC5F9E", "#1FB5D8",
+           "#9775FA", "#C99A06", "#8A8F98"]
 
 DEFAULT_CATEGORIES: dict[str, dict[str, list[str]]] = {
     "income": {
